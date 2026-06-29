@@ -1,12 +1,27 @@
 // ----------------------------------------------------------------------------
-// Page template. Takes content + styles and returns the full HTML document.
-// Keep markup here; keep data in content.ts and CSS in styles.ts.
+// Page template. Composes the panel modules into the dashboard grid.
+// Data lives in content.ts + each panel module; CSS in styles.ts.
 // ----------------------------------------------------------------------------
 
-import { SITE, OUTCOMES, PANELS, LINKS } from "./content";
+import { SITE, OUTCOMES, LINKS } from "./content";
 import { styles } from "./styles";
+import { PANELS, type Env } from "./panels";
 
-export function renderPage(): string {
+export async function renderPage(env: Env): Promise<string> {
+  // Render panels concurrently; one failure can't take down the page.
+  const cards = await Promise.all(
+    PANELS.map(async (p) => {
+      try {
+        return await p.render(env);
+      } catch {
+        return `<div class="panel" id="${p.key}">
+          <div class="panel-head"><h3>${p.title}</h3></div>
+          <div class="note">temporarily unavailable</div>
+        </div>`;
+      }
+    })
+  );
+
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -32,13 +47,7 @@ export function renderPage(): string {
     <section>
       <div class="sec-head"><h2>Live dashboard</h2><span class="tag">building in public</span></div>
       <div class="grid">
-        ${PANELS.map(
-          (p) => `<div class="panel" id="${p.key}">
-            <h3>${p.title}</h3>
-            <div class="note">${p.note}</div>
-            <span class="badge">${p.status === "live" ? "● live" : "coming soon"}</span>
-          </div>`
-        ).join("")}
+        ${cards.join("")}
       </div>
     </section>
 

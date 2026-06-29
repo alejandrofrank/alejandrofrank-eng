@@ -6,6 +6,8 @@ export const styles = `
   :root {
     --bg: #0a0a0b; --panel: #141417; --line: #232327;
     --fg: #ededef; --muted: #8a8a93; --accent: #6ee7b7;
+    /* GitHub-style heatmap scale */
+    --hm0: #1b1b1f; --hm1: #0e4429; --hm2: #006d32; --hm3: #26a641; --hm4: #39d353;
   }
   * { box-sizing: border-box; }
   body {
@@ -27,9 +29,21 @@ export const styles = `
   .sec-head h2 { font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0; font-weight: 600; }
   .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-height: 130px; display: flex; flex-direction: column; }
-  .panel h3 { margin: 0 0 4px; font-size: 16px; }
+  .panel.span2 { grid-column: 1 / -1; }
+  .panel h3 { margin: 0; font-size: 16px; }
   .panel .note { color: var(--muted); font-size: 13px; flex: 1; }
-  .badge { align-self: flex-start; margin-top: 14px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .badge { align-self: flex-start; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; text-decoration: none; }
+  a.badge:hover { color: var(--accent); border-color: var(--accent); }
+  /* GitHub panel */
+  .stats { display: flex; flex-wrap: wrap; gap: 22px; margin-bottom: 16px; }
+  .stat b { display: block; font-size: 20px; line-height: 1.2; }
+  .stat span { color: var(--muted); font-size: 12px; }
+  .hm { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 4px; }
+  .hm-col { display: flex; flex-direction: column; gap: 3px; }
+  .hm-d { width: 11px; height: 11px; border-radius: 2px; flex: none; }
+  .gh-latest { color: var(--muted); font-size: 13px; margin-top: 14px; }
+  .gh-latest a { color: var(--accent); text-decoration: none; }
   footer { color: var(--muted); font-size: 13px; padding: 0 0 60px; }
   footer a { color: var(--accent); text-decoration: none; }
   @media (max-width: 640px) { .outcomes, .grid { grid-template-columns: 1fr 1fr; } }

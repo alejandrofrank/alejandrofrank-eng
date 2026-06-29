@@ -19,22 +19,7 @@ export const OUTCOMES: { value: string; label: string }[] = [
   { value: "OSS", label: "MCP server, in the ecosystem" },
 ];
 
-// Dashboard panels — each becomes a live integration.
-export type Panel = {
-  key: string;
-  title: string;
-  note: string;
-  status: "soon" | "live";
-};
-
-export const PANELS: Panel[] = [
-  { key: "github", title: "GitHub activity", note: "commits/day · streak · latest ship", status: "soon" },
-  { key: "leetcode", title: "LeetCode", note: "solved · difficulty · streak", status: "soon" },
-  { key: "shipping", title: "Shipping log", note: "projects & deploys timeline", status: "soon" },
-  { key: "status", title: "Service status", note: "are my deployed systems up?", status: "soon" },
-  { key: "x", title: "X / writing", note: "latest posts · cadence", status: "soon" },
-  { key: "hackathons", title: "Hackathons", note: "events & builds", status: "soon" },
-];
+// Dashboard panels now live as modules under src/panels/ (see panels/index.ts).
 
 export const LINKS: { label: string; href: string }[] = [
   { label: "GitHub", href: "https://github.com/alejandrofrank" },
