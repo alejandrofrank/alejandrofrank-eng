@@ -56,6 +56,17 @@ export const styles = `
   .lc-dot.med { background: #ffc01e; }
   .lc-dot.hard { background: #ff375f; }
   .lc-streak { margin-top: 16px; color: var(--muted); font-size: 12px; }
+  /* Shipping log panel */
+  .ship { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+  .ship-row { display: flex; align-items: center; gap: 8px; }
+  .ship-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .ship-dot.shipped { background: var(--accent); }
+  .ship-dot.building { background: #ffc01e; }
+  .ship-dot.planned { background: var(--muted); }
+  .ship-title { font-size: 14px; color: var(--fg); text-decoration: none; }
+  a.ship-title:hover { color: var(--accent); }
+  .ship-date { margin-left: auto; color: var(--muted); font-size: 11px; }
+  .ship-blurb { color: var(--muted); font-size: 12px; margin: 3px 0 0 16px; }
   footer { color: var(--muted); font-size: 13px; padding: 0 0 60px; }
   footer a { color: var(--accent); text-decoration: none; }
   @media (max-width: 640px) { .outcomes, .grid { grid-template-columns: 1fr 1fr; } }

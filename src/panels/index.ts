@@ -6,12 +6,13 @@
 import type { Panel } from "./types";
 import { github } from "./github";
 import { leetcode } from "./leetcode";
+import { shipping } from "./shipping";
 import { placeholder } from "./placeholder";
 
 export const PANELS: Panel[] = [
   github,
   leetcode,
-  placeholder("shipping", "Shipping log", "projects & deploys timeline"),
+  shipping,
   placeholder("status", "Service status", "are my deployed systems up?"),
   placeholder("x", "X / writing", "latest posts · cadence"),
   placeholder("hackathons", "Hackathons", "events & builds"),
