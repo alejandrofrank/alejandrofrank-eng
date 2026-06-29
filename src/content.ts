@@ -8,7 +8,7 @@ export const SITE = {
   location: "Madrid",
   thesis: "The wall is never the code.",
   subtitle:
-    "Forward-deployed engineer. I take ambiguous problems and ship the ambitious version — live systems other people can depend on.",
+    "Forward-deployed engineer. I take ambiguous problems and ship the ambitious version: live systems other people can depend on.",
 };
 
 // Outcomes header — the two static credibility numbers. The header module
@@ -36,14 +36,14 @@ export const SHIPLOG: ShipEntry[] = [
     date: "Jun 2026",
     title: "me.alejandrofranks.workers.dev",
     status: "shipped",
-    blurb: "This dashboard — live GitHub + LeetCode panels, more landing weekly.",
+    blurb: "This dashboard: live GitHub + LeetCode panels, more landing weekly.",
     href: "https://me.alejandrofranks.workers.dev",
   },
   {
     date: "2026",
     title: "DataMarket",
     status: "building",
-    blurb: "Live retail-pricing platform — daily data from 22 retailers, LLM enrichment layer.",
+    blurb: "Live retail-pricing platform: daily data from 22 retailers, LLM enrichment layer.",
   },
   {
     date: "2026",

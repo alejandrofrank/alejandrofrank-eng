@@ -65,7 +65,7 @@ export const leetcode: Panel = {
     if (!s) {
       return `<div class="panel" id="leetcode">
         <div class="panel-head"><h3>LeetCode</h3><span class="badge">● live</span></div>
-        <div class="note">Couldn't reach LeetCode right now — refresh in a bit.</div>
+        <div class="note">Couldn't reach LeetCode right now. Refresh in a bit.</div>
       </div>`;
     }
 

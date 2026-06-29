@@ -151,7 +151,7 @@ export const github: Panel = {
     if (!profile) {
       return `<div class="panel span2" id="github">
         <div class="panel-head"><h3>GitHub activity</h3><span class="badge">● live</span></div>
-        <div class="note">Couldn't reach GitHub right now — refresh in a bit.</div>
+        <div class="note">Couldn't reach GitHub right now. Refresh in a bit.</div>
       </div>`;
     }
 
@@ -165,10 +165,10 @@ export const github: Panel = {
 
     const heatmap = cal ? renderHeatmap(cal) : "";
 
+    // Intentionally no repo name/link here: the last-pushed repo can be a
+    // private/client repo, so we surface recency only, never the name.
     const latestLine = latest
-      ? `<div class="gh-latest">↳ last pushed to <a href="https://github.com/${esc(
-          latest.repo
-        )}">${esc(latest.repo)}</a> · ${timeAgo(latest.when)}</div>`
+      ? `<div class="gh-latest">↳ last push · ${timeAgo(latest.when)}</div>`
       : "";
 
     return `<div class="panel span2" id="github">

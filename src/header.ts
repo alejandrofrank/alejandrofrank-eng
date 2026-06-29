@@ -18,7 +18,7 @@ export async function buildOutcomes(env: Env): Promise<Outcome[]> {
 
   return [
     ...OUTCOMES,
-    { value: pushAgo ?? "—", label: "last shipped" },
+    { value: pushAgo ?? "n/a", label: "last shipped" },
     { value: String(building), label: "now building" },
   ];
 }

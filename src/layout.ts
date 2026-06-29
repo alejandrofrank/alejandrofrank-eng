@@ -30,7 +30,7 @@ export async function renderPage(env: Env): Promise<string> {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>${SITE.name} — builder dashboard</title>
+<title>${SITE.name} · builder dashboard</title>
 <meta name="description" content="${SITE.subtitle}" />
 <style>${styles}</style>
 </head>
@@ -56,7 +56,7 @@ export async function renderPage(env: Env): Promise<string> {
 
     <footer class="wrap">
       ${LINKS.map((l) => `<a href="${l.href}">${l.label}</a>`).join(" · ")}
-      &nbsp;—&nbsp; v0.1 · deployed on Cloudflare Workers
+      &nbsp;·&nbsp; v0.1 · deployed on Cloudflare Workers
     </footer>
   </div>
 </body>
