@@ -1,0 +1,25 @@
+# Personal / job-application materials — never commit
+Alejandro_Frank_CV_long.docx
+cover_letter_google
+SITE_PLAN.md
+
+# Dependencies
+node_modules/
+
+# Wrangler / Cloudflare
+.wrangler/
+.dev.vars
+.dev.vars.*
+
+# Build output
+dist/
+
+# Env & secrets
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
