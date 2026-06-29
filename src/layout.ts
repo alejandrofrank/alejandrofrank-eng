@@ -6,6 +6,8 @@
 import { SITE, LINKS } from "./content";
 import { styles } from "./styles";
 import { buildOutcomes } from "./header";
+import { BANNER } from "./banner";
+import { esc } from "./panels/helpers";
 import { PANELS, type Env } from "./panels";
 
 export async function renderPage(env: Env): Promise<string> {
@@ -38,7 +40,8 @@ export async function renderPage(env: Env): Promise<string> {
   <div class="wrap">
     <header class="hero">
       <div class="tag">${SITE.name} · ${SITE.location}</div>
-      <h1>${SITE.thesis}</h1>
+      <h1 class="sr-only">${SITE.thesis}</h1>
+      <pre class="banner" aria-hidden="true">${esc(BANNER)}</pre>
       <p class="sub">${SITE.subtitle}</p>
       <div class="outcomes">
         ${outcomes
