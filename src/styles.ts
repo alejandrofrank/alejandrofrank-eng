@@ -16,7 +16,9 @@ export const styles = `
     -webkit-font-smoothing: antialiased;
   }
   .wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; }
-  header.hero { padding: 96px 0 56px; container-type: inline-size; }
+  header.hero { padding: 96px 0 56px; container-type: inline-size; position: relative; overflow: hidden; }
+  .mobius { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+  .hero-content { position: relative; z-index: 1; }
   .tag { color: var(--accent); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
   h1 { font-size: clamp(34px, 6vw, 56px); line-height: 1.1; margin: 14px 0 18px; letter-spacing: -0.02em; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }

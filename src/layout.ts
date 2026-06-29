@@ -7,6 +7,7 @@ import { SITE, LINKS } from "./content";
 import { styles } from "./styles";
 import { buildOutcomes } from "./header";
 import { BANNER } from "./banner";
+import { MOBIUS_CANVAS, MOBIUS_SCRIPT } from "./anim";
 import { esc } from "./panels/helpers";
 import { PANELS, type Env } from "./panels";
 
@@ -39,14 +40,17 @@ export async function renderPage(env: Env): Promise<string> {
 <body>
   <div class="wrap">
     <header class="hero">
-      <div class="tag">${SITE.name} · ${SITE.location}</div>
-      <h1 class="sr-only">${SITE.thesis}</h1>
-      <pre class="banner" aria-hidden="true">${esc(BANNER)}</pre>
-      <p class="sub">${SITE.subtitle}</p>
-      <div class="outcomes">
-        ${outcomes
-          .map((o) => `<div class="outcome"><b>${o.value}</b><span>${o.label}</span></div>`)
-          .join("")}
+      ${MOBIUS_CANVAS}
+      <div class="hero-content">
+        <div class="tag">${SITE.name} · ${SITE.location}</div>
+        <h1 class="sr-only">${SITE.thesis}</h1>
+        <pre class="banner" aria-hidden="true">${esc(BANNER)}</pre>
+        <p class="sub">${SITE.subtitle}</p>
+        <div class="outcomes">
+          ${outcomes
+            .map((o) => `<div class="outcome"><b>${o.value}</b><span>${o.label}</span></div>`)
+            .join("")}
+        </div>
       </div>
     </header>
 
@@ -62,6 +66,7 @@ export async function renderPage(env: Env): Promise<string> {
       &nbsp;·&nbsp; v0.1 · deployed on Cloudflare Workers
     </footer>
   </div>
+  ${MOBIUS_SCRIPT}
 </body>
 </html>`;
 }
