@@ -15,7 +15,8 @@ export const styles = `
     font: 16px/1.6 ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
     -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+  .rain { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
   header.hero { padding: 96px 0 56px; container-type: inline-size; position: relative; overflow: hidden; }
   .mobius { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
   .hero-content { position: relative; z-index: 1; }

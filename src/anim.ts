@@ -109,3 +109,59 @@ export const MOBIUS_SCRIPT = `<script>
   requestAnimationFrame(frame);
 })();
 </script>`;
+
+// Full-viewport ambient ASCII rain (ported from scrapmarket, a touch dimmer).
+export const RAIN_CANVAS = '<canvas id="rain" class="rain" aria-hidden="true"></canvas>';
+
+export const RAIN_SCRIPT = `<script>
+(function () {
+  var canvas = document.getElementById('rain');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  var GLYPHS = '01:;.+=-~*%&#|/^';
+  var CELL = 14, MAX_DROPS = 120;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var drops = [];
+
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function spawn() {
+    return {
+      x: Math.floor(Math.random() * (canvas.width / CELL)) * CELL,
+      y: -CELL,
+      speed: 0.3 + Math.random() * 0.8,
+      char: GLYPHS[Math.floor(Math.random() * GLYPHS.length)],
+      opacity: 0.015 + Math.random() * 0.05,   // a little dimmer than the original
+      ttl: 200 + Math.floor(Math.random() * 400)
+    };
+  }
+
+  for (var i = 0; i < 40; i++) { var d = spawn(); d.y = Math.random() * (canvas.height + 200); drops.push(d); }
+
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = CELL + 'px monospace';
+    ctx.textBaseline = 'top';
+
+    if (drops.length < MAX_DROPS && Math.random() < 0.3) drops.push(spawn());
+
+    for (var j = drops.length - 1; j >= 0; j--) {
+      var p = drops[j];
+      p.y += p.speed; p.ttl--;
+      if (Math.random() < 0.02) p.char = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+      var fade = p.ttl < 60 ? p.ttl / 60 : 1;
+      ctx.fillStyle = 'rgba(200,210,255,' + (p.opacity * fade) + ')';
+      ctx.fillText(p.char, p.x, p.y);
+      if (p.ttl <= 0 || p.y > canvas.height + CELL) drops.splice(j, 1);
+    }
+
+    if (!reduce) requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
+})();
+</script>`;

@@ -7,7 +7,7 @@ import { SITE, LINKS } from "./content";
 import { styles } from "./styles";
 import { buildOutcomes } from "./header";
 import { BANNER } from "./banner";
-import { MOBIUS_CANVAS, MOBIUS_SCRIPT } from "./anim";
+import { MOBIUS_CANVAS, MOBIUS_SCRIPT, RAIN_CANVAS, RAIN_SCRIPT } from "./anim";
 import { esc } from "./panels/helpers";
 import { PANELS, type Env } from "./panels";
 
@@ -38,6 +38,7 @@ export async function renderPage(env: Env): Promise<string> {
 <style>${styles}</style>
 </head>
 <body>
+  ${RAIN_CANVAS}
   <div class="wrap">
     <header class="hero">
       ${MOBIUS_CANVAS}
@@ -66,6 +67,7 @@ export async function renderPage(env: Env): Promise<string> {
       &nbsp;·&nbsp; v0.1 · deployed on Cloudflare Workers
     </footer>
   </div>
+  ${RAIN_SCRIPT}
   ${MOBIUS_SCRIPT}
 </body>
 </html>`;
