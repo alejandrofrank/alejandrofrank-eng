@@ -96,6 +96,13 @@ async function fetchCalendar(user: string, env: Env): Promise<Calendar | null> {
   return { total: cal.totalContributions, streak, weeks };
 }
 
+/** Shared with the topline header: "last shipped" signal. Edge-cached. */
+export async function latestPushAgo(env: Env): Promise<string | null> {
+  const user = env.GITHUB_USER || DEFAULT_USER;
+  const r = await fetchLatestRepo(user, env);
+  return r ? timeAgo(r.when) : null;
+}
+
 // --- Rendering ---------------------------------------------------------------
 
 function heatColor(count: number): string {

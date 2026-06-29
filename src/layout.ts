@@ -3,11 +3,14 @@
 // Data lives in content.ts + each panel module; CSS in styles.ts.
 // ----------------------------------------------------------------------------
 
-import { SITE, OUTCOMES, LINKS } from "./content";
+import { SITE, LINKS } from "./content";
 import { styles } from "./styles";
+import { buildOutcomes } from "./header";
 import { PANELS, type Env } from "./panels";
 
 export async function renderPage(env: Env): Promise<string> {
+  const outcomes = await buildOutcomes(env);
+
   // Render panels concurrently; one failure can't take down the page.
   const cards = await Promise.all(
     PANELS.map(async (p) => {
@@ -38,9 +41,9 @@ export async function renderPage(env: Env): Promise<string> {
       <h1>${SITE.thesis}</h1>
       <p class="sub">${SITE.subtitle}</p>
       <div class="outcomes">
-        ${OUTCOMES.map(
-          (o) => `<div class="outcome"><b>${o.value}</b><span>${o.label}</span></div>`
-        ).join("")}
+        ${outcomes
+          .map((o) => `<div class="outcome"><b>${o.value}</b><span>${o.label}</span></div>`)
+          .join("")}
       </div>
     </header>
 

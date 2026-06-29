@@ -11,12 +11,11 @@ export const SITE = {
     "Forward-deployed engineer. I take ambiguous problems and ship the ambitious version — live systems other people can depend on.",
 };
 
-// Outcomes header — frames the live activity below as "senior builder in motion".
+// Outcomes header — the two static credibility numbers. The header module
+// (header.ts) appends two LIVE signals (last shipped, now building) after these.
 export const OUTCOMES: { value: string; label: string }[] = [
   { value: "7 yrs", label: "shipping production systems" },
   { value: "8+", label: "enterprise clients" },
-  { value: "AI + data", label: "agents, RAG, MCP, pipelines" },
-  { value: "OSS", label: "MCP server, in the ecosystem" },
 ];
 
 // Dashboard panels now live as modules under src/panels/ (see panels/index.ts).
