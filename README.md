@@ -6,6 +6,21 @@ status), framed by what I've already built.
 
 Built with [Hono](https://hono.dev) on **Cloudflare Workers**.
 
+## Structure
+
+```
+src/
+  index.ts      routes only (the Hono app)
+  content.ts    editable content — copy, numbers, panels, links (edit this most)
+  styles.ts     all CSS
+  layout.ts     HTML page template
+wrangler.jsonc  Cloudflare Worker config (URL slug = "name" field)
+_personal/      job-application materials — gitignored, never pushed
+```
+
+Adding a live panel later: write its module under `src/panels/`, add an entry to
+`PANELS` in `content.ts`, render it in `layout.ts`.
+
 ## Develop
 
 ```bash
