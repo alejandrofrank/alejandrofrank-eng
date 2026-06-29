@@ -13,9 +13,9 @@ export const PANELS: Panel[] = [
   github,
   leetcode,
   shipping,
-  placeholder("status", "Service status", "are my deployed systems up?"),
-  placeholder("x", "X / writing", "latest posts · cadence"),
-  placeholder("hackathons", "Hackathons", "events & builds"),
+  placeholder("status", "Service status", "are my deployed systems up?", "◉"),
+  placeholder("x", "X / writing", "latest posts · cadence", "✎"),
+  placeholder("hackathons", "Hackathons", "events & builds", "◆"),
 ];
 
 export type { Panel, Env } from "./types";

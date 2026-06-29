@@ -3,14 +3,15 @@
 // ----------------------------------------------------------------------------
 
 import type { Panel } from "./types";
+import { panelHead } from "./helpers";
 
-export function placeholder(key: string, title: string, note: string): Panel {
+export function placeholder(key: string, title: string, note: string, icon = "·"): Panel {
   return {
     key,
     title,
     async render() {
       return `<div class="panel" id="${key}">
-        <div class="panel-head"><h3>${title}</h3><span class="badge">coming soon</span></div>
+        ${panelHead(icon, title, '<span class="badge">coming soon</span>')}
         <div class="note">${note}</div>
       </div>`;
     },

@@ -5,7 +5,9 @@
 
 import type { Env, Panel } from "./types";
 import { SHIPLOG, type ShipEntry } from "../content";
-import { esc } from "./helpers";
+import { esc, panelHead } from "./helpers";
+
+const ICON = "▸";
 
 function item(e: ShipEntry): string {
   const title = e.href
@@ -27,7 +29,7 @@ export const shipping: Panel = {
 
   async render(_env: Env): Promise<string> {
     return `<div class="panel" id="shipping">
-      <div class="panel-head"><h3>Shipping log</h3><span class="badge">building in public</span></div>
+      ${panelHead(ICON, "Shipping log", '<span class="badge">building in public</span>')}
       <ul class="ship">${SHIPLOG.map(item).join("")}</ul>
     </div>`;
   },

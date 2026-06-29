@@ -7,9 +7,10 @@
 // ----------------------------------------------------------------------------
 
 import type { Env, Panel } from "./types";
-import { esc, cachedFetch } from "./helpers";
+import { esc, cachedFetch, panelHead } from "./helpers";
 
 const DEFAULT_USER = "alexfrank";
+const ICON = "λ";
 
 interface LCStats {
   user: string;
@@ -64,7 +65,7 @@ export const leetcode: Panel = {
 
     if (!s) {
       return `<div class="panel" id="leetcode">
-        <div class="panel-head"><h3>LeetCode</h3><span class="badge">● live</span></div>
+        ${panelHead(ICON, "LeetCode", '<span class="badge">● live</span>')}
         <div class="note">Couldn't reach LeetCode right now. Refresh in a bit.</div>
       </div>`;
     }
@@ -77,11 +78,10 @@ export const leetcode: Panel = {
         ? `<div class="lc-streak">current streak · ${s.streak}d</div>`
         : `<div class="lc-streak">no active streak yet</div>`;
 
+    const badge = `<a class="badge" href="https://leetcode.com/u/${esc(user)}/">@${esc(user)}</a>`;
+
     return `<div class="panel" id="leetcode">
-      <div class="panel-head">
-        <h3>LeetCode</h3>
-        <a class="badge" href="https://leetcode.com/u/${esc(user)}/">@${esc(user)}</a>
-      </div>
+      ${panelHead(ICON, "LeetCode", badge)}
       <div class="lc-total"><b>${s.total}</b><span>solved</span></div>
       <div class="lc-breakdown">
         ${row("easy", "Easy", s.easy)}

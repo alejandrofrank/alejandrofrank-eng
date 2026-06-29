@@ -33,6 +33,8 @@ export const styles = `
   .panel h3 { margin: 0; font-size: 16px; }
   .panel .note { color: var(--muted); font-size: 13px; flex: 1; }
   .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .panel-head h3 { display: flex; align-items: center; }
+  .panel-icon { display: inline-block; width: 1.5em; color: var(--accent); opacity: .8; font-weight: 400; }
   .badge { align-self: flex-start; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; text-decoration: none; }
   a.badge:hover { color: var(--accent); border-color: var(--accent); }
   /* GitHub panel */
@@ -42,6 +44,9 @@ export const styles = `
   .hm { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 4px; }
   .hm-col { display: flex; flex-direction: column; gap: 3px; }
   .hm-d { width: 11px; height: 11px; border-radius: 2px; flex: none; }
+  .gh-today { font-size: 12px; margin-bottom: 14px; letter-spacing: .02em; }
+  .gh-today.on { color: var(--accent); }
+  .gh-today.off { color: #ffb020; }
   .gh-latest { color: var(--muted); font-size: 13px; margin-top: 14px; }
   .gh-latest a { color: var(--accent); text-decoration: none; }
   /* LeetCode panel */

@@ -2,6 +2,11 @@
 // Small shared helpers for panel modules.
 // ----------------------------------------------------------------------------
 
+/** Consistent panel header: ASCII icon + title, with optional right-side html. */
+export function panelHead(icon: string, title: string, right = ""): string {
+  return `<div class="panel-head"><h3><span class="panel-icon">${icon}</span>${title}</h3>${right}</div>`;
+}
+
 /** Escape user/remote-sourced strings before putting them in HTML. */
 export function esc(s: string): string {
   return s

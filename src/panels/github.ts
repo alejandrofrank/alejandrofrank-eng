@@ -8,7 +8,9 @@
 // ----------------------------------------------------------------------------
 
 import type { Env, Panel } from "./types";
-import { esc, timeAgo, cachedFetch, ghHeaders } from "./helpers";
+import { esc, timeAgo, cachedFetch, ghHeaders, panelHead } from "./helpers";
+
+const ICON = "▦";
 
 const DEFAULT_USER = "alejandrofrank";
 
@@ -27,6 +29,7 @@ interface LatestRepo {
 interface Calendar {
   total: number;
   streak: number;
+  todayCount: number;
   weeks: { days: { count: number; date: string }[] }[];
 }
 
@@ -93,7 +96,10 @@ async function fetchCalendar(user: string, env: Env): Promise<Calendar | null> {
     else break;
   }
 
-  return { total: cal.totalContributions, streak, weeks };
+  // Last day in the calendar is today (UTC).
+  const todayCount = days.length ? days[days.length - 1].count : 0;
+
+  return { total: cal.totalContributions, streak, todayCount, weeks };
 }
 
 /** Shared with the topline header: "last shipped" signal. Edge-cached. */
@@ -150,7 +156,7 @@ export const github: Panel = {
     // Total failure (rate-limited / offline): keep the card, show a soft note.
     if (!profile) {
       return `<div class="panel span2" id="github">
-        <div class="panel-head"><h3>GitHub activity</h3><span class="badge">● live</span></div>
+        ${panelHead(ICON, "GitHub activity", '<span class="badge">● live</span>')}
         <div class="note">Couldn't reach GitHub right now. Refresh in a bit.</div>
       </div>`;
     }
@@ -163,6 +169,13 @@ export const github: Panel = {
     chips.push(statChip(String(profile.public_repos), "public repos"));
     chips.push(statChip(String(profile.followers), "followers"));
 
+    // Daily nudge: amber/empty until today has a commit, then flips green.
+    const today = cal
+      ? cal.todayCount > 0
+        ? `<div class="gh-today on">✓ shipped today · ${cal.todayCount}</div>`
+        : `<div class="gh-today off">○ nothing shipped today yet</div>`
+      : "";
+
     const heatmap = cal ? renderHeatmap(cal) : "";
 
     // Intentionally no repo name/link here: the last-pushed repo can be a
@@ -171,12 +184,12 @@ export const github: Panel = {
       ? `<div class="gh-latest">↳ last push · ${timeAgo(latest.when)}</div>`
       : "";
 
+    const badge = `<a class="badge" href="${esc(profile.html_url)}">@${esc(profile.login)}</a>`;
+
     return `<div class="panel span2" id="github">
-      <div class="panel-head">
-        <h3>GitHub activity</h3>
-        <a class="badge" href="${esc(profile.html_url)}">@${esc(profile.login)}</a>
-      </div>
+      ${panelHead(ICON, "GitHub activity", badge)}
       <div class="stats">${chips.join("")}</div>
+      ${today}
       ${heatmap}
       ${latestLine}
     </div>`;
