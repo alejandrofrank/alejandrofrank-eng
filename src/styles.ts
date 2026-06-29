@@ -16,11 +16,12 @@ export const styles = `
     -webkit-font-smoothing: antialiased;
   }
   .wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; }
-  header.hero { padding: 96px 0 56px; }
+  header.hero { padding: 96px 0 56px; container-type: inline-size; }
   .tag { color: var(--accent); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
   h1 { font-size: clamp(34px, 6vw, 56px); line-height: 1.1; margin: 14px 0 18px; letter-spacing: -0.02em; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-  .banner { color: var(--accent); font-size: clamp(6px, 1.75vw, 13px); line-height: 1.05; margin: 16px 0 22px; overflow-x: auto; white-space: pre; }
+  /* Sized to the hero container (71 cols wide) so it always fits — no scrollbar. */
+  .banner { color: var(--accent); font-size: min(2.05cqw, 11px); line-height: 1.05; margin: 16px 0 22px; overflow: hidden; white-space: pre; }
   .sub { color: var(--muted); max-width: 60ch; font-size: 17px; }
   .outcomes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 44px 0 0; }
   .outcome { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
