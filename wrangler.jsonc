@@ -1,8 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  // Worker name → becomes the subdomain: live.alejandrofranks.workers.dev
+  // Worker name → becomes the subdomain: me.alejandrofranks.workers.dev
   // Change this string to rename the URL slug.
-  "name": "live",
+  "name": "me",
   "main": "src/index.ts",
   "compatibility_date": "2026-06-29",
   "observability": {

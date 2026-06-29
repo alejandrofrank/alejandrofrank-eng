@@ -29,7 +29,7 @@ npm run dev        # local dev server
 npm run deploy     # deploy to Cloudflare Workers
 ```
 
-Live at `live.alejandrofranks.workers.dev` (custom domain `alejandrofrank.dev`
+Live at `me.alejandrofranks.workers.dev` (custom domain `alejandrofrank.dev`
 coming). Rename the URL slug via the `name` field in `wrangler.jsonc`.
 
 ## Status
