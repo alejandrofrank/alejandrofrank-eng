@@ -44,6 +44,18 @@ export const styles = `
   .hm-d { width: 11px; height: 11px; border-radius: 2px; flex: none; }
   .gh-latest { color: var(--muted); font-size: 13px; margin-top: 14px; }
   .gh-latest a { color: var(--accent); text-decoration: none; }
+  /* LeetCode panel */
+  .lc-total { display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px; }
+  .lc-total b { font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .lc-total span { color: var(--muted); font-size: 13px; }
+  .lc-breakdown { display: flex; flex-direction: column; gap: 9px; }
+  .lc-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .lc-row b { margin-left: auto; color: var(--fg); font-variant-numeric: tabular-nums; }
+  .lc-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .lc-dot.easy { background: #00b8a3; }
+  .lc-dot.med { background: #ffc01e; }
+  .lc-dot.hard { background: #ff375f; }
+  .lc-streak { margin-top: 16px; color: var(--muted); font-size: 12px; }
   footer { color: var(--muted); font-size: 13px; padding: 0 0 60px; }
   footer a { color: var(--accent); text-decoration: none; }
   @media (max-width: 640px) { .outcomes, .grid { grid-template-columns: 1fr 1fr; } }

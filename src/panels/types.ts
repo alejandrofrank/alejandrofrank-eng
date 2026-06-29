@@ -8,6 +8,8 @@ export interface Env {
   GITHUB_TOKEN?: string;
   /** GitHub username. Defaults to "alejandrofrank" if unset. */
   GITHUB_USER?: string;
+  /** LeetCode username. Defaults to "alexfrank" if unset. */
+  LEETCODE_USER?: string;
 }
 
 export interface Panel {
