@@ -47,9 +47,9 @@ export const styles = `
   .stats { display: flex; flex-wrap: wrap; gap: 22px; margin-bottom: 16px; }
   .stat b { display: block; font-size: 20px; line-height: 1.2; }
   .stat span { color: var(--muted); font-size: 12px; }
-  .hm { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 4px; }
-  .hm-col { display: flex; flex-direction: column; gap: 3px; }
-  .hm-d { width: 11px; height: 11px; border-radius: 2px; flex: none; }
+  .hm { display: flex; gap: 3px; width: 100%; }
+  .hm-col { display: flex; flex-direction: column; gap: 3px; flex: 1 1 0; min-width: 0; }
+  .hm-d { width: 100%; aspect-ratio: 1; border-radius: 2px; }
   .gh-today { font-size: 12px; margin-bottom: 14px; letter-spacing: .02em; }
   .gh-today.on { color: var(--accent); }
   .gh-today.off { color: #ffb020; }
