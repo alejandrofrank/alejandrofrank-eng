@@ -8,6 +8,7 @@ import { styles } from "./styles";
 import { buildOutcomes } from "./header";
 import { BANNER } from "./banner";
 import { MOBIUS_CANVAS, MOBIUS_SCRIPT, RAIN_CANVAS, RAIN_SCRIPT } from "./anim";
+import { FAVICON } from "./favicon";
 import { esc } from "./panels/helpers";
 import { PANELS, type Env } from "./panels";
 
@@ -33,6 +34,7 @@ export async function renderPage(env: Env): Promise<string> {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+${FAVICON}
 <title>${SITE.name} · builder dashboard</title>
 <meta name="description" content="${SITE.subtitle}" />
 <style>${styles}</style>
