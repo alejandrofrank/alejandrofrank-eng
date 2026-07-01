@@ -56,12 +56,13 @@ export const PLAYER_STYLES = `
   .tl-track { position: relative; flex: 1; height: 2px; background: var(--line); border-radius: 2px; }
   .tl-marker { position: absolute; top: 50%; left: 0; width: 2px; height: 16px; background: #fff; border-radius: 1px; transform: translate(-50%, -50%); transition: left .6s cubic-bezier(.2,.8,.2,1); box-shadow: 0 0 6px rgba(255,255,255,.6); }
   /* Experience row: big prev/next arrows flanking the whole block. */
-  .exp-row { display: flex; align-items: center; gap: 14px; }
+  .exp-row { display: flex; align-items: flex-start; gap: 12px; }
   .exp-main { flex: 1; min-width: 0; }
-  .exp-arrow { font: inherit; font-size: 20px; line-height: 1; background: var(--panel); border: 1px solid var(--line); color: var(--fg); width: 46px; height: 46px; border-radius: 50%; cursor: pointer; flex: none; display: flex; align-items: center; justify-content: center; }
-  .exp-arrow:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-  .exp-arrow:disabled { opacity: .26; cursor: default; }
-  @media (max-width: 560px) { .exp-arrow { width: 38px; height: 38px; font-size: 17px; } .exp-row { gap: 8px; } }
+  .exp-arrow { background: none; border: none; padding: 6px; color: var(--muted); cursor: pointer; flex: none; margin-top: 58px; transition: color .2s ease, transform .2s ease; }
+  .exp-arrow:hover:not(:disabled) { color: var(--accent); transform: scale(1.12); }
+  .exp-arrow:disabled { opacity: .22; cursor: default; }
+  .exp-ico { width: 30px; height: 30px; fill: currentColor; display: block; }
+  @media (max-width: 560px) { .exp-ico { width: 22px; height: 22px; } .exp-arrow { margin-top: 40px; padding: 4px; } .exp-row { gap: 6px; } }
 `;
 
 export const PLAYER_SCRIPT = `<script>

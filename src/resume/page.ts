@@ -39,7 +39,7 @@ ${FAVICON}
       </div>
 
       <div class="exp-row">
-        <button class="exp-arrow" id="tlPrev" aria-label="previous role">←</button>
+        <button class="exp-arrow" id="tlPrev" aria-label="previous role"><svg class="exp-ico" viewBox="0 0 24 24" aria-hidden="true"><polygon points="3,12 19,3 13,12 19,21"/></svg></button>
         <div class="exp-main">
           <div class="tabs" id="jobTabs"></div>
 
@@ -62,7 +62,7 @@ ${FAVICON}
             <div class="caption-text" id="capText"></div>
           </div>
         </div>
-        <button class="exp-arrow" id="tlNext" aria-label="next role">→</button>
+        <button class="exp-arrow" id="tlNext" aria-label="next role"><svg class="exp-ico" viewBox="0 0 24 24" aria-hidden="true"><polygon points="21,12 5,3 11,12 5,21"/></svg></button>
       </div>
     </div>
   </div>
