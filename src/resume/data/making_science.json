@@ -3,7 +3,7 @@
   "title": "Making Science",
   "role": "Data Engineer",
   "period": "Mar 2021 – Jul 2021",
-  "summary": "Built the pipeline for a very high-load ad-optimization system: ~1.4 TB of ad data a day fanned out across ~1000 Cloud Functions into BigQuery, feeding a bid algorithm that reallocated spend from losing ads to winners.",
+  "summary": "Built the pipeline for a very high-load ad-optimization system: ~1.4 TB of ad data a day fanned out across ~1000 Cloud Functions into BigQuery, crossed against the business team's threshold mappings, then written straight back to the ad platforms as optimized bids.",
   "nodes": [
     {
       "id": "gcs",
@@ -19,7 +19,7 @@
       "label": "Bid mappings",
       "kind": "source",
       "x": 0.06,
-      "y": 0.74,
+      "y": 0.72,
       "sublabel": "thresholds (Excel)",
       "color": ""
     },
@@ -27,7 +27,7 @@
       "id": "functions",
       "label": "Cloud Functions",
       "kind": "core",
-      "x": 0.3,
+      "x": 0.34,
       "y": 0.28,
       "sublabel": "GCS-triggered · ~1000 parallel",
       "color": ""
@@ -36,35 +36,26 @@
       "id": "bq",
       "label": "BigQuery",
       "kind": "core",
-      "x": 0.5,
-      "y": 0.28,
-      "sublabel": "ingested",
+      "x": 0.6,
+      "y": 0.48,
+      "sublabel": "cross + transform w/ mappings",
       "color": ""
     },
     {
       "id": "datamart",
       "label": "Datamart",
-      "kind": "core",
-      "x": 0.7,
-      "y": 0.28,
-      "sublabel": "curated layer",
-      "color": ""
-    },
-    {
-      "id": "bidder",
-      "label": "Bid algorithm",
       "kind": "science",
-      "x": 0.82,
-      "y": 0.72,
-      "sublabel": "picks bid prices",
+      "x": 0.92,
+      "y": 0.25,
+      "sublabel": "smaller cut · for analysts",
       "color": ""
     },
     {
       "id": "ads",
       "label": "Ad platforms",
       "kind": "sink",
-      "x": 0.95,
-      "y": 0.48,
+      "x": 0.92,
+      "y": 0.7,
       "sublabel": "optimized bids placed",
       "color": "#8ecbff"
     }
@@ -87,7 +78,15 @@
       "color": ""
     },
     {
-      "id": "f_curate",
+      "id": "f_map",
+      "src": "mappings",
+      "dst": "bq",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_mart",
       "src": "bq",
       "dst": "datamart",
       "label": "",
@@ -95,24 +94,8 @@
       "color": ""
     },
     {
-      "id": "f_pick",
-      "src": "datamart",
-      "dst": "bidder",
-      "label": "",
-      "glow": false,
-      "color": ""
-    },
-    {
-      "id": "f_map",
-      "src": "mappings",
-      "dst": "bidder",
-      "label": "",
-      "glow": false,
-      "color": ""
-    },
-    {
       "id": "f_place",
-      "src": "bidder",
+      "src": "bq",
       "dst": "ads",
       "label": "optimized bids",
       "glow": true,
@@ -138,7 +121,7 @@
     },
     {
       "title": "Watch, then fan out to ~1000 functions",
-      "caption": "A watcher on the bucket fired the instant files landed, fanning out ~1000 Cloud Functions in parallel. They processed until they hit the function time limit, then spawned the next 1000 — chewing through the whole load in waves.",
+      "caption": "A watcher on the bucket fired the instant files landed, fanning out ~1000 Cloud Functions in parallel. They processed until they hit the function time limit, then spawned the next 1000 — chewing through the whole load in waves, straight into BigQuery.",
       "nodes": [
         "functions"
       ],
@@ -147,31 +130,29 @@
       ]
     },
     {
-      "title": "Into BigQuery, then a datamart",
-      "caption": "Processed records streamed into BigQuery — where analysts built their own models on top — and settled into a curated datamart, the clean source of truth for bidding.",
+      "title": "Cross it in BigQuery",
+      "caption": "In BigQuery the ad data is crossed and transformed against the mappings — every bid scored against the business thresholds to decide where spend should move.",
       "nodes": [
-        "bq",
-        "datamart"
+        "bq"
       ],
       "flows": [
         "f_ingest",
-        "f_curate"
-      ]
-    },
-    {
-      "title": "The bid algorithm",
-      "caption": "A pricing algorithm read the datamart against the business thresholds and set each ad's next bid: gut budget from high-CPC, low-ROI ads, push it toward the winners.",
-      "nodes": [
-        "bidder"
-      ],
-      "flows": [
-        "f_pick",
         "f_map"
       ]
     },
     {
-      "title": "Place the bids, optimize the spend",
-      "caption": "Every optimized bid went straight back onto its ad platform — a closed cost-optimization loop running over 1.4 TB a day for the whole marketing operation.",
+      "title": "A cut for the analysts",
+      "caption": "A smaller, curated version drops into a datamart — the layer the analysts dig into for their own models.",
+      "nodes": [
+        "datamart"
+      ],
+      "flows": [
+        "f_mart"
+      ]
+    },
+    {
+      "title": "Bids back to the platforms",
+      "caption": "And the optimized bids go straight from BigQuery back onto the ad platforms — spend gutted from high-CPC, low-ROI ads and pushed toward the winners. A closed loop, 1.4 TB a day.",
       "nodes": [
         "ads"
       ],
