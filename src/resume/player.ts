@@ -50,6 +50,14 @@ export const PLAYER_STYLES = `
   .caption { margin-top: 18px; min-height: 62px; }
   .caption-title { color: var(--fg); font-weight: 600; }
   .caption-text { color: var(--muted); max-width: 74ch; margin-top: 5px; line-height: 1.55; }
+  /* Career timeline: white marker slides 2019 -> 2021 with the beats; arrows move between roles. */
+  .timeline { display: flex; align-items: center; gap: 14px; margin-top: 34px; }
+  .tl-arrow { font: inherit; background: var(--panel); border: 1px solid var(--line); color: var(--fg); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
+  .tl-arrow:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .tl-arrow:disabled { opacity: .28; cursor: default; }
+  .tl-year { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; min-width: 36px; text-align: center; }
+  .tl-track { position: relative; flex: 1; height: 2px; background: var(--line); border-radius: 2px; }
+  .tl-marker { position: absolute; top: 50%; left: 0; width: 2px; height: 16px; background: #fff; border-radius: 1px; transform: translate(-50%, -50%); transition: left .6s cubic-bezier(.2,.8,.2,1); box-shadow: 0 0 6px rgba(255,255,255,.6); }
 `;
 
 export const PLAYER_SCRIPT = `<script>
@@ -70,8 +78,13 @@ export const PLAYER_SCRIPT = `<script>
   var dotsEl = document.getElementById('beatDots');
   var capTitle = document.getElementById('capTitle');
   var capText = document.getElementById('capText');
+  var tlStart = document.getElementById('tlStart');
+  var tlEnd = document.getElementById('tlEnd');
+  var tlMarker = document.getElementById('tlMarker');
+  var tlPrev = document.getElementById('tlPrev');
+  var tlNext = document.getElementById('tlNext');
 
-  var scene = null, beat = 0, timer = null;
+  var scene = null, beat = 0, timer = null, sceneIdx = 0;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var nodeEls = {}, flowEls = {};
 
@@ -211,6 +224,10 @@ export const PLAYER_SCRIPT = `<script>
     for (var q = 0; q < dots.length; q++) dots[q].classList.toggle('on', q === i);
     capTitle.textContent = cur.title;
     capText.textContent = cur.caption;
+
+    // white marker slides across the job's span with the beats
+    var n = scene.beats.length;
+    tlMarker.style.left = (n > 1 ? (i / (n - 1)) * 100 : 100) + '%';
   }
 
   function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
@@ -234,8 +251,14 @@ export const PLAYER_SCRIPT = `<script>
     }
   }
 
+  function years(period) {
+    var m = String(period).match(/\\d{4}/g);
+    return m ? [m[0], m[m.length - 1]] : ['', ''];
+  }
+
   function selectScene(idx) {
     clearTimer();
+    sceneIdx = idx;
     scene = scenes[idx]; beat = 0;
     roleEl.textContent = scene.role;
     metaEl.textContent = scene.title + ' \\u00B7 ' + scene.period;
@@ -244,9 +267,17 @@ export const PLAYER_SCRIPT = `<script>
     buildDots();
     var tabs = tabsEl.children;
     for (var t = 0; t < tabs.length; t++) tabs[t].classList.toggle('on', t === idx);
+    // timeline: span years + arrow availability
+    var yr = years(scene.period);
+    tlStart.textContent = yr[0]; tlEnd.textContent = yr[1];
+    tlPrev.disabled = (idx === 0);
+    tlNext.disabled = (idx === scenes.length - 1);
     // autoplay through the beats; reduced-motion jumps straight to the end
     if (reduce) showBeat(scene.beats.length - 1); else runFrom(0);
   }
+
+  tlPrev.addEventListener('click', function () { if (sceneIdx > 0) selectScene(sceneIdx - 1); });
+  tlNext.addEventListener('click', function () { if (sceneIdx < scenes.length - 1) selectScene(sceneIdx + 1); });
 
   // tabs
   for (var i = 0; i < scenes.length; i++) {

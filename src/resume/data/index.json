@@ -4,5 +4,11 @@
     "title": "Pompeii",
     "role": "Data Engineer / Data Analyst",
     "period": "May 2019 – Mar 2021"
+  },
+  {
+    "id": "making_science",
+    "title": "Making Science",
+    "role": "Data Engineer",
+    "period": "Mar 2021 – Jul 2021"
   }
 ]

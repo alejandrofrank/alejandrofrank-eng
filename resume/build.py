@@ -14,6 +14,7 @@ import importlib
 import json
 import pathlib
 import pkgutil
+import re
 import sys
 
 # Allow `python resume/build.py` (adds the project root to the path so
@@ -27,6 +28,23 @@ from resume.scene import Scene  # noqa: E402
 DATA_DIR = ROOT / "src" / "resume" / "data"
 
 
+_MONTHS = {
+    m: i
+    for i, m in enumerate(
+        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], 1
+    )
+}
+
+
+def _start_key(s: Scene) -> tuple[int, int]:
+    """Chronological sort key from the period's start (e.g. 'May 2019 – …')."""
+    m = re.search(r"([A-Za-z]{3})[a-z]*\s+(\d{4})", s.period)
+    if m:
+        return (int(m.group(2)), _MONTHS.get(m.group(1)[:3].title(), 1))
+    y = re.search(r"\d{4}", s.period)
+    return (int(y.group()) if y else 9999, 1)
+
+
 def load_scenes() -> list[Scene]:
     found: list[Scene] = []
     for mod in pkgutil.iter_modules(scenes_pkg.__path__):
@@ -34,7 +52,7 @@ def load_scenes() -> list[Scene]:
         scene = getattr(module, "scene", None)
         if isinstance(scene, Scene):
             found.append(scene)
-    found.sort(key=lambda s: s.id)
+    found.sort(key=_start_key)  # earliest role first → arrow moves forward in time
     return found
 
 

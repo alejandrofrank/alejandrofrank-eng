@@ -52,6 +52,14 @@ ${FAVICON}
         <div class="caption-title" id="capTitle"></div>
         <div class="caption-text" id="capText"></div>
       </div>
+
+      <div class="timeline">
+        <button class="tl-arrow" id="tlPrev" aria-label="previous role">←</button>
+        <span class="tl-year" id="tlStart"></span>
+        <div class="tl-track"><div class="tl-marker" id="tlMarker"></div></div>
+        <span class="tl-year" id="tlEnd"></span>
+        <button class="tl-arrow" id="tlNext" aria-label="next role">→</button>
+      </div>
     </div>
   </div>
   <script>window.__SCENES__ = ${data};</script>

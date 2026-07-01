@@ -1,0 +1,168 @@
+{
+  "id": "making_science",
+  "title": "Making Science",
+  "role": "Data Engineer",
+  "period": "Mar 2021 – Jul 2021",
+  "summary": "A short, sharp engagement: cost-efficient data pipelines on Google Cloud that unified a client's ad channels and cut their ad spend by 30%.",
+  "nodes": [
+    {
+      "id": "google_ads",
+      "label": "Google Ads",
+      "kind": "source",
+      "x": 0.06,
+      "y": 0.22,
+      "sublabel": "spend",
+      "color": "#8ecbff"
+    },
+    {
+      "id": "meta_ads",
+      "label": "Meta Ads",
+      "kind": "source",
+      "x": 0.06,
+      "y": 0.5,
+      "sublabel": "spend",
+      "color": "#8ecbff"
+    },
+    {
+      "id": "analytics",
+      "label": "Analytics",
+      "kind": "source",
+      "x": 0.06,
+      "y": 0.78,
+      "sublabel": "GA / measurement",
+      "color": "#8ecbff"
+    },
+    {
+      "id": "gcp",
+      "label": "GCP ingest",
+      "kind": "core",
+      "x": 0.34,
+      "y": 0.5,
+      "sublabel": "cost-efficient pipelines",
+      "color": ""
+    },
+    {
+      "id": "bq",
+      "label": "BigQuery",
+      "kind": "core",
+      "x": 0.58,
+      "y": 0.5,
+      "sublabel": "unified model",
+      "color": ""
+    },
+    {
+      "id": "optimize",
+      "label": "Spend optimization",
+      "kind": "science",
+      "x": 0.87,
+      "y": 0.3,
+      "sublabel": "find the waste",
+      "color": ""
+    },
+    {
+      "id": "report",
+      "label": "Client reporting",
+      "kind": "sink",
+      "x": 0.87,
+      "y": 0.72,
+      "sublabel": "−30% ad spend",
+      "color": ""
+    }
+  ],
+  "flows": [
+    {
+      "id": "f_gads",
+      "src": "google_ads",
+      "dst": "gcp",
+      "label": "",
+      "glow": false,
+      "color": "#8ecbff"
+    },
+    {
+      "id": "f_mads",
+      "src": "meta_ads",
+      "dst": "gcp",
+      "label": "",
+      "glow": false,
+      "color": "#8ecbff"
+    },
+    {
+      "id": "f_ga",
+      "src": "analytics",
+      "dst": "gcp",
+      "label": "",
+      "glow": false,
+      "color": "#8ecbff"
+    },
+    {
+      "id": "f_bq",
+      "src": "gcp",
+      "dst": "bq",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_opt",
+      "src": "bq",
+      "dst": "optimize",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_report",
+      "src": "optimize",
+      "dst": "report",
+      "label": "−30%",
+      "glow": true,
+      "color": ""
+    }
+  ],
+  "beats": [
+    {
+      "title": "Spend across every channel",
+      "caption": "The client was spending across Google, Meta and more — with no unified view of what each euro was actually buying.",
+      "nodes": [
+        "google_ads",
+        "meta_ads",
+        "analytics"
+      ],
+      "flows": []
+    },
+    {
+      "title": "Pipelines on GCP",
+      "caption": "Cost-efficient data pipelines on Google Cloud pulled every channel into one BigQuery model — one place to see all spend and performance.",
+      "nodes": [
+        "gcp",
+        "bq"
+      ],
+      "flows": [
+        "f_gads",
+        "f_mads",
+        "f_ga",
+        "f_bq"
+      ]
+    },
+    {
+      "title": "Find the waste",
+      "caption": "Analysis on top of the unified model surfaced exactly where budget was being burned for little to no return.",
+      "nodes": [
+        "optimize"
+      ],
+      "flows": [
+        "f_opt"
+      ]
+    },
+    {
+      "title": "−30% ad spend",
+      "caption": "The payoff: a 30% cut in ad spend, with the savings and the reasoning handed straight back to the client.",
+      "nodes": [
+        "report"
+      ],
+      "flows": [
+        "f_report"
+      ]
+    }
+  ]
+}
