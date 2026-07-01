@@ -146,14 +146,6 @@ export const PLAYER_SCRIPT = `<script>
       if (fl.glow) path.setAttribute('filter', 'url(#glow)');
       g.appendChild(path);
 
-      if (fl.label) {
-        var t = el('text');
-        t.setAttribute('class', 'flow-label'); t.setAttribute('text-anchor', 'middle');
-        t.setAttribute('x', (x1 + x2) / 2); t.setAttribute('y', (y1 + y2) / 2 - 8);
-        t.textContent = fl.label;
-        g.appendChild(t);
-      }
-
       var pulse = el('circle');
       pulse.setAttribute('r', fl.glow ? '5' : '3.6'); pulse.setAttribute('class', 'flow-pulse');
       if (fl.color) pulse.style.fill = fl.color;
