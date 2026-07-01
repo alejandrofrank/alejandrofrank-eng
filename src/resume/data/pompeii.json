@@ -11,7 +11,8 @@
       "kind": "source",
       "x": 0.06,
       "y": 0.1,
-      "sublabel": "ERP"
+      "sublabel": "ERP",
+      "color": ""
     },
     {
       "id": "shopify",
@@ -19,7 +20,8 @@
       "kind": "source",
       "x": 0.06,
       "y": 0.3,
-      "sublabel": "web store"
+      "sublabel": "web store",
+      "color": ""
     },
     {
       "id": "instagram",
@@ -27,7 +29,8 @@
       "kind": "source",
       "x": 0.06,
       "y": 0.5,
-      "sublabel": "social"
+      "sublabel": "social",
+      "color": "#8ecbff"
     },
     {
       "id": "tiktok",
@@ -35,7 +38,8 @@
       "kind": "source",
       "x": 0.06,
       "y": 0.7,
-      "sublabel": "social"
+      "sublabel": "social",
+      "color": "#8ecbff"
     },
     {
       "id": "ads",
@@ -43,7 +47,8 @@
       "kind": "source",
       "x": 0.06,
       "y": 0.9,
-      "sublabel": "Google · Meta · +"
+      "sublabel": "Google · Meta · +",
+      "color": "#8ecbff"
     },
     {
       "id": "aws",
@@ -51,7 +56,8 @@
       "kind": "core",
       "x": 0.3,
       "y": 0.5,
-      "sublabel": "raw landing"
+      "sublabel": "raw landing",
+      "color": ""
     },
     {
       "id": "transform",
@@ -59,7 +65,8 @@
       "kind": "core",
       "x": 0.5,
       "y": 0.5,
-      "sublabel": "SQL · pandas · Spark"
+      "sublabel": "SQL · pandas · Spark",
+      "color": ""
     },
     {
       "id": "warehouse",
@@ -67,7 +74,8 @@
       "kind": "core",
       "x": 0.7,
       "y": 0.5,
-      "sublabel": "facts + dimensions"
+      "sublabel": "facts + dimensions",
+      "color": ""
     },
     {
       "id": "dashboards",
@@ -75,7 +83,8 @@
       "kind": "sink",
       "x": 0.93,
       "y": 0.14,
-      "sublabel": "sales · marketing · shops · PR"
+      "sublabel": "sales · marketing · shops · PR",
+      "color": ""
     },
     {
       "id": "email",
@@ -83,7 +92,8 @@
       "kind": "sink",
       "x": 0.93,
       "y": 0.38,
-      "sublabel": "segmented campaigns"
+      "sublabel": "segmented campaigns",
+      "color": ""
     },
     {
       "id": "segments",
@@ -91,7 +101,8 @@
       "kind": "science",
       "x": 0.93,
       "y": 0.62,
-      "sublabel": "customer clustering"
+      "sublabel": "customer clustering",
+      "color": ""
     },
     {
       "id": "forecast",
@@ -99,7 +110,8 @@
       "kind": "science",
       "x": 0.93,
       "y": 0.86,
-      "sublabel": "sales forecast"
+      "sublabel": "sales forecast",
+      "color": ""
     }
   ],
   "flows": [
@@ -108,77 +120,88 @@
       "src": "odoo",
       "dst": "aws",
       "label": "",
-      "glow": false
+      "glow": false,
+      "color": ""
     },
     {
       "id": "f_shopify",
       "src": "shopify",
       "dst": "aws",
       "label": "",
-      "glow": false
+      "glow": false,
+      "color": ""
     },
     {
       "id": "f_instagram",
       "src": "instagram",
       "dst": "aws",
       "label": "",
-      "glow": false
+      "glow": false,
+      "color": "#8ecbff"
     },
     {
       "id": "f_tiktok",
       "src": "tiktok",
       "dst": "aws",
       "label": "",
-      "glow": false
+      "glow": false,
+      "color": "#8ecbff"
     },
     {
       "id": "f_ads",
       "src": "ads",
       "dst": "aws",
       "label": "",
-      "glow": false
+      "glow": false,
+      "color": "#8ecbff"
     },
     {
       "id": "f_ingest",
       "src": "aws",
       "dst": "transform",
       "label": "",
-      "glow": false
+      "glow": false,
+      "color": ""
     },
     {
       "id": "f_model",
       "src": "transform",
       "dst": "warehouse",
       "label": "",
-      "glow": false
+      "glow": false,
+      "color": ""
     },
     {
       "id": "f_dash",
       "src": "warehouse",
       "dst": "dashboards",
       "label": "auto-refresh",
-      "glow": true
+      "glow": true,
+      "color": ""
     },
     {
       "id": "f_email",
       "src": "warehouse",
       "dst": "email",
       "label": "",
-      "glow": false
+      "glow": false,
+      "color": ""
     },
     {
       "id": "f_segments",
       "src": "warehouse",
       "dst": "segments",
       "label": "",
-      "glow": false
+      "glow": false,
+      "color": ""
     },
     {
       "id": "f_forecast",
       "src": "warehouse",
       "dst": "forecast",
       "label": "",
-      "glow": false
+      "glow": false,
+      "color": ""
     }
   ],
   "beats": [
@@ -202,8 +225,8 @@
       "flows": []
     },
     {
-      "title": "Land it all",
-      "caption": "First move: pull every source into AWS as a raw landing zone — one place where all the operational and marketing data arrives.",
+      "title": "Ingest in parallel",
+      "caption": "The key move: every source — operational and marketing — pulled in concurrently, each on its own connector, all landing at once in AWS. No single feed could bottleneck the rest.",
       "nodes": [
         "aws"
       ],

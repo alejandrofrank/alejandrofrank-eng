@@ -28,9 +28,12 @@ export const PLAYER_STYLES = `
   .node-sub { font-family: inherit; font-size: 11px; fill: var(--muted); }
   .node .node-inner { opacity: 0; transform: scale(.82); transform-box: fill-box; transform-origin: center; transition: opacity .5s ease, transform .5s cubic-bezier(.2,.8,.2,1); }
   .node.on .node-inner { opacity: 1; transform: scale(1); }
-  .flow-path { fill: none; stroke: #33333c; stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .85s ease; }
-  .flow.on .flow-path { stroke-dashoffset: 0; stroke: #55556a; }
-  .flow.glow.on .flow-path { stroke: var(--accent); stroke-width: 2.6; }
+  .flow-path { fill: none; stroke: var(--flow-color, #3f3f49); stroke-width: 1.6; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: .38; transition: stroke-dashoffset .8s ease, opacity .5s ease; }
+  .flow.on .flow-path { stroke-dashoffset: 0; }
+  .flow.on.active .flow-path { opacity: 1; }
+  .flow.glow .flow-path { stroke: var(--accent); stroke-width: 2.4; }
+  .flow.glow.on .flow-path { opacity: .82; }
+  .flow.glow.on.active .flow-path { opacity: 1; }
   .flow-label { font-family: inherit; font-size: 11px; fill: var(--accent); opacity: 0; transition: opacity .4s ease .3s; }
   .flow.on .flow-label { opacity: .9; }
   .flow-pulse { fill: var(--accent); opacity: 0; }
@@ -55,8 +58,8 @@ export const PLAYER_SCRIPT = `<script>
   var scenes = window.__SCENES__ || [];
   if (!scenes.length) return;
 
-  var VB_W = 1000, VB_H = 560, PAD_X = 96, PAD_Y = 78;
-  var NODE_W = 152, NODE_H = 54, BEAT_MS = 2900;
+  var VB_W = 1180, VB_H = 560, PAD_X = 100, PAD_Y = 78;
+  var NODE_W = 176, NODE_H = 60, BEAT_MS = 2900;
   var KIND = { source: '#6ea8fe', core: '#6ee7b7', sink: '#ffb020', science: '#c792ea' };
 
   var svg = document.getElementById('scene');
@@ -80,6 +83,7 @@ export const PLAYER_SCRIPT = `<script>
   function buildScene(s) {
     clear(svg);
     nodeEls = {}; flowEls = {};
+    svg.setAttribute('viewBox', '0 0 ' + VB_W + ' ' + VB_H);
 
     var defs = el('defs');
     var f = el('filter');
@@ -105,10 +109,11 @@ export const PLAYER_SCRIPT = `<script>
       var a = byId[fl.src], z = byId[fl.dst];
       var x1 = X(a.x) + NODE_W / 2, y1 = Y(a.y);
       var x2 = X(z.x) - NODE_W / 2, y2 = Y(z.y);
-      var dx = Math.max(46, (x2 - x1) * 0.42);
+      var dx = Math.max(36, (x2 - x1) * 0.32);
       var d = 'M ' + x1 + ' ' + y1 + ' C ' + (x1 + dx) + ' ' + y1 + ', ' + (x2 - dx) + ' ' + y2 + ', ' + x2 + ' ' + y2;
 
       var g = el('g'); g.setAttribute('class', 'flow' + (fl.glow ? ' glow' : ''));
+      if (fl.color) g.style.setProperty('--flow-color', fl.color);
       var path = el('path');
       path.setAttribute('d', d); path.setAttribute('pathLength', '1'); path.setAttribute('class', 'flow-path');
       if (fl.glow) path.setAttribute('filter', 'url(#glow)');
@@ -124,6 +129,7 @@ export const PLAYER_SCRIPT = `<script>
 
       var pulse = el('circle');
       pulse.setAttribute('r', fl.glow ? '5' : '3.6'); pulse.setAttribute('class', 'flow-pulse');
+      if (fl.color) pulse.style.fill = fl.color;
       var mo = el('animateMotion');
       mo.setAttribute('dur', '1.05s'); mo.setAttribute('begin', 'indefinite');
       mo.setAttribute('path', d); mo.setAttribute('fill', 'remove');
@@ -138,7 +144,7 @@ export const PLAYER_SCRIPT = `<script>
     // nodes
     for (var k = 0; k < s.nodes.length; k++) {
       var n = s.nodes[k];
-      var color = KIND[n.kind] || '#888';
+      var color = n.color || KIND[n.kind] || '#888';
       var outer = el('g'); outer.setAttribute('class', 'node');
       outer.setAttribute('transform', 'translate(' + X(n.x) + ',' + Y(n.y) + ')');
       var inner = el('g'); inner.setAttribute('class', 'node-inner');
@@ -176,14 +182,18 @@ export const PLAYER_SCRIPT = `<script>
       for (var a = 0; a < bt.nodes.length; a++) showN[bt.nodes[a]] = 1;
       for (var c = 0; c < bt.flows.length; c++) showF[bt.flows[c]] = 1;
     }
+    var cur = scene.beats[i];
+    var activeF = {};
+    for (var af = 0; af < cur.flows.length; af++) activeF[cur.flows[af]] = 1;
+
     for (var nid in nodeEls) nodeEls[nid].g.classList.toggle('on', !!showN[nid]);
     for (var fid in flowEls) {
       var on = !!showF[fid];
       flowEls[fid].g.classList.toggle('on', on);
+      flowEls[fid].g.classList.toggle('active', !!activeF[fid]);
       if (!on) flowEls[fid].pulse.style.opacity = '0';
     }
     // pulse this beat's flows once the path has drawn
-    var cur = scene.beats[i];
     for (var p = 0; p < cur.flows.length; p++) {
       (function (fe) {
         if (!fe) return;

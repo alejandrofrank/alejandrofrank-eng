@@ -26,6 +26,7 @@ class Node:
     x: float  # normalized 0..1, left→right
     y: float  # normalized 0..1, top→bottom
     sublabel: str = ""
+    color: str = ""  # optional override of the kind's default colour
 
 
 @dataclass
@@ -35,6 +36,7 @@ class Flow:
     dst: str  # Node.id
     label: str = ""
     glow: bool = False  # a highlighted "magic light" beam
+    color: str = ""  # optional line colour (else neutral)
 
 
 @dataclass

@@ -25,10 +25,10 @@ scene = Scene(
         # sources — operational (left, top)
         Node("odoo", "Odoo", "source", 0.06, 0.10, "ERP"),
         Node("shopify", "Shopify", "source", 0.06, 0.30, "web store"),
-        # sources — marketing / social (left, bottom)
-        Node("instagram", "Instagram", "source", 0.06, 0.50, "social"),
-        Node("tiktok", "TikTok", "source", 0.06, 0.70, "social"),
-        Node("ads", "Ad platforms", "source", 0.06, 0.90, "Google · Meta · +"),
+        # sources — marketing / social (left, bottom) — light blue
+        Node("instagram", "Instagram", "source", 0.06, 0.50, "social", color="#8ecbff"),
+        Node("tiktok", "TikTok", "source", 0.06, 0.70, "social", color="#8ecbff"),
+        Node("ads", "Ad platforms", "source", 0.06, 0.90, "Google · Meta · +", color="#8ecbff"),
         # core pipeline (middle)
         Node("aws", "AWS ingest", "core", 0.30, 0.50, "raw landing"),
         Node("transform", "Transform", "core", 0.50, 0.50, "SQL · pandas · Spark"),
@@ -43,9 +43,9 @@ scene = Scene(
     flows=[
         Flow("f_odoo", "odoo", "aws"),
         Flow("f_shopify", "shopify", "aws"),
-        Flow("f_instagram", "instagram", "aws"),
-        Flow("f_tiktok", "tiktok", "aws"),
-        Flow("f_ads", "ads", "aws"),
+        Flow("f_instagram", "instagram", "aws", color="#8ecbff"),
+        Flow("f_tiktok", "tiktok", "aws", color="#8ecbff"),
+        Flow("f_ads", "ads", "aws", color="#8ecbff"),
         Flow("f_ingest", "aws", "transform"),
         Flow("f_model", "transform", "warehouse"),
         Flow("f_dash", "warehouse", "dashboards", "auto-refresh", glow=True),
@@ -67,9 +67,10 @@ scene = Scene(
             nodes=["instagram", "tiktok", "ads"],
         ),
         Beat(
-            "Land it all",
-            "First move: pull every source into AWS as a raw landing zone — one "
-            "place where all the operational and marketing data arrives.",
+            "Ingest in parallel",
+            "The key move: every source — operational and marketing — pulled in "
+            "concurrently, each on its own connector, all landing at once in AWS. "
+            "No single feed could bottleneck the rest.",
             nodes=["aws"],
             flows=["f_odoo", "f_shopify", "f_instagram", "f_tiktok", "f_ads"],
         ),
