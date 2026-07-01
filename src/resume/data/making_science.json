@@ -3,165 +3,180 @@
   "title": "Making Science",
   "role": "Data Engineer",
   "period": "Mar 2021 – Jul 2021",
-  "summary": "A short, sharp engagement: cost-efficient data pipelines on Google Cloud that unified a client's ad channels and cut their ad spend by 30%.",
+  "summary": "Built the pipeline for a very high-load ad-optimization system: ~1.4 TB of ad data a day fanned out across ~1000 Cloud Functions into BigQuery, feeding a bid algorithm that reallocated spend from losing ads to winners.",
   "nodes": [
     {
-      "id": "google_ads",
-      "label": "Google Ads",
+      "id": "gcs",
+      "label": "Ad data bucket",
       "kind": "source",
       "x": 0.06,
-      "y": 0.22,
-      "sublabel": "spend",
+      "y": 0.28,
+      "sublabel": "~1000 files/day · 1.4 TB",
       "color": "#8ecbff"
     },
     {
-      "id": "meta_ads",
-      "label": "Meta Ads",
+      "id": "mappings",
+      "label": "Bid mappings",
       "kind": "source",
       "x": 0.06,
-      "y": 0.5,
-      "sublabel": "spend",
-      "color": "#8ecbff"
+      "y": 0.74,
+      "sublabel": "thresholds (Excel)",
+      "color": ""
     },
     {
-      "id": "analytics",
-      "label": "Analytics",
-      "kind": "source",
-      "x": 0.06,
-      "y": 0.78,
-      "sublabel": "GA / measurement",
-      "color": "#8ecbff"
-    },
-    {
-      "id": "gcp",
-      "label": "GCP ingest",
+      "id": "functions",
+      "label": "Cloud Functions",
       "kind": "core",
-      "x": 0.34,
-      "y": 0.5,
-      "sublabel": "cost-efficient pipelines",
+      "x": 0.3,
+      "y": 0.28,
+      "sublabel": "GCS-triggered · ~1000 parallel",
       "color": ""
     },
     {
       "id": "bq",
       "label": "BigQuery",
       "kind": "core",
-      "x": 0.58,
-      "y": 0.5,
-      "sublabel": "unified model",
+      "x": 0.5,
+      "y": 0.28,
+      "sublabel": "ingested",
       "color": ""
     },
     {
-      "id": "optimize",
-      "label": "Spend optimization",
+      "id": "datamart",
+      "label": "Datamart",
+      "kind": "core",
+      "x": 0.7,
+      "y": 0.28,
+      "sublabel": "curated layer",
+      "color": ""
+    },
+    {
+      "id": "bidder",
+      "label": "Bid algorithm",
       "kind": "science",
-      "x": 0.87,
-      "y": 0.3,
-      "sublabel": "find the waste",
+      "x": 0.82,
+      "y": 0.72,
+      "sublabel": "picks bid prices",
       "color": ""
     },
     {
-      "id": "report",
-      "label": "Client reporting",
+      "id": "ads",
+      "label": "Ad platforms",
       "kind": "sink",
-      "x": 0.87,
-      "y": 0.72,
-      "sublabel": "−30% ad spend",
-      "color": ""
+      "x": 0.95,
+      "y": 0.48,
+      "sublabel": "optimized bids placed",
+      "color": "#8ecbff"
     }
   ],
   "flows": [
     {
-      "id": "f_gads",
-      "src": "google_ads",
-      "dst": "gcp",
+      "id": "f_load",
+      "src": "gcs",
+      "dst": "functions",
       "label": "",
       "glow": false,
       "color": "#8ecbff"
     },
     {
-      "id": "f_mads",
-      "src": "meta_ads",
-      "dst": "gcp",
-      "label": "",
-      "glow": false,
-      "color": "#8ecbff"
-    },
-    {
-      "id": "f_ga",
-      "src": "analytics",
-      "dst": "gcp",
-      "label": "",
-      "glow": false,
-      "color": "#8ecbff"
-    },
-    {
-      "id": "f_bq",
-      "src": "gcp",
+      "id": "f_ingest",
+      "src": "functions",
       "dst": "bq",
       "label": "",
       "glow": false,
       "color": ""
     },
     {
-      "id": "f_opt",
+      "id": "f_curate",
       "src": "bq",
-      "dst": "optimize",
+      "dst": "datamart",
       "label": "",
       "glow": false,
       "color": ""
     },
     {
-      "id": "f_report",
-      "src": "optimize",
-      "dst": "report",
-      "label": "−30%",
+      "id": "f_pick",
+      "src": "datamart",
+      "dst": "bidder",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_map",
+      "src": "mappings",
+      "dst": "bidder",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_place",
+      "src": "bidder",
+      "dst": "ads",
+      "label": "optimized bids",
       "glow": true,
       "color": ""
     }
   ],
   "beats": [
     {
-      "title": "Spend across every channel",
-      "caption": "The client was spending across Google, Meta and more — with no unified view of what each euro was actually buying.",
+      "title": "1.4 TB, every day",
+      "caption": "Every day the project dropped ~1000 files of ad data into a GCS bucket — same structure, keyed by bid_id, about 1.4 TB per load.",
       "nodes": [
-        "google_ads",
-        "meta_ads",
-        "analytics"
+        "gcs"
       ],
       "flows": []
     },
     {
-      "title": "Pipelines on GCP",
-      "caption": "Cost-efficient data pipelines on Google Cloud pulled every channel into one BigQuery model — one place to see all spend and performance.",
+      "title": "The business playbook",
+      "caption": "The marketing team's rules lived in Excel mappings: thresholds that said, as an ad's return moved up or down, how much to raise or cut its spend.",
       "nodes": [
-        "gcp",
-        "bq"
+        "mappings"
+      ],
+      "flows": []
+    },
+    {
+      "title": "Watch, then fan out to ~1000 functions",
+      "caption": "A watcher on the bucket fired the instant files landed, fanning out ~1000 Cloud Functions in parallel. They processed until they hit the function time limit, then spawned the next 1000 — chewing through the whole load in waves.",
+      "nodes": [
+        "functions"
       ],
       "flows": [
-        "f_gads",
-        "f_mads",
-        "f_ga",
-        "f_bq"
+        "f_load"
       ]
     },
     {
-      "title": "Find the waste",
-      "caption": "Analysis on top of the unified model surfaced exactly where budget was being burned for little to no return.",
+      "title": "Into BigQuery, then a datamart",
+      "caption": "Processed records streamed into BigQuery — where analysts built their own models on top — and settled into a curated datamart, the clean source of truth for bidding.",
       "nodes": [
-        "optimize"
+        "bq",
+        "datamart"
       ],
       "flows": [
-        "f_opt"
+        "f_ingest",
+        "f_curate"
       ]
     },
     {
-      "title": "−30% ad spend",
-      "caption": "The payoff: a 30% cut in ad spend, with the savings and the reasoning handed straight back to the client.",
+      "title": "The bid algorithm",
+      "caption": "A pricing algorithm read the datamart against the business thresholds and set each ad's next bid: gut budget from high-CPC, low-ROI ads, push it toward the winners.",
       "nodes": [
-        "report"
+        "bidder"
       ],
       "flows": [
-        "f_report"
+        "f_pick",
+        "f_map"
+      ]
+    },
+    {
+      "title": "Place the bids, optimize the spend",
+      "caption": "Every optimized bid went straight back onto its ad platform — a closed cost-optimization loop running over 1.4 TB a day for the whole marketing operation.",
+      "nodes": [
+        "ads"
+      ],
+      "flows": [
+        "f_place"
       ]
     }
   ]
