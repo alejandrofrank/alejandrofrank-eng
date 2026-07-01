@@ -56,7 +56,7 @@ export const PLAYER_STYLES = `
   .beat-dots { display: flex; gap: 8px; margin-left: auto; }
   .beat-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--line); border: none; cursor: pointer; padding: 0; }
   .beat-dot.on { background: var(--accent); }
-  .caption { margin-top: 18px; min-height: 62px; }
+  .caption { margin-top: 18px; min-height: 62px; padding-bottom: 100px; }
   .caption-title { color: var(--fg); font-weight: 600; }
   .caption-text { color: var(--muted); max-width: 74ch; margin-top: 5px; line-height: 1.55; }
   /* Career timeline: white marker slides 2019 -> 2021 with the beats; arrows move between roles. */
