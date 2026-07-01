@@ -3,14 +3,23 @@
   "title": "Accenture",
   "role": "Data Engineer",
   "period": "Jul 2021 – May 2022",
-  "summary": "Accenture had gone all-in as a Google Cloud partner and needed its on-prem stack moved to GCP. Migrated four applications — three Hadoop / Spark-Scala pipelines plus one with an ML layer — to Cloud Storage, PySpark on Dataproc and BigQuery, re-platforming the old cron scheduling to event-driven Pub/Sub and Cloud Composer. Terabytes of data, running natively on GCP.",
+  "summary": "Accenture had gone all-in as a Google Cloud partner and needed its on-prem apps rebuilt on GCP. Recreated four applications — three Hadoop / Spark-Scala / Hive pipelines scheduled by Oozie, plus one with an ML layer — as a new event-driven GCP architecture: files land in Cloud Storage, Pub/Sub fires, and Cloud Composer orchestrates PySpark on Dataproc and BigQuery. Terabytes of data, native on GCP.",
   "nodes": [
+    {
+      "id": "oozie",
+      "label": "Oozie",
+      "kind": "source",
+      "x": 0.24,
+      "y": 0.08,
+      "sublabel": "scheduler",
+      "color": "#9a8f80"
+    },
     {
       "id": "hdfs",
       "label": "Hadoop",
       "kind": "source",
-      "x": 0.08,
-      "y": 0.14,
+      "x": 0.1,
+      "y": 0.28,
       "sublabel": "HDFS storage",
       "color": "#9a8f80"
     },
@@ -18,8 +27,8 @@
       "id": "spark",
       "label": "Spark",
       "kind": "source",
-      "x": 0.08,
-      "y": 0.37,
+      "x": 0.38,
+      "y": 0.28,
       "sublabel": "Scala",
       "color": "#9a8f80"
     },
@@ -27,103 +36,110 @@
       "id": "hive",
       "label": "Hive",
       "kind": "source",
-      "x": 0.08,
-      "y": 0.6,
+      "x": 0.66,
+      "y": 0.28,
       "sublabel": "tables",
       "color": "#9a8f80"
     },
     {
-      "id": "cron",
-      "label": "cron",
-      "kind": "source",
-      "x": 0.08,
-      "y": 0.83,
-      "sublabel": "scheduler",
-      "color": "#9a8f80"
-    },
-    {
-      "id": "gcs",
+      "id": "storage",
       "label": "Cloud Storage",
       "kind": "core",
-      "x": 0.84,
-      "y": 0.14,
-      "sublabel": "GCS",
-      "color": ""
-    },
-    {
-      "id": "dataproc",
-      "label": "PySpark",
-      "kind": "core",
-      "x": 0.84,
-      "y": 0.37,
-      "sublabel": "on Dataproc",
-      "color": ""
-    },
-    {
-      "id": "bq",
-      "label": "BigQuery",
-      "kind": "core",
-      "x": 0.84,
-      "y": 0.6,
-      "sublabel": "warehouse",
+      "x": 0.1,
+      "y": 0.7,
+      "sublabel": "files land",
       "color": ""
     },
     {
       "id": "pubsub",
       "label": "Pub/Sub",
       "kind": "core",
-      "x": 0.84,
+      "x": 0.34,
       "y": 0.7,
-      "sublabel": "event trigger",
+      "sublabel": "on file landing",
       "color": ""
     },
     {
       "id": "composer",
       "label": "Cloud Composer",
       "kind": "core",
-      "x": 0.84,
-      "y": 0.9,
+      "x": 0.56,
+      "y": 0.7,
       "sublabel": "Airflow",
+      "color": ""
+    },
+    {
+      "id": "dataproc",
+      "label": "PySpark",
+      "kind": "core",
+      "x": 0.8,
+      "y": 0.58,
+      "sublabel": "Dataproc",
+      "color": ""
+    },
+    {
+      "id": "bq",
+      "label": "BigQuery",
+      "kind": "core",
+      "x": 0.8,
+      "y": 0.83,
+      "sublabel": "warehouse",
       "color": ""
     }
   ],
   "flows": [
     {
-      "id": "f_storage",
+      "id": "f_read",
       "src": "hdfs",
-      "dst": "gcs",
+      "dst": "spark",
       "label": "",
-      "glow": true,
-      "color": ""
+      "glow": false,
+      "color": "#9a8f80"
     },
     {
-      "id": "f_spark",
+      "id": "f_write",
       "src": "spark",
-      "dst": "dataproc",
+      "dst": "hive",
       "label": "",
-      "glow": true,
-      "color": ""
+      "glow": false,
+      "color": "#9a8f80"
     },
     {
-      "id": "f_hive",
-      "src": "hive",
-      "dst": "bq",
+      "id": "f_sched",
+      "src": "oozie",
+      "dst": "spark",
       "label": "",
-      "glow": true,
-      "color": ""
+      "glow": false,
+      "color": "#9a8f80"
     },
     {
-      "id": "f_trigger",
-      "src": "cron",
+      "id": "f_land",
+      "src": "storage",
       "dst": "pubsub",
       "label": "",
       "glow": true,
       "color": ""
     },
     {
-      "id": "f_orch",
-      "src": "cron",
+      "id": "f_call",
+      "src": "pubsub",
       "dst": "composer",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_dataproc",
+      "src": "composer",
+      "dst": "dataproc",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_bq",
+      "src": "composer",
+      "dst": "bq",
       "label": "",
       "glow": true,
       "color": ""
@@ -131,56 +147,51 @@
   ],
   "beats": [
     {
-      "title": "On-prem, four apps",
-      "caption": "Accenture had become a Google Cloud partner and needed its on-prem apps moved over. The stack: Hadoop clusters, Spark in Scala, Hive tables and cron scheduling — four applications in all.",
+      "title": "The old architecture",
+      "caption": "On-prem: Hadoop / HDFS storage and Spark in Scala writing Hive tables, all scheduled by Oozie — the shape of all four applications.",
       "nodes": [
+        "oozie",
         "hdfs",
         "spark",
-        "hive",
-        "cron"
-      ],
-      "flows": []
-    },
-    {
-      "title": "Storage → Cloud Storage",
-      "caption": "First, the data itself: everything on HDFS lifted into Cloud Storage as the new landing layer.",
-      "nodes": [
-        "gcs"
+        "hive"
       ],
       "flows": [
-        "f_storage"
+        "f_read",
+        "f_write",
+        "f_sched"
       ]
     },
     {
-      "title": "Spark Scala → PySpark",
-      "caption": "The heavy lifting: Spark jobs re-written from Scala to PySpark on Dataproc — refactored for maintainability along the way.",
+      "title": "Rebuilt on GCP: files land, Pub/Sub fires",
+      "caption": "We recreated it natively on GCP. Files now land in Cloud Storage, and Pub/Sub fires the instant they do — no more waiting on a schedule.",
       "nodes": [
-        "dataproc"
+        "storage",
+        "pubsub"
       ],
       "flows": [
-        "f_spark"
+        "f_land"
       ]
     },
     {
-      "title": "Hive → BigQuery",
-      "caption": "The Hive tables became a BigQuery warehouse — same data, no cluster to babysit.",
+      "title": "Composer orchestrates",
+      "caption": "Pub/Sub calls Cloud Composer (Airflow), which orchestrates the whole run end to end.",
       "nodes": [
-        "bq"
-      ],
-      "flows": [
-        "f_hive"
-      ]
-    },
-    {
-      "title": "cron → event-driven GCP",
-      "caption": "The old cron jobs went event-driven: Pub/Sub fires the moment files land in Cloud Storage, and Cloud Composer (Airflow) orchestrates the run. All four apps — three pipelines plus one with an ML layer — fully migrated, native on GCP.",
-      "nodes": [
-        "pubsub",
         "composer"
       ],
       "flows": [
-        "f_trigger",
-        "f_orch"
+        "f_call"
+      ]
+    },
+    {
+      "title": "PySpark on Dataproc → BigQuery",
+      "caption": "Composer drives the Spark work — now PySpark on Dataproc — and lands everything in BigQuery. All four apps rebuilt, one with an ML layer, running native on GCP.",
+      "nodes": [
+        "dataproc",
+        "bq"
+      ],
+      "flows": [
+        "f_dataproc",
+        "f_bq"
       ]
     }
   ]

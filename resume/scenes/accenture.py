@@ -1,14 +1,13 @@
-"""Accenture — on-prem → GCP migration.
+"""Accenture — on-prem app recreated on GCP.
 
-Accenture became a Google Cloud partner and needed its on-prem apps moved to
-GCP. Migrated four applications — three Hadoop / Spark-Scala pipelines (re-written
-to PySpark on Dataproc, into BigQuery + Cloud Storage) and one that also needed
-an ML layer (kept deliberately vague). The old cron scheduling became
-event-driven: Pub/Sub fires when files land, Cloud Composer (Airflow) orchestrates.
+Accenture became a Google Cloud partner and needed its on-prem apps rebuilt on
+GCP. Recreated four applications — three Hadoop / Spark-Scala / Hive pipelines
+scheduled by Oozie, plus one with an ML layer (kept deliberately vague) — as a
+new event-driven GCP architecture: files land in Cloud Storage, Pub/Sub fires,
+Cloud Composer orchestrates PySpark on Dataproc and BigQuery.
 
-Modeled as a before→after mapping: the old stack on the left, each component's
-GCP equivalent on the right, with glowing "migration beams" between them. This
-is the reusable template for the other migration roles.
+Two SEPARATE architectures (not a 1:1 migration mapping): the old stack on top,
+the new GCP stack on the bottom, each internally connected, no links between.
 """
 
 from resume.scene import Scene, Node, Flow, Beat
@@ -22,69 +21,65 @@ scene = Scene(
     period="Jul 2021 – May 2022",
     summary=(
         "Accenture had gone all-in as a Google Cloud partner and needed its "
-        "on-prem stack moved to GCP. Migrated four applications — three "
-        "Hadoop / Spark-Scala pipelines plus one with an ML layer — to Cloud "
-        "Storage, PySpark on Dataproc and BigQuery, re-platforming the old cron "
-        "scheduling to event-driven Pub/Sub and Cloud Composer. Terabytes of "
-        "data, running natively on GCP."
+        "on-prem apps rebuilt on GCP. Recreated four applications — three "
+        "Hadoop / Spark-Scala / Hive pipelines scheduled by Oozie, plus one with "
+        "an ML layer — as a new event-driven GCP architecture: files land in "
+        "Cloud Storage, Pub/Sub fires, and Cloud Composer orchestrates PySpark "
+        "on Dataproc and BigQuery. Terabytes of data, native on GCP."
     ),
     nodes=[
-        # old world (left)
-        Node("hdfs", "Hadoop", "source", 0.08, 0.14, "HDFS storage", color=LEGACY),
-        Node("spark", "Spark", "source", 0.08, 0.37, "Scala", color=LEGACY),
-        Node("hive", "Hive", "source", 0.08, 0.60, "tables", color=LEGACY),
-        Node("cron", "cron", "source", 0.08, 0.83, "scheduler", color=LEGACY),
-        # GCP (right)
-        Node("gcs", "Cloud Storage", "core", 0.84, 0.14, "GCS"),
-        Node("dataproc", "PySpark", "core", 0.84, 0.37, "on Dataproc"),
-        Node("bq", "BigQuery", "core", 0.84, 0.60, "warehouse"),
-        Node("pubsub", "Pub/Sub", "core", 0.84, 0.70, "event trigger"),
-        Node("composer", "Cloud Composer", "core", 0.84, 0.90, "Airflow"),
+        # --- old architecture (top band) ---
+        Node("oozie", "Oozie", "source", 0.24, 0.08, "scheduler", color=LEGACY),
+        Node("hdfs", "Hadoop", "source", 0.10, 0.28, "HDFS storage", color=LEGACY),
+        Node("spark", "Spark", "source", 0.38, 0.28, "Scala", color=LEGACY),
+        Node("hive", "Hive", "source", 0.66, 0.28, "tables", color=LEGACY),
+        # --- new GCP architecture (bottom band) ---
+        Node("storage", "Cloud Storage", "core", 0.10, 0.70, "files land"),
+        Node("pubsub", "Pub/Sub", "core", 0.34, 0.70, "on file landing"),
+        Node("composer", "Cloud Composer", "core", 0.56, 0.70, "Airflow"),
+        Node("dataproc", "PySpark", "core", 0.80, 0.58, "Dataproc"),
+        Node("bq", "BigQuery", "core", 0.80, 0.83, "warehouse"),
     ],
     flows=[
-        Flow("f_storage", "hdfs", "gcs", glow=True),
-        Flow("f_spark", "spark", "dataproc", glow=True),
-        Flow("f_hive", "hive", "bq", glow=True),
-        Flow("f_trigger", "cron", "pubsub", glow=True),
-        Flow("f_orch", "cron", "composer", glow=True),
+        # old (muted, internal)
+        Flow("f_read", "hdfs", "spark", color=LEGACY),
+        Flow("f_write", "spark", "hive", color=LEGACY),
+        Flow("f_sched", "oozie", "spark", color=LEGACY),
+        # new (glowing, internal)
+        Flow("f_land", "storage", "pubsub", glow=True),
+        Flow("f_call", "pubsub", "composer", glow=True),
+        Flow("f_dataproc", "composer", "dataproc", glow=True),
+        Flow("f_bq", "composer", "bq", glow=True),
     ],
     beats=[
         Beat(
-            "On-prem, four apps",
-            "Accenture had become a Google Cloud partner and needed its on-prem "
-            "apps moved over. The stack: Hadoop clusters, Spark in Scala, Hive "
-            "tables and cron scheduling — four applications in all.",
-            nodes=["hdfs", "spark", "hive", "cron"],
+            "The old architecture",
+            "On-prem: Hadoop / HDFS storage and Spark in Scala writing Hive "
+            "tables, all scheduled by Oozie — the shape of all four applications.",
+            nodes=["oozie", "hdfs", "spark", "hive"],
+            flows=["f_read", "f_write", "f_sched"],
         ),
         Beat(
-            "Storage → Cloud Storage",
-            "First, the data itself: everything on HDFS lifted into Cloud Storage "
-            "as the new landing layer.",
-            nodes=["gcs"],
-            flows=["f_storage"],
+            "Rebuilt on GCP: files land, Pub/Sub fires",
+            "We recreated it natively on GCP. Files now land in Cloud Storage, "
+            "and Pub/Sub fires the instant they do — no more waiting on a schedule.",
+            nodes=["storage", "pubsub"],
+            flows=["f_land"],
         ),
         Beat(
-            "Spark Scala → PySpark",
-            "The heavy lifting: Spark jobs re-written from Scala to PySpark on "
-            "Dataproc — refactored for maintainability along the way.",
-            nodes=["dataproc"],
-            flows=["f_spark"],
+            "Composer orchestrates",
+            "Pub/Sub calls Cloud Composer (Airflow), which orchestrates the whole "
+            "run end to end.",
+            nodes=["composer"],
+            flows=["f_call"],
         ),
         Beat(
-            "Hive → BigQuery",
-            "The Hive tables became a BigQuery warehouse — same data, no cluster "
-            "to babysit.",
-            nodes=["bq"],
-            flows=["f_hive"],
-        ),
-        Beat(
-            "cron → event-driven GCP",
-            "The old cron jobs went event-driven: Pub/Sub fires the moment files "
-            "land in Cloud Storage, and Cloud Composer (Airflow) orchestrates the "
-            "run. All four apps — three pipelines plus one with an ML layer — "
-            "fully migrated, native on GCP.",
-            nodes=["pubsub", "composer"],
-            flows=["f_trigger", "f_orch"],
+            "PySpark on Dataproc → BigQuery",
+            "Composer drives the Spark work — now PySpark on Dataproc — and lands "
+            "everything in BigQuery. All four apps rebuilt, one with an ML layer, "
+            "running native on GCP.",
+            nodes=["dataproc", "bq"],
+            flows=["f_dataproc", "f_bq"],
         ),
     ],
 )
