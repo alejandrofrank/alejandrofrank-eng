@@ -51,13 +51,17 @@ export const PLAYER_STYLES = `
   .caption-title { color: var(--fg); font-weight: 600; }
   .caption-text { color: var(--muted); max-width: 74ch; margin-top: 5px; line-height: 1.55; }
   /* Career timeline: white marker slides 2019 -> 2021 with the beats; arrows move between roles. */
-  .timeline { display: flex; align-items: center; gap: 14px; margin-top: 34px; }
-  .tl-arrow { font: inherit; background: var(--panel); border: 1px solid var(--line); color: var(--fg); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
-  .tl-arrow:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-  .tl-arrow:disabled { opacity: .28; cursor: default; }
-  .tl-year { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; min-width: 36px; text-align: center; }
+  .timeline { display: flex; align-items: center; gap: 14px; margin: 6px 0 26px; }
+  .tl-year { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; min-width: 40px; text-align: center; }
   .tl-track { position: relative; flex: 1; height: 2px; background: var(--line); border-radius: 2px; }
   .tl-marker { position: absolute; top: 50%; left: 0; width: 2px; height: 16px; background: #fff; border-radius: 1px; transform: translate(-50%, -50%); transition: left .6s cubic-bezier(.2,.8,.2,1); box-shadow: 0 0 6px rgba(255,255,255,.6); }
+  /* Experience row: big prev/next arrows flanking the whole block. */
+  .exp-row { display: flex; align-items: center; gap: 14px; }
+  .exp-main { flex: 1; min-width: 0; }
+  .exp-arrow { font: inherit; font-size: 20px; line-height: 1; background: var(--panel); border: 1px solid var(--line); color: var(--fg); width: 46px; height: 46px; border-radius: 50%; cursor: pointer; flex: none; display: flex; align-items: center; justify-content: center; }
+  .exp-arrow:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .exp-arrow:disabled { opacity: .26; cursor: default; }
+  @media (max-width: 560px) { .exp-arrow { width: 38px; height: 38px; font-size: 17px; } .exp-row { gap: 8px; } }
 `;
 
 export const PLAYER_SCRIPT = `<script>

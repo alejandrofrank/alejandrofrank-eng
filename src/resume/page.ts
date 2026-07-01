@@ -32,9 +32,18 @@ ${FAVICON}
       <h1 class="resume-h1">Experience</h1>
       <p class="resume-lede">Each role, as a keynote of the systems I actually built.</p>
 
-      <div class="tabs" id="jobTabs"></div>
+      <div class="timeline">
+        <span class="tl-year" id="tlStart"></span>
+        <div class="tl-track"><div class="tl-marker" id="tlMarker"></div></div>
+        <span class="tl-year" id="tlEnd"></span>
+      </div>
 
-      <div class="job-header">
+      <div class="exp-row">
+        <button class="exp-arrow" id="tlPrev" aria-label="previous role">←</button>
+        <div class="exp-main">
+          <div class="tabs" id="jobTabs"></div>
+
+          <div class="job-header">
         <h2 id="jobRole"></h2>
         <div class="job-meta" id="jobMeta"></div>
         <p class="job-summary" id="jobSummary"></p>
@@ -48,17 +57,12 @@ ${FAVICON}
         <div class="beat-dots" id="beatDots"></div>
       </div>
 
-      <div class="caption">
-        <div class="caption-title" id="capTitle"></div>
-        <div class="caption-text" id="capText"></div>
-      </div>
-
-      <div class="timeline">
-        <button class="tl-arrow" id="tlPrev" aria-label="previous role">←</button>
-        <span class="tl-year" id="tlStart"></span>
-        <div class="tl-track"><div class="tl-marker" id="tlMarker"></div></div>
-        <span class="tl-year" id="tlEnd"></span>
-        <button class="tl-arrow" id="tlNext" aria-label="next role">→</button>
+          <div class="caption">
+            <div class="caption-title" id="capTitle"></div>
+            <div class="caption-text" id="capText"></div>
+          </div>
+        </div>
+        <button class="exp-arrow" id="tlNext" aria-label="next role">→</button>
       </div>
     </div>
   </div>
