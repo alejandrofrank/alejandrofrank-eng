@@ -8,7 +8,8 @@
 // ----------------------------------------------------------------------------
 
 export const PLAYER_STYLES = `
-  .resume { max-width: 1000px; margin: 0 auto; }
+  .wrap.resumewrap { max-width: 1160px; }
+  .resume { max-width: 1160px; margin: 0 auto; }
   .resume-nav { margin-bottom: 26px; }
   .resume-nav a { color: var(--muted); text-decoration: none; font-size: 13px; }
   .resume-nav a:hover { color: var(--accent); }
@@ -24,11 +25,11 @@ export const PLAYER_STYLES = `
   .stage { margin: 16px 0 6px; padding: 6px; }
   #scene { width: 100%; height: auto; display: block; }
   .node-box { fill: #14141a; stroke-width: 1.5; }
-  .node-label { font-family: inherit; font-size: 15px; font-weight: 600; }
+  .node-label { font-family: inherit; font-size: 16px; font-weight: 600; }
   .node-sub { font-family: inherit; font-size: 11px; fill: var(--muted); }
   .node .node-inner { opacity: 0; transform: scale(.82); transform-box: fill-box; transform-origin: center; transition: opacity .5s ease, transform .5s cubic-bezier(.2,.8,.2,1); }
   .node.on .node-inner { opacity: 1; transform: scale(1); }
-  .flow-path { fill: none; stroke: var(--flow-color, #3f3f49); stroke-width: 1.6; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: .38; transition: stroke-dashoffset .8s ease, opacity .5s ease; }
+  .flow-path { fill: none; stroke: var(--flow-color, #4d4d5a); stroke-width: 1.7; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: .5; transition: stroke-dashoffset .8s ease, opacity .5s ease; }
   .flow.on .flow-path { stroke-dashoffset: 0; }
   .flow.on.active .flow-path { opacity: 1; }
   .flow.glow .flow-path { stroke: var(--accent); stroke-width: 2.4; }
@@ -69,7 +70,7 @@ export const PLAYER_SCRIPT = `<script>
   if (!scenes.length) return;
 
   var VB_W = 1180, VB_H = 560, PAD_X = 100, PAD_Y = 78;
-  var NODE_W = 176, NODE_H = 60, BEAT_MS = 2900;
+  var NODE_W = 180, NODE_H = 64, BEAT_MS = 2900;
   var KIND = { source: '#6ea8fe', core: '#6ee7b7', sink: '#ffb020', science: '#c792ea' };
 
   var svg = document.getElementById('scene');
@@ -103,8 +104,11 @@ export const PLAYER_SCRIPT = `<script>
     var defs = el('defs');
     var f = el('filter');
     f.setAttribute('id', 'glow');
-    f.setAttribute('x', '-60%'); f.setAttribute('y', '-60%');
-    f.setAttribute('width', '220%'); f.setAttribute('height', '220%');
+    // userSpaceOnUse + absolute region: bbox-relative filters vanish on
+    // perfectly-horizontal paths (zero-height bounding box).
+    f.setAttribute('filterUnits', 'userSpaceOnUse');
+    f.setAttribute('x', '0'); f.setAttribute('y', '0');
+    f.setAttribute('width', VB_W); f.setAttribute('height', VB_H);
     var b = el('feGaussianBlur'); b.setAttribute('stdDeviation', '3.4'); b.setAttribute('result', 'b');
     var m = el('feMerge');
     var m1 = el('feMergeNode'); m1.setAttribute('in', 'b');

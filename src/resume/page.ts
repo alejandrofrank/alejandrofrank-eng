@@ -26,7 +26,7 @@ ${FAVICON}
 </head>
 <body>
   ${RAIN_CANVAS}
-  <div class="wrap">
+  <div class="wrap resumewrap">
     <div class="resume">
       <nav class="resume-nav"><a href="/">‹ dashboard</a></nav>
       <h1 class="resume-h1">Experience</h1>
