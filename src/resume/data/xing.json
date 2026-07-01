@@ -2,7 +2,7 @@
   "id": "xing",
   "title": "Xing",
   "role": "Data Engineer · via CortexLabs",
-  "period": "2024 – 2025",
+  "period": "Jan 2025 – Mar 2025",
   "summary": "Migrated Xing's on-prem Hadoop / Hive pipelines to Snowflake — rebuilt the transformations in dbt and orchestrated the whole thing with Airflow on Astronomer.",
   "nodes": [
     {
