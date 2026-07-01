@@ -60,6 +60,7 @@ export const SHIPLOG: ShipEntry[] = [
 ];
 
 export const LINKS: { label: string; href: string }[] = [
+  { label: "Experience", href: "/resume" },
   { label: "GitHub", href: "https://github.com/alejandrofrank" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/alejandrofrank" },
   { label: "Email", href: "mailto:alejandrofranks@gmail.com" },

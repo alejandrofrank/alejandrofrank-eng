@@ -4,11 +4,13 @@
 
 import { Hono } from "hono";
 import { renderPage } from "./layout";
+import { renderResumePage } from "./resume/page";
 import type { Env } from "./panels";
 
 const app = new Hono<{ Bindings: Env }>();
 
 app.get("/", async (c) => c.html(await renderPage(c.env)));
+app.get("/resume", (c) => c.html(renderResumePage()));
 app.get("/health", (c) => c.json({ ok: true }));
 
 export default app;

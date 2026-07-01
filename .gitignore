@@ -1,6 +1,10 @@
 # Personal / job-application materials — never commit
 _personal/
 
+# Python (the resume build tool)
+__pycache__/
+*.pyc
+
 # Dependencies
 node_modules/
 

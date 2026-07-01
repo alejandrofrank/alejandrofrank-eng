@@ -1,0 +1,180 @@
+{
+  "id": "pompeii",
+  "title": "Pompeii",
+  "role": "Data Engineer / Data Analyst",
+  "period": "May 2019 – Mar 2021",
+  "summary": "Joined to build the data function from zero. Turned two operational systems into one clean warehouse every business team could self-serve, then layered data science on top of the same model.",
+  "nodes": [
+    {
+      "id": "odoo",
+      "label": "Odoo",
+      "kind": "source",
+      "x": 0.06,
+      "y": 0.3,
+      "sublabel": "ERP"
+    },
+    {
+      "id": "shopify",
+      "label": "Shopify",
+      "kind": "source",
+      "x": 0.06,
+      "y": 0.66,
+      "sublabel": "web store"
+    },
+    {
+      "id": "aws",
+      "label": "AWS ingest",
+      "kind": "core",
+      "x": 0.3,
+      "y": 0.48,
+      "sublabel": "raw landing"
+    },
+    {
+      "id": "transform",
+      "label": "Transform",
+      "kind": "core",
+      "x": 0.5,
+      "y": 0.48,
+      "sublabel": "SQL · pandas · Spark"
+    },
+    {
+      "id": "warehouse",
+      "label": "Warehouse",
+      "kind": "core",
+      "x": 0.7,
+      "y": 0.48,
+      "sublabel": "facts + dimensions"
+    },
+    {
+      "id": "dashboards",
+      "label": "Team dashboards",
+      "kind": "sink",
+      "x": 0.93,
+      "y": 0.2,
+      "sublabel": "sales · marketing · shops · PR"
+    },
+    {
+      "id": "segments",
+      "label": "Segmentation",
+      "kind": "science",
+      "x": 0.93,
+      "y": 0.56,
+      "sublabel": "customer clustering"
+    },
+    {
+      "id": "forecast",
+      "label": "Forecasting",
+      "kind": "science",
+      "x": 0.93,
+      "y": 0.82,
+      "sublabel": "sales forecast"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f_odoo",
+      "src": "odoo",
+      "dst": "aws",
+      "label": "",
+      "glow": false
+    },
+    {
+      "id": "f_shopify",
+      "src": "shopify",
+      "dst": "aws",
+      "label": "",
+      "glow": false
+    },
+    {
+      "id": "f_ingest",
+      "src": "aws",
+      "dst": "transform",
+      "label": "",
+      "glow": false
+    },
+    {
+      "id": "f_model",
+      "src": "transform",
+      "dst": "warehouse",
+      "label": "",
+      "glow": false
+    },
+    {
+      "id": "f_dash",
+      "src": "warehouse",
+      "dst": "dashboards",
+      "label": "auto-refresh",
+      "glow": true
+    },
+    {
+      "id": "f_segments",
+      "src": "warehouse",
+      "dst": "segments",
+      "label": "",
+      "glow": false
+    },
+    {
+      "id": "f_forecast",
+      "src": "warehouse",
+      "dst": "forecast",
+      "label": "",
+      "glow": false
+    }
+  ],
+  "beats": [
+    {
+      "title": "Two systems, zero visibility",
+      "caption": "Sales, marketing, shop managers and PR each had questions the data could answer — but everything lived locked inside Odoo and Shopify.",
+      "nodes": [
+        "odoo",
+        "shopify"
+      ],
+      "flows": []
+    },
+    {
+      "title": "Land the raw data",
+      "caption": "First move: pull both systems into AWS as a raw landing zone — one place where all the operational data arrives.",
+      "nodes": [
+        "aws"
+      ],
+      "flows": [
+        "f_odoo",
+        "f_shopify"
+      ]
+    },
+    {
+      "title": "One clean model",
+      "caption": "A pipeline in SQL, pandas and Spark reshaped the mess into a normalized fact + dimension warehouse — designed for non-technical users.",
+      "nodes": [
+        "transform",
+        "warehouse"
+      ],
+      "flows": [
+        "f_ingest",
+        "f_model"
+      ]
+    },
+    {
+      "title": "KPIs, no SQL required",
+      "caption": "Every team got a dashboard of their own KPIs that auto-refreshed the moment the pipeline finished. No tickets, no waiting, no data knowledge needed.",
+      "nodes": [
+        "dashboards"
+      ],
+      "flows": [
+        "f_dash"
+      ]
+    },
+    {
+      "title": "Then, the science",
+      "caption": "On the same clean model: customer clustering / segmentation and sales forecasting — analytics the business could actually act on.",
+      "nodes": [
+        "segments",
+        "forecast"
+      ],
+      "flows": [
+        "f_segments",
+        "f_forecast"
+      ]
+    }
+  ]
+}
