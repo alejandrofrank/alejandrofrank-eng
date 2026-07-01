@@ -42,17 +42,13 @@ ${FAVICON}
 
       <div class="tabs" id="jobTabs"></div>
 
-      <div class="info-row">
-        <div class="job-header">
-          <h2 id="jobRole"></h2>
-          <div class="job-meta" id="jobMeta"></div>
-          <p class="job-summary" id="jobSummary"></p>
-        </div>
-        <div class="caption">
-          <div class="caption-title" id="capTitle"></div>
-          <div class="caption-text" id="capText"></div>
-        </div>
-      </div>
+      <details class="job-details">
+        <summary>
+          <span class="jd-role" id="jobRole"></span>
+          <span class="jd-meta" id="jobMeta"></span>
+        </summary>
+        <p class="job-summary" id="jobSummary"></p>
+      </details>
 
       <div class="stage">
         <svg id="scene" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Systems diagram"></svg>
@@ -60,6 +56,11 @@ ${FAVICON}
 
       <div class="player-controls">
         <div class="beat-dots" id="beatDots"></div>
+      </div>
+
+      <div class="caption">
+        <div class="caption-title" id="capTitle"></div>
+        <div class="caption-text" id="capText"></div>
       </div>
     </div>
   </div>

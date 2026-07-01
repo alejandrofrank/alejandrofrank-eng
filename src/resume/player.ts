@@ -19,13 +19,14 @@ export const PLAYER_STYLES = `
   .tab { font: inherit; background: var(--panel); border: 1px solid var(--line); color: var(--muted); padding: 6px 13px; border-radius: 999px; cursor: pointer; }
   .tab:hover { color: var(--fg); }
   .tab.on { color: var(--bg); background: var(--accent); border-color: var(--accent); }
-  .info-row { display: flex; gap: 32px; align-items: flex-start; margin-bottom: 10px; }
-  .info-row .job-header { flex: 0 0 40%; }
-  .info-row .caption { flex: 1; margin-top: 0; }
-  .job-header h2 { margin: 0; font-size: 20px; }
-  .job-meta { color: var(--accent); font-size: 13px; margin: 4px 0 8px; }
-  .job-summary { color: var(--muted); margin: 0; }
-  @media (max-width: 640px) { .info-row { flex-direction: column; gap: 14px; } .info-row .job-header { flex: none; } }
+  .job-details { margin: 2px 0 14px; }
+  .job-details > summary { cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .job-details > summary::-webkit-details-marker { display: none; }
+  .job-details > summary::before { content: "▸"; color: var(--muted); display: inline-block; transition: transform .2s ease; }
+  .job-details[open] > summary::before { transform: rotate(90deg); }
+  .jd-role { font-size: 18px; font-weight: 600; color: var(--fg); }
+  .jd-meta { color: var(--accent); font-size: 13px; }
+  .job-summary { color: var(--muted); margin: 10px 0 0 20px; max-width: 74ch; }
   .stage { margin: 16px 0 6px; padding: 6px; }
   #scene { width: 100%; height: auto; display: block; }
   .node-box { fill: #14141a; stroke-width: 1.5; }
