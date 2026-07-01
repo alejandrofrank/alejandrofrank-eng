@@ -1,0 +1,111 @@
+{
+  "id": "permira",
+  "title": "Permira",
+  "role": "Data / AI Engineer · via CortexLabs",
+  "period": "Oct 2025 – Jul 2026",
+  "summary": "Built an LLM analytics agent on Snowflake that lets non-technical stakeholders self-serve financial metrics in plain English, querying real production tables. Collapsed a 6-role, multi-week request pipeline into one real-time query, grounded in the finance team's real source files for full auditability.",
+  "nodes": [
+    {
+      "id": "user",
+      "label": "Stakeholder",
+      "kind": "source",
+      "x": 0.07,
+      "y": 0.5,
+      "sublabel": "plain-English question",
+      "color": ""
+    },
+    {
+      "id": "agent",
+      "label": "LLM agent",
+      "kind": "science",
+      "x": 0.37,
+      "y": 0.5,
+      "sublabel": "natural language → query",
+      "color": ""
+    },
+    {
+      "id": "snowflake",
+      "label": "Snowflake",
+      "kind": "core",
+      "x": 0.66,
+      "y": 0.5,
+      "sublabel": "real production tables",
+      "color": ""
+    },
+    {
+      "id": "answer",
+      "label": "Answer + sources",
+      "kind": "sink",
+      "x": 0.93,
+      "y": 0.5,
+      "sublabel": "grounded · auditable",
+      "color": ""
+    }
+  ],
+  "flows": [
+    {
+      "id": "f_ask",
+      "src": "user",
+      "dst": "agent",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_query",
+      "src": "agent",
+      "dst": "snowflake",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_answer",
+      "src": "snowflake",
+      "dst": "answer",
+      "label": "",
+      "glow": true,
+      "color": ""
+    }
+  ],
+  "beats": [
+    {
+      "title": "Six roles, weeks of waiting",
+      "caption": "A single financial metric used to run a 6-role, multi-week pipeline: analyst → scrum → engineering → product → QA → production.",
+      "nodes": [
+        "user"
+      ],
+      "flows": []
+    },
+    {
+      "title": "Just ask",
+      "caption": "I built an LLM agent that takes the question in plain English — e.g. 'what was Adevinta's EBITDA in 2025?' — no SQL, no ticket.",
+      "nodes": [
+        "agent"
+      ],
+      "flows": [
+        "f_ask"
+      ]
+    },
+    {
+      "title": "Query the real tables",
+      "caption": "The agent queries real production tables in Snowflake, live — not a sample, not a cache.",
+      "nodes": [
+        "snowflake"
+      ],
+      "flows": [
+        "f_query"
+      ]
+    },
+    {
+      "title": "Grounded and auditable",
+      "caption": "A v2 grounds every answer in the finance team's real source files with source attribution — the difference between a demo and a production-trusted system. One query, real time.",
+      "nodes": [
+        "answer"
+      ],
+      "flows": [
+        "f_answer"
+      ]
+    }
+  ]
+}

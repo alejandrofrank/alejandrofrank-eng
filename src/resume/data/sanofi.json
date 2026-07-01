@@ -1,0 +1,130 @@
+{
+  "id": "sanofi",
+  "title": "Sanofi",
+  "role": "Data Engineer · via CortexLabs",
+  "period": "Dec 2023 – Oct 2024",
+  "summary": "Led Sanofi's migration from AWS to Snowflake — designing the new architecture and engineering an automated, bidirectional transfer layer so legacy systems on AWS kept running throughout. Zero operational downtime, reporting never interrupted.",
+  "nodes": [
+    {
+      "id": "aws",
+      "label": "AWS",
+      "kind": "source",
+      "x": 0.09,
+      "y": 0.34,
+      "sublabel": "S3 + warehouse",
+      "color": "#9a8f80"
+    },
+    {
+      "id": "legacy",
+      "label": "Legacy systems",
+      "kind": "source",
+      "x": 0.09,
+      "y": 0.74,
+      "sublabel": "stay on AWS",
+      "color": "#9a8f80"
+    },
+    {
+      "id": "sync",
+      "label": "Bidirectional sync",
+      "kind": "core",
+      "x": 0.42,
+      "y": 0.52,
+      "sublabel": "zero downtime",
+      "color": ""
+    },
+    {
+      "id": "snowflake",
+      "label": "Snowflake",
+      "kind": "core",
+      "x": 0.72,
+      "y": 0.52,
+      "sublabel": "new warehouse",
+      "color": ""
+    },
+    {
+      "id": "reporting",
+      "label": "Reporting",
+      "kind": "sink",
+      "x": 0.93,
+      "y": 0.52,
+      "sublabel": "uninterrupted",
+      "color": ""
+    }
+  ],
+  "flows": [
+    {
+      "id": "f_out",
+      "src": "aws",
+      "dst": "sync",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_legacy",
+      "src": "legacy",
+      "dst": "sync",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_in",
+      "src": "sync",
+      "dst": "snowflake",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_report",
+      "src": "snowflake",
+      "dst": "reporting",
+      "label": "",
+      "glow": true,
+      "color": ""
+    }
+  ],
+  "beats": [
+    {
+      "title": "Infrastructure on AWS",
+      "caption": "Sanofi's data infrastructure lived on AWS, with legacy systems depending on it — nothing could go dark during a move.",
+      "nodes": [
+        "aws",
+        "legacy"
+      ],
+      "flows": []
+    },
+    {
+      "title": "A bidirectional bridge",
+      "caption": "The key move: an automated, bidirectional transfer layer between AWS and Snowflake, keeping both sides in step in real time.",
+      "nodes": [
+        "sync"
+      ],
+      "flows": [
+        "f_out",
+        "f_legacy"
+      ]
+    },
+    {
+      "title": "New home: Snowflake",
+      "caption": "Data migrated into a new Snowflake architecture, while the bridge kept the AWS legacy systems working both ways.",
+      "nodes": [
+        "snowflake"
+      ],
+      "flows": [
+        "f_in"
+      ]
+    },
+    {
+      "title": "Reporting never stopped",
+      "caption": "Reporting ran uninterrupted through the entire transition — zero operational downtime.",
+      "nodes": [
+        "reporting"
+      ],
+      "flows": [
+        "f_report"
+      ]
+    }
+  ]
+}

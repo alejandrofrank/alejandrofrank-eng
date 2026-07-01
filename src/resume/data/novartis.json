@@ -1,0 +1,111 @@
+{
+  "id": "novartis",
+  "title": "Novartis",
+  "role": "AI Engineer · via CortexLabs",
+  "period": "2024",
+  "summary": "Made Novartis's internal GPT tool actually useful: built an efficient embedding pipeline and vector database so it could retrieve and answer from the company's own content instead of guessing.",
+  "nodes": [
+    {
+      "id": "docs",
+      "label": "Internal content",
+      "kind": "source",
+      "x": 0.08,
+      "y": 0.5,
+      "sublabel": "documents",
+      "color": ""
+    },
+    {
+      "id": "embed",
+      "label": "Embeddings",
+      "kind": "core",
+      "x": 0.37,
+      "y": 0.5,
+      "sublabel": "vectorize",
+      "color": ""
+    },
+    {
+      "id": "vectordb",
+      "label": "Vector DB",
+      "kind": "core",
+      "x": 0.64,
+      "y": 0.5,
+      "sublabel": "fast retrieval",
+      "color": ""
+    },
+    {
+      "id": "gpt",
+      "label": "GPT tool",
+      "kind": "science",
+      "x": 0.92,
+      "y": 0.5,
+      "sublabel": "internal assistant",
+      "color": ""
+    }
+  ],
+  "flows": [
+    {
+      "id": "f_embed",
+      "src": "docs",
+      "dst": "embed",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_store",
+      "src": "embed",
+      "dst": "vectordb",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_retrieve",
+      "src": "vectordb",
+      "dst": "gpt",
+      "label": "",
+      "glow": true,
+      "color": ""
+    }
+  ],
+  "beats": [
+    {
+      "title": "A GPT tool with no grounding",
+      "caption": "Novartis had an internal GPT tool that needed to answer from a large body of internal content — but couldn't reach it.",
+      "nodes": [
+        "docs"
+      ],
+      "flows": []
+    },
+    {
+      "title": "Embed everything",
+      "caption": "Built an efficient embedding pipeline to turn that content into vectors.",
+      "nodes": [
+        "embed"
+      ],
+      "flows": [
+        "f_embed"
+      ]
+    },
+    {
+      "title": "Vector retrieval",
+      "caption": "Stored them in a vector database tuned for fast, relevant retrieval.",
+      "nodes": [
+        "vectordb"
+      ],
+      "flows": [
+        "f_store"
+      ]
+    },
+    {
+      "title": "Grounded answers",
+      "caption": "Now the GPT tool pulls the right context and answers grounded in real internal data.",
+      "nodes": [
+        "gpt"
+      ],
+      "flows": [
+        "f_retrieve"
+      ]
+    }
+  ]
+}

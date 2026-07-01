@@ -1,0 +1,111 @@
+{
+  "id": "airbus",
+  "title": "Airbus",
+  "role": "Data Engineer · via CortexLabs",
+  "period": "2024",
+  "summary": "Built the AWS data pipelines feeding a chip-failure prediction model, putting reliable failure analysis in the hands of Airbus's in-house scientists.",
+  "nodes": [
+    {
+      "id": "chips",
+      "label": "Chip test data",
+      "kind": "source",
+      "x": 0.08,
+      "y": 0.5,
+      "sublabel": "sensor / failure logs",
+      "color": ""
+    },
+    {
+      "id": "pipelines",
+      "label": "AWS pipelines",
+      "kind": "core",
+      "x": 0.37,
+      "y": 0.5,
+      "sublabel": "ingest + prep",
+      "color": ""
+    },
+    {
+      "id": "model",
+      "label": "Failure prediction",
+      "kind": "science",
+      "x": 0.65,
+      "y": 0.5,
+      "sublabel": "ML model",
+      "color": ""
+    },
+    {
+      "id": "scientists",
+      "label": "Scientists",
+      "kind": "sink",
+      "x": 0.92,
+      "y": 0.5,
+      "sublabel": "run failure analysis",
+      "color": ""
+    }
+  ],
+  "flows": [
+    {
+      "id": "f_ingest",
+      "src": "chips",
+      "dst": "pipelines",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_feed",
+      "src": "pipelines",
+      "dst": "model",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_use",
+      "src": "model",
+      "dst": "scientists",
+      "label": "",
+      "glow": true,
+      "color": ""
+    }
+  ],
+  "beats": [
+    {
+      "title": "Why do chips fail?",
+      "caption": "Airbus needed to predict chip failures from mountains of test and sensor data.",
+      "nodes": [
+        "chips"
+      ],
+      "flows": []
+    },
+    {
+      "title": "AWS pipelines",
+      "caption": "Built the pipelines on AWS to ingest and prepare that data reliably.",
+      "nodes": [
+        "pipelines"
+      ],
+      "flows": [
+        "f_ingest"
+      ]
+    },
+    {
+      "title": "Feed the model",
+      "caption": "The clean data fed a failure-prediction model.",
+      "nodes": [
+        "model"
+      ],
+      "flows": [
+        "f_feed"
+      ]
+    },
+    {
+      "title": "Scientists in control",
+      "caption": "Which put failure analysis directly in the hands of Airbus's in-house scientists.",
+      "nodes": [
+        "scientists"
+      ],
+      "flows": [
+        "f_use"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "id": "loewe",
+  "title": "Loewe",
+  "role": "Data Engineer · via CortexLabs",
+  "period": "2024",
+  "summary": "Set up Loewe's data pipelines in Dataform and automated large-scale data transfers in Python — a clean, repeatable path from sources into the warehouse.",
+  "nodes": [
+    {
+      "id": "sources",
+      "label": "Sources",
+      "kind": "source",
+      "x": 0.08,
+      "y": 0.5,
+      "sublabel": "operational data",
+      "color": ""
+    },
+    {
+      "id": "transfers",
+      "label": "Python transfers",
+      "kind": "core",
+      "x": 0.37,
+      "y": 0.5,
+      "sublabel": "large-scale, automated",
+      "color": ""
+    },
+    {
+      "id": "dataform",
+      "label": "Dataform",
+      "kind": "core",
+      "x": 0.64,
+      "y": 0.5,
+      "sublabel": "pipelines + models",
+      "color": ""
+    },
+    {
+      "id": "warehouse",
+      "label": "Warehouse",
+      "kind": "sink",
+      "x": 0.92,
+      "y": 0.5,
+      "sublabel": "analytics-ready",
+      "color": ""
+    }
+  ],
+  "flows": [
+    {
+      "id": "f_move",
+      "src": "sources",
+      "dst": "transfers",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_model",
+      "src": "transfers",
+      "dst": "dataform",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_load",
+      "src": "dataform",
+      "dst": "warehouse",
+      "label": "",
+      "glow": true,
+      "color": ""
+    }
+  ],
+  "beats": [
+    {
+      "title": "Scattered sources",
+      "caption": "Loewe's data was spread across systems with no reliable path into a warehouse.",
+      "nodes": [
+        "sources"
+      ],
+      "flows": []
+    },
+    {
+      "title": "Automated transfers",
+      "caption": "Automated the large-scale moves in Python — repeatable, hands-off.",
+      "nodes": [
+        "transfers"
+      ],
+      "flows": [
+        "f_move"
+      ]
+    },
+    {
+      "title": "Modeled in Dataform",
+      "caption": "Set up the pipelines and models in Dataform.",
+      "nodes": [
+        "dataform"
+      ],
+      "flows": [
+        "f_model"
+      ]
+    },
+    {
+      "title": "Analytics-ready",
+      "caption": "Landing clean, analytics-ready data in the warehouse.",
+      "nodes": [
+        "warehouse"
+      ],
+      "flows": [
+        "f_load"
+      ]
+    }
+  ]
+}

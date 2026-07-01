@@ -1,0 +1,140 @@
+{
+  "id": "xing",
+  "title": "Xing",
+  "role": "Data Engineer · via CortexLabs",
+  "period": "2024 – 2025",
+  "summary": "Migrated Xing's on-prem Hadoop / Hive pipelines to Snowflake — rebuilt the transformations in dbt and orchestrated the whole thing with Airflow on Astronomer.",
+  "nodes": [
+    {
+      "id": "hadoop",
+      "label": "Hadoop",
+      "kind": "source",
+      "x": 0.16,
+      "y": 0.2,
+      "sublabel": "HDFS",
+      "color": "#9a8f80"
+    },
+    {
+      "id": "hive",
+      "label": "Hive",
+      "kind": "source",
+      "x": 0.46,
+      "y": 0.2,
+      "sublabel": "on-prem tables",
+      "color": "#9a8f80"
+    },
+    {
+      "id": "snowflake",
+      "label": "Snowflake",
+      "kind": "core",
+      "x": 0.12,
+      "y": 0.72,
+      "sublabel": "new warehouse",
+      "color": ""
+    },
+    {
+      "id": "dbt",
+      "label": "dbt",
+      "kind": "core",
+      "x": 0.42,
+      "y": 0.72,
+      "sublabel": "models + tests",
+      "color": ""
+    },
+    {
+      "id": "marts",
+      "label": "Data marts",
+      "kind": "sink",
+      "x": 0.9,
+      "y": 0.72,
+      "sublabel": "analytics-ready",
+      "color": ""
+    },
+    {
+      "id": "airflow",
+      "label": "Airflow",
+      "kind": "core",
+      "x": 0.3,
+      "y": 0.94,
+      "sublabel": "Astronomer",
+      "color": ""
+    }
+  ],
+  "flows": [
+    {
+      "id": "f_old",
+      "src": "hadoop",
+      "dst": "hive",
+      "label": "",
+      "glow": false,
+      "color": "#9a8f80"
+    },
+    {
+      "id": "f_model",
+      "src": "snowflake",
+      "dst": "dbt",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_marts",
+      "src": "dbt",
+      "dst": "marts",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_sched",
+      "src": "airflow",
+      "dst": "dbt",
+      "label": "",
+      "glow": true,
+      "color": ""
+    }
+  ],
+  "beats": [
+    {
+      "title": "On-prem Hadoop / Hive",
+      "caption": "Xing's pipelines ran on-prem: Hadoop clusters feeding Hive tables.",
+      "nodes": [
+        "hadoop",
+        "hive"
+      ],
+      "flows": [
+        "f_old"
+      ]
+    },
+    {
+      "title": "Rebuilt on Snowflake",
+      "caption": "Everything moved to Snowflake as the new warehouse — no clusters to maintain.",
+      "nodes": [
+        "snowflake"
+      ],
+      "flows": []
+    },
+    {
+      "title": "Modeled in dbt",
+      "caption": "The transformations were rebuilt in dbt — models and tests — landing clean analytics marts.",
+      "nodes": [
+        "dbt",
+        "marts"
+      ],
+      "flows": [
+        "f_model",
+        "f_marts"
+      ]
+    },
+    {
+      "title": "Orchestrated on Astronomer",
+      "caption": "Airflow on Astronomer scheduled and orchestrated every run.",
+      "nodes": [
+        "airflow"
+      ],
+      "flows": [
+        "f_sched"
+      ]
+    }
+  ]
+}

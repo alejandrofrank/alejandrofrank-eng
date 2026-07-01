@@ -22,5 +22,47 @@
     "title": "Unipol",
     "role": "Data Engineer",
     "period": "Jun 2022 – May 2023"
+  },
+  {
+    "id": "sanofi",
+    "title": "Sanofi",
+    "role": "Data Engineer · via CortexLabs",
+    "period": "Dec 2023 – Oct 2024"
+  },
+  {
+    "id": "airbus",
+    "title": "Airbus",
+    "role": "Data Engineer · via CortexLabs",
+    "period": "2024"
+  },
+  {
+    "id": "loewe",
+    "title": "Loewe",
+    "role": "Data Engineer · via CortexLabs",
+    "period": "2024"
+  },
+  {
+    "id": "novartis",
+    "title": "Novartis",
+    "role": "AI Engineer · via CortexLabs",
+    "period": "2024"
+  },
+  {
+    "id": "xing",
+    "title": "Xing",
+    "role": "Data Engineer · via CortexLabs",
+    "period": "2024 – 2025"
+  },
+  {
+    "id": "adevinta",
+    "title": "Adevinta",
+    "role": "Data Engineer · via CortexLabs",
+    "period": "Mar 2025 – Oct 2025"
+  },
+  {
+    "id": "permira",
+    "title": "Permira",
+    "role": "Data / AI Engineer · via CortexLabs",
+    "period": "Oct 2025 – Jul 2026"
   }
 ]
