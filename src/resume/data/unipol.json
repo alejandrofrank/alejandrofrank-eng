@@ -1,0 +1,149 @@
+{
+  "id": "unipol",
+  "title": "Unipol",
+  "role": "Data Engineer",
+  "period": "Jun 2022 – May 2023",
+  "summary": "Unipol had no data platform — so I built one from the ground up: a full dbt setup on AWS with best practices from day one, and Airflow scheduling every run to automate the pipeline end to end.",
+  "nodes": [
+    {
+      "id": "sources",
+      "label": "Source systems",
+      "kind": "source",
+      "x": 0.06,
+      "y": 0.45,
+      "sublabel": "operational data",
+      "color": ""
+    },
+    {
+      "id": "s3",
+      "label": "AWS S3",
+      "kind": "core",
+      "x": 0.28,
+      "y": 0.45,
+      "sublabel": "raw landing",
+      "color": ""
+    },
+    {
+      "id": "redshift",
+      "label": "Redshift",
+      "kind": "core",
+      "x": 0.5,
+      "y": 0.45,
+      "sublabel": "raw tables",
+      "color": ""
+    },
+    {
+      "id": "dbt",
+      "label": "dbt",
+      "kind": "core",
+      "x": 0.72,
+      "y": 0.3,
+      "sublabel": "models + tests",
+      "color": ""
+    },
+    {
+      "id": "marts",
+      "label": "Data marts",
+      "kind": "sink",
+      "x": 0.93,
+      "y": 0.3,
+      "sublabel": "analytics-ready",
+      "color": ""
+    },
+    {
+      "id": "airflow",
+      "label": "Airflow",
+      "kind": "core",
+      "x": 0.6,
+      "y": 0.78,
+      "sublabel": "schedules dbt",
+      "color": ""
+    }
+  ],
+  "flows": [
+    {
+      "id": "f_land",
+      "src": "sources",
+      "dst": "s3",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_load",
+      "src": "s3",
+      "dst": "redshift",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_read",
+      "src": "redshift",
+      "dst": "dbt",
+      "label": "",
+      "glow": false,
+      "color": ""
+    },
+    {
+      "id": "f_marts",
+      "src": "dbt",
+      "dst": "marts",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_sched",
+      "src": "airflow",
+      "dst": "dbt",
+      "label": "",
+      "glow": true,
+      "color": ""
+    }
+  ],
+  "beats": [
+    {
+      "title": "Built from the ground up",
+      "caption": "Unipol had no data platform. Job one was building the whole thing from scratch — starting from the raw source systems.",
+      "nodes": [
+        "sources"
+      ],
+      "flows": []
+    },
+    {
+      "title": "Land it on AWS",
+      "caption": "Raw operational data landed in S3 and loaded into Redshift as the warehouse.",
+      "nodes": [
+        "s3",
+        "redshift"
+      ],
+      "flows": [
+        "f_land",
+        "f_load"
+      ]
+    },
+    {
+      "title": "Model it with dbt",
+      "caption": "A full dbt setup — models, tests, best practices from day one — turned the raw tables into clean, analytics-ready data marts.",
+      "nodes": [
+        "dbt",
+        "marts"
+      ],
+      "flows": [
+        "f_read",
+        "f_marts"
+      ]
+    },
+    {
+      "title": "Automated end to end",
+      "caption": "Airflow scheduled every dbt run, automating the whole pipeline end to end — no manual steps left.",
+      "nodes": [
+        "airflow"
+      ],
+      "flows": [
+        "f_sched"
+      ]
+    }
+  ]
+}

@@ -16,5 +16,11 @@
     "title": "Accenture",
     "role": "Data Engineer",
     "period": "Jul 2021 – May 2022"
+  },
+  {
+    "id": "unipol",
+    "title": "Unipol",
+    "role": "Data Engineer",
+    "period": "Jun 2022 – May 2023"
   }
 ]
