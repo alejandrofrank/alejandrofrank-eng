@@ -45,8 +45,6 @@ ${FAVICON}
       </div>
 
       <div class="player-controls">
-        <button id="playBtn">▶ play</button>
-        <button id="replayBtn">↻ replay</button>
         <div class="beat-dots" id="beatDots"></div>
       </div>
 

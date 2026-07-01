@@ -3,14 +3,14 @@
   "title": "Pompeii",
   "role": "Data Engineer / Data Analyst",
   "period": "May 2019 – Mar 2021",
-  "summary": "Joined to build the data function from zero. Turned two operational systems into one clean warehouse every business team could self-serve, then layered data science on top of the same model.",
+  "summary": "Joined to build the data function from zero. Turned a sprawl of operational and marketing systems into one clean warehouse every business team could self-serve, then layered activation and data science on top of the same model.",
   "nodes": [
     {
       "id": "odoo",
       "label": "Odoo",
       "kind": "source",
       "x": 0.06,
-      "y": 0.3,
+      "y": 0.1,
       "sublabel": "ERP"
     },
     {
@@ -18,15 +18,39 @@
       "label": "Shopify",
       "kind": "source",
       "x": 0.06,
-      "y": 0.66,
+      "y": 0.3,
       "sublabel": "web store"
+    },
+    {
+      "id": "instagram",
+      "label": "Instagram",
+      "kind": "source",
+      "x": 0.06,
+      "y": 0.5,
+      "sublabel": "social"
+    },
+    {
+      "id": "tiktok",
+      "label": "TikTok",
+      "kind": "source",
+      "x": 0.06,
+      "y": 0.7,
+      "sublabel": "social"
+    },
+    {
+      "id": "ads",
+      "label": "Ad platforms",
+      "kind": "source",
+      "x": 0.06,
+      "y": 0.9,
+      "sublabel": "Google · Meta · +"
     },
     {
       "id": "aws",
       "label": "AWS ingest",
       "kind": "core",
       "x": 0.3,
-      "y": 0.48,
+      "y": 0.5,
       "sublabel": "raw landing"
     },
     {
@@ -34,7 +58,7 @@
       "label": "Transform",
       "kind": "core",
       "x": 0.5,
-      "y": 0.48,
+      "y": 0.5,
       "sublabel": "SQL · pandas · Spark"
     },
     {
@@ -42,7 +66,7 @@
       "label": "Warehouse",
       "kind": "core",
       "x": 0.7,
-      "y": 0.48,
+      "y": 0.5,
       "sublabel": "facts + dimensions"
     },
     {
@@ -50,15 +74,23 @@
       "label": "Team dashboards",
       "kind": "sink",
       "x": 0.93,
-      "y": 0.2,
+      "y": 0.14,
       "sublabel": "sales · marketing · shops · PR"
+    },
+    {
+      "id": "email",
+      "label": "Email marketing",
+      "kind": "sink",
+      "x": 0.93,
+      "y": 0.38,
+      "sublabel": "segmented campaigns"
     },
     {
       "id": "segments",
       "label": "Segmentation",
       "kind": "science",
       "x": 0.93,
-      "y": 0.56,
+      "y": 0.62,
       "sublabel": "customer clustering"
     },
     {
@@ -66,7 +98,7 @@
       "label": "Forecasting",
       "kind": "science",
       "x": 0.93,
-      "y": 0.82,
+      "y": 0.86,
       "sublabel": "sales forecast"
     }
   ],
@@ -81,6 +113,27 @@
     {
       "id": "f_shopify",
       "src": "shopify",
+      "dst": "aws",
+      "label": "",
+      "glow": false
+    },
+    {
+      "id": "f_instagram",
+      "src": "instagram",
+      "dst": "aws",
+      "label": "",
+      "glow": false
+    },
+    {
+      "id": "f_tiktok",
+      "src": "tiktok",
+      "dst": "aws",
+      "label": "",
+      "glow": false
+    },
+    {
+      "id": "f_ads",
+      "src": "ads",
       "dst": "aws",
       "label": "",
       "glow": false
@@ -107,6 +160,13 @@
       "glow": true
     },
     {
+      "id": "f_email",
+      "src": "warehouse",
+      "dst": "email",
+      "label": "",
+      "glow": false
+    },
+    {
       "id": "f_segments",
       "src": "warehouse",
       "dst": "segments",
@@ -123,8 +183,8 @@
   ],
   "beats": [
     {
-      "title": "Two systems, zero visibility",
-      "caption": "Sales, marketing, shop managers and PR each had questions the data could answer — but everything lived locked inside Odoo and Shopify.",
+      "title": "Operational systems",
+      "caption": "Sales and the web store ran on two operational systems — Odoo and Shopify — each holding numbers the business couldn't easily see.",
       "nodes": [
         "odoo",
         "shopify"
@@ -132,14 +192,27 @@
       "flows": []
     },
     {
-      "title": "Land the raw data",
-      "caption": "First move: pull both systems into AWS as a raw landing zone — one place where all the operational data arrives.",
+      "title": "Every marketing channel",
+      "caption": "On top of that, the brand lived across Instagram, TikTok and a stack of ad platforms — each with its own dashboard and its own truth.",
+      "nodes": [
+        "instagram",
+        "tiktok",
+        "ads"
+      ],
+      "flows": []
+    },
+    {
+      "title": "Land it all",
+      "caption": "First move: pull every source into AWS as a raw landing zone — one place where all the operational and marketing data arrives.",
       "nodes": [
         "aws"
       ],
       "flows": [
         "f_odoo",
-        "f_shopify"
+        "f_shopify",
+        "f_instagram",
+        "f_tiktok",
+        "f_ads"
       ]
     },
     {
@@ -165,13 +238,15 @@
       ]
     },
     {
-      "title": "Then, the science",
-      "caption": "On the same clean model: customer clustering / segmentation and sales forecasting — analytics the business could actually act on.",
+      "title": "Everything off one model",
+      "caption": "The same clean model drove email-marketing campaigns, customer clustering / segmentation, and sales forecasting — activation and science the business could act on.",
       "nodes": [
+        "email",
         "segments",
         "forecast"
       ],
       "flows": [
+        "f_email",
         "f_segments",
         "f_forecast"
       ]

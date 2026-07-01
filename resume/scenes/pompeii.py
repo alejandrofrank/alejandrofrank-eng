@@ -16,46 +16,62 @@ scene = Scene(
     role="Data Engineer / Data Analyst",
     period="May 2019 – Mar 2021",
     summary=(
-        "Joined to build the data function from zero. Turned two operational "
-        "systems into one clean warehouse every business team could self-serve, "
-        "then layered data science on top of the same model."
+        "Joined to build the data function from zero. Turned a sprawl of "
+        "operational and marketing systems into one clean warehouse every "
+        "business team could self-serve, then layered activation and data "
+        "science on top of the same model."
     ),
     nodes=[
-        # sources (left)
-        Node("odoo", "Odoo", "source", 0.06, 0.30, "ERP"),
-        Node("shopify", "Shopify", "source", 0.06, 0.66, "web store"),
+        # sources — operational (left, top)
+        Node("odoo", "Odoo", "source", 0.06, 0.10, "ERP"),
+        Node("shopify", "Shopify", "source", 0.06, 0.30, "web store"),
+        # sources — marketing / social (left, bottom)
+        Node("instagram", "Instagram", "source", 0.06, 0.50, "social"),
+        Node("tiktok", "TikTok", "source", 0.06, 0.70, "social"),
+        Node("ads", "Ad platforms", "source", 0.06, 0.90, "Google · Meta · +"),
         # core pipeline (middle)
-        Node("aws", "AWS ingest", "core", 0.30, 0.48, "raw landing"),
-        Node("transform", "Transform", "core", 0.50, 0.48, "SQL · pandas · Spark"),
-        Node("warehouse", "Warehouse", "core", 0.70, 0.48, "facts + dimensions"),
+        Node("aws", "AWS ingest", "core", 0.30, 0.50, "raw landing"),
+        Node("transform", "Transform", "core", 0.50, 0.50, "SQL · pandas · Spark"),
+        Node("warehouse", "Warehouse", "core", 0.70, 0.50, "facts + dimensions"),
         # sinks (right)
-        Node("dashboards", "Team dashboards", "sink", 0.93, 0.20, "sales · marketing · shops · PR"),
+        Node("dashboards", "Team dashboards", "sink", 0.93, 0.14, "sales · marketing · shops · PR"),
+        Node("email", "Email marketing", "sink", 0.93, 0.38, "segmented campaigns"),
         # science (right)
-        Node("segments", "Segmentation", "science", 0.93, 0.56, "customer clustering"),
-        Node("forecast", "Forecasting", "science", 0.93, 0.82, "sales forecast"),
+        Node("segments", "Segmentation", "science", 0.93, 0.62, "customer clustering"),
+        Node("forecast", "Forecasting", "science", 0.93, 0.86, "sales forecast"),
     ],
     flows=[
         Flow("f_odoo", "odoo", "aws"),
         Flow("f_shopify", "shopify", "aws"),
+        Flow("f_instagram", "instagram", "aws"),
+        Flow("f_tiktok", "tiktok", "aws"),
+        Flow("f_ads", "ads", "aws"),
         Flow("f_ingest", "aws", "transform"),
         Flow("f_model", "transform", "warehouse"),
         Flow("f_dash", "warehouse", "dashboards", "auto-refresh", glow=True),
+        Flow("f_email", "warehouse", "email"),
         Flow("f_segments", "warehouse", "segments"),
         Flow("f_forecast", "warehouse", "forecast"),
     ],
     beats=[
         Beat(
-            "Two systems, zero visibility",
-            "Sales, marketing, shop managers and PR each had questions the data "
-            "could answer — but everything lived locked inside Odoo and Shopify.",
+            "Operational systems",
+            "Sales and the web store ran on two operational systems — Odoo and "
+            "Shopify — each holding numbers the business couldn't easily see.",
             nodes=["odoo", "shopify"],
         ),
         Beat(
-            "Land the raw data",
-            "First move: pull both systems into AWS as a raw landing zone — one "
-            "place where all the operational data arrives.",
+            "Every marketing channel",
+            "On top of that, the brand lived across Instagram, TikTok and a stack "
+            "of ad platforms — each with its own dashboard and its own truth.",
+            nodes=["instagram", "tiktok", "ads"],
+        ),
+        Beat(
+            "Land it all",
+            "First move: pull every source into AWS as a raw landing zone — one "
+            "place where all the operational and marketing data arrives.",
             nodes=["aws"],
-            flows=["f_odoo", "f_shopify"],
+            flows=["f_odoo", "f_shopify", "f_instagram", "f_tiktok", "f_ads"],
         ),
         Beat(
             "One clean model",
@@ -72,11 +88,12 @@ scene = Scene(
             flows=["f_dash"],
         ),
         Beat(
-            "Then, the science",
-            "On the same clean model: customer clustering / segmentation and sales "
-            "forecasting — analytics the business could actually act on.",
-            nodes=["segments", "forecast"],
-            flows=["f_segments", "f_forecast"],
+            "Everything off one model",
+            "The same clean model drove email-marketing campaigns, customer "
+            "clustering / segmentation, and sales forecasting — activation and "
+            "science the business could act on.",
+            nodes=["email", "segments", "forecast"],
+            flows=["f_email", "f_segments", "f_forecast"],
         ),
     ],
 )

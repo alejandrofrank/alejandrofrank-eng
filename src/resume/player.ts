@@ -21,7 +21,7 @@ export const PLAYER_STYLES = `
   .job-header h2 { margin: 0; font-size: 20px; }
   .job-meta { color: var(--accent); font-size: 13px; margin: 4px 0 8px; }
   .job-summary { color: var(--muted); max-width: 72ch; margin: 0; }
-  .stage { margin: 20px 0 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 10px; }
+  .stage { margin: 16px 0 6px; padding: 6px; }
   #scene { width: 100%; height: auto; display: block; }
   .node-box { fill: #14141a; stroke-width: 1.5; }
   .node-label { font-family: inherit; font-size: 15px; font-weight: 600; }
@@ -34,6 +34,10 @@ export const PLAYER_STYLES = `
   .flow-label { font-family: inherit; font-size: 11px; fill: var(--accent); opacity: 0; transition: opacity .4s ease .3s; }
   .flow.on .flow-label { opacity: .9; }
   .flow-pulse { fill: var(--accent); opacity: 0; }
+  /* End state: hold on the last beat and let every drawn path glow. */
+  @keyframes flowGlow { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+  .done .flow.on .flow-path { stroke: var(--accent); filter: url(#glow); animation: flowGlow 2.6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .done .flow.on .flow-path { animation: none; } }
   .player-controls { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
   .player-controls button { font: inherit; background: var(--panel); border: 1px solid var(--line); color: var(--fg); padding: 6px 13px; border-radius: 8px; cursor: pointer; }
   .player-controls button:hover { border-color: var(--accent); }
@@ -63,10 +67,9 @@ export const PLAYER_SCRIPT = `<script>
   var dotsEl = document.getElementById('beatDots');
   var capTitle = document.getElementById('capTitle');
   var capText = document.getElementById('capText');
-  var playBtn = document.getElementById('playBtn');
-  var replayBtn = document.getElementById('replayBtn');
 
-  var scene = null, beat = 0, playing = false, timer = null;
+  var scene = null, beat = 0, timer = null;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var nodeEls = {}, flowEls = {};
 
   function X(nx) { return PAD_X + nx * (VB_W - 2 * PAD_X); }
@@ -190,6 +193,9 @@ export const PLAYER_SCRIPT = `<script>
         }, 380);
       })(flowEls[cur.flows[p]]);
     }
+    // final beat: freeze here and let every path glow (no reset)
+    svg.classList.toggle('done', i === scene.beats.length - 1);
+
     // dots + caption
     var dots = dotsEl.children;
     for (var q = 0; q < dots.length; q++) dots[q].classList.toggle('on', q === i);
@@ -197,44 +203,39 @@ export const PLAYER_SCRIPT = `<script>
     capText.textContent = cur.caption;
   }
 
-  function stop() { playing = false; playBtn.textContent = '\\u25B6 play'; if (timer) clearTimeout(timer); }
-  function step() {
-    beat++;
-    if (beat >= scene.beats.length) { beat = scene.beats.length - 1; stop(); return; }
-    showBeat(beat);
-    if (playing) timer = setTimeout(step, BEAT_MS);
-  }
-  function play() {
-    if (!scene) return;
-    if (beat >= scene.beats.length - 1) { showBeat(0); }
-    playing = true; playBtn.textContent = '\\u23F8 pause';
-    timer = setTimeout(step, BEAT_MS);
-  }
+  function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
 
-  playBtn.addEventListener('click', function () { if (playing) stop(); else play(); });
-  replayBtn.addEventListener('click', function () { stop(); showBeat(0); play(); });
+  // Auto-run from beat i through the end, then hold on the last beat.
+  function runFrom(i) {
+    clearTimer();
+    showBeat(i);
+    if (!reduce && i < scene.beats.length - 1) {
+      timer = setTimeout(function () { runFrom(i + 1); }, BEAT_MS);
+    }
+  }
 
   function buildDots() {
     clear(dotsEl);
     for (var i = 0; i < scene.beats.length; i++) {
       var dot = document.createElement('button');
       dot.className = 'beat-dot'; dot.title = scene.beats[i].title;
-      (function (idx) { dot.addEventListener('click', function () { stop(); showBeat(idx); }); })(i);
+      (function (idx) { dot.addEventListener('click', function () { runFrom(idx); }); })(i);
       dotsEl.appendChild(dot);
     }
   }
 
   function selectScene(idx) {
-    stop();
+    clearTimer();
     scene = scenes[idx]; beat = 0;
     roleEl.textContent = scene.role;
     metaEl.textContent = scene.title + ' \\u00B7 ' + scene.period;
     sumEl.textContent = scene.summary;
     buildScene(scene);
     buildDots();
-    showBeat(0);
     var tabs = tabsEl.children;
     for (var t = 0; t < tabs.length; t++) tabs[t].classList.toggle('on', t === idx);
+    // autoplay through the beats; reduced-motion jumps straight to the end
+    if (reduce) showBeat(scene.beats.length - 1); else runFrom(0);
   }
 
   // tabs
