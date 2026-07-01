@@ -3,14 +3,14 @@
   "title": "Accenture",
   "role": "Data Engineer",
   "period": "Jul 2021 – May 2022",
-  "summary": "Accenture had gone all-in as a Google Cloud partner and needed its on-prem stack moved to GCP. Migrated four applications — three Hadoop / Spark-Scala pipelines plus one with an ML layer — to Cloud Storage, PySpark, BigQuery and Cloud Composer. Terabytes of data, running natively on GCP.",
+  "summary": "Accenture had gone all-in as a Google Cloud partner and needed its on-prem stack moved to GCP. Migrated four applications — three Hadoop / Spark-Scala pipelines plus one with an ML layer — to Cloud Storage, PySpark on Dataproc and BigQuery, re-platforming the old cron scheduling to event-driven Pub/Sub and Cloud Composer. Terabytes of data, running natively on GCP.",
   "nodes": [
     {
       "id": "hdfs",
       "label": "Hadoop",
       "kind": "source",
       "x": 0.08,
-      "y": 0.16,
+      "y": 0.14,
       "sublabel": "HDFS storage",
       "color": "#9a8f80"
     },
@@ -19,7 +19,7 @@
       "label": "Spark",
       "kind": "source",
       "x": 0.08,
-      "y": 0.38,
+      "y": 0.37,
       "sublabel": "Scala",
       "color": "#9a8f80"
     },
@@ -33,12 +33,12 @@
       "color": "#9a8f80"
     },
     {
-      "id": "talend",
-      "label": "Talend",
+      "id": "cron",
+      "label": "cron",
       "kind": "source",
       "x": 0.08,
-      "y": 0.82,
-      "sublabel": "orchestration",
+      "y": 0.83,
+      "sublabel": "scheduler",
       "color": "#9a8f80"
     },
     {
@@ -46,7 +46,7 @@
       "label": "Cloud Storage",
       "kind": "core",
       "x": 0.84,
-      "y": 0.16,
+      "y": 0.14,
       "sublabel": "GCS",
       "color": ""
     },
@@ -55,7 +55,7 @@
       "label": "PySpark",
       "kind": "core",
       "x": 0.84,
-      "y": 0.38,
+      "y": 0.37,
       "sublabel": "on Dataproc",
       "color": ""
     },
@@ -69,11 +69,20 @@
       "color": ""
     },
     {
+      "id": "pubsub",
+      "label": "Pub/Sub",
+      "kind": "core",
+      "x": 0.84,
+      "y": 0.7,
+      "sublabel": "event trigger",
+      "color": ""
+    },
+    {
       "id": "composer",
       "label": "Cloud Composer",
       "kind": "core",
       "x": 0.84,
-      "y": 0.82,
+      "y": 0.9,
       "sublabel": "Airflow",
       "color": ""
     }
@@ -104,8 +113,16 @@
       "color": ""
     },
     {
+      "id": "f_trigger",
+      "src": "cron",
+      "dst": "pubsub",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
       "id": "f_orch",
-      "src": "talend",
+      "src": "cron",
       "dst": "composer",
       "label": "",
       "glow": true,
@@ -115,12 +132,12 @@
   "beats": [
     {
       "title": "On-prem, four apps",
-      "caption": "Accenture had become a Google Cloud partner and needed its on-prem apps moved over. The stack: Hadoop clusters, Spark in Scala, Hive tables and Talend — four applications in all.",
+      "caption": "Accenture had become a Google Cloud partner and needed its on-prem apps moved over. The stack: Hadoop clusters, Spark in Scala, Hive tables and cron scheduling — four applications in all.",
       "nodes": [
         "hdfs",
         "spark",
         "hive",
-        "talend"
+        "cron"
       ],
       "flows": []
     },
@@ -136,7 +153,7 @@
     },
     {
       "title": "Spark Scala → PySpark",
-      "caption": "The heavy lifting: Spark jobs re-written from Scala to PySpark and run on Dataproc — refactored for maintainability along the way.",
+      "caption": "The heavy lifting: Spark jobs re-written from Scala to PySpark on Dataproc — refactored for maintainability along the way.",
       "nodes": [
         "dataproc"
       ],
@@ -155,12 +172,14 @@
       ]
     },
     {
-      "title": "Orchestrated on Cloud Composer",
-      "caption": "Finally, Talend's orchestration moved to Airflow on Cloud Composer. All four apps — three pipelines plus one with an ML layer — fully migrated and running natively on GCP.",
+      "title": "cron → event-driven GCP",
+      "caption": "The old cron jobs went event-driven: Pub/Sub fires the moment files land in Cloud Storage, and Cloud Composer (Airflow) orchestrates the run. All four apps — three pipelines plus one with an ML layer — fully migrated, native on GCP.",
       "nodes": [
+        "pubsub",
         "composer"
       ],
       "flows": [
+        "f_trigger",
         "f_orch"
       ]
     }
