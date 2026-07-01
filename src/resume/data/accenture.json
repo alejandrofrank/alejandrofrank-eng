@@ -3,7 +3,7 @@
   "title": "Accenture",
   "role": "Data Engineer",
   "period": "Jul 2021 – May 2022",
-  "summary": "Accenture had gone all-in as a Google Cloud partner and needed its on-prem apps rebuilt on GCP. Recreated four applications — three Hadoop / Spark-Scala / Hive pipelines scheduled by Oozie, plus one with an ML layer — as a new event-driven GCP architecture: files land in Cloud Storage, Pub/Sub fires, and Cloud Composer orchestrates PySpark on Dataproc and BigQuery. Terabytes of data, native on GCP.",
+  "summary": "Accenture had gone all-in as a Google Cloud partner and needed its on-prem apps rebuilt on GCP. Recreated four applications — three Hadoop / Spark-Scala / Hive pipelines scheduled by Oozie, plus one with an ML layer — as an event-driven GCP architecture: files land in Cloud Storage, Pub/Sub fires, and a Cloud Composer (Airflow) DAG runs the PySpark job on Dataproc while monitoring it, writing out to BigQuery.",
   "nodes": [
     {
       "id": "oozie",
@@ -45,8 +45,8 @@
       "id": "storage",
       "label": "Cloud Storage",
       "kind": "core",
-      "x": 0.1,
-      "y": 0.7,
+      "x": 0.05,
+      "y": 0.71,
       "sublabel": "files land",
       "color": ""
     },
@@ -54,8 +54,8 @@
       "id": "pubsub",
       "label": "Pub/Sub",
       "kind": "core",
-      "x": 0.34,
-      "y": 0.7,
+      "x": 0.25,
+      "y": 0.71,
       "sublabel": "on file landing",
       "color": ""
     },
@@ -63,27 +63,36 @@
       "id": "composer",
       "label": "Cloud Composer",
       "kind": "core",
-      "x": 0.56,
-      "y": 0.7,
-      "sublabel": "Airflow",
+      "x": 0.45,
+      "y": 0.71,
+      "sublabel": "Airflow DAG",
       "color": ""
     },
     {
       "id": "dataproc",
-      "label": "PySpark",
+      "label": "Run Dataproc",
       "kind": "core",
-      "x": 0.8,
-      "y": 0.58,
-      "sublabel": "Dataproc",
+      "x": 0.65,
+      "y": 0.59,
+      "sublabel": "PySpark · Dataproc",
+      "color": ""
+    },
+    {
+      "id": "monitor",
+      "label": "Monitor Job",
+      "kind": "core",
+      "x": 0.65,
+      "y": 0.83,
+      "sublabel": "watch the run",
       "color": ""
     },
     {
       "id": "bq",
       "label": "BigQuery",
       "kind": "core",
-      "x": 0.8,
-      "y": 0.83,
-      "sublabel": "warehouse",
+      "x": 0.85,
+      "y": 0.59,
+      "sublabel": "write results",
       "color": ""
     }
   ],
@@ -129,18 +138,26 @@
       "color": ""
     },
     {
-      "id": "f_dataproc",
+      "id": "f_run",
       "src": "composer",
       "dst": "dataproc",
-      "label": "",
+      "label": "run",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_monitor",
+      "src": "composer",
+      "dst": "monitor",
+      "label": "monitor",
       "glow": true,
       "color": ""
     },
     {
       "id": "f_bq",
-      "src": "composer",
+      "src": "dataproc",
       "dst": "bq",
-      "label": "",
+      "label": "write",
       "glow": true,
       "color": ""
     }
@@ -163,7 +180,7 @@
     },
     {
       "title": "Rebuilt on GCP: files land, Pub/Sub fires",
-      "caption": "We recreated it natively on GCP. Files now land in Cloud Storage, and Pub/Sub fires the instant they do — no more waiting on a schedule.",
+      "caption": "We recreated it natively on GCP. Files land in Cloud Storage, and Pub/Sub fires the instant they do — no waiting on a schedule.",
       "nodes": [
         "storage",
         "pubsub"
@@ -173,8 +190,8 @@
       ]
     },
     {
-      "title": "Composer orchestrates",
-      "caption": "Pub/Sub calls Cloud Composer (Airflow), which orchestrates the whole run end to end.",
+      "title": "Pub/Sub calls Cloud Composer",
+      "caption": "Pub/Sub kicks off a Cloud Composer (Airflow) DAG — the orchestrator for the whole run.",
       "nodes": [
         "composer"
       ],
@@ -183,14 +200,24 @@
       ]
     },
     {
-      "title": "PySpark on Dataproc → BigQuery",
-      "caption": "Composer drives the Spark work — now PySpark on Dataproc — and lands everything in BigQuery. All four apps rebuilt, one with an ML layer, running native on GCP.",
+      "title": "The DAG: run + monitor",
+      "caption": "The DAG branches into two tasks in parallel: launch the PySpark job on Dataproc, and monitor it end to end.",
       "nodes": [
         "dataproc",
+        "monitor"
+      ],
+      "flows": [
+        "f_run",
+        "f_monitor"
+      ]
+    },
+    {
+      "title": "Write to BigQuery",
+      "caption": "The Dataproc job writes its results to BigQuery. Four apps rebuilt — one with an ML layer — running native on GCP.",
+      "nodes": [
         "bq"
       ],
       "flows": [
-        "f_dataproc",
         "f_bq"
       ]
     }
