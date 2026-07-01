@@ -8,13 +8,13 @@
 // ----------------------------------------------------------------------------
 
 export const PLAYER_STYLES = `
-  .wrap.resumewrap { max-width: 1160px; }
-  .resume { max-width: 1160px; margin: 0 auto; }
+  .wrap.resumewrap { max-width: 1030px; }
+  .resume { max-width: 1030px; margin: 0 auto; }
   .resume-nav { margin-bottom: 26px; }
   .resume-nav a { color: var(--muted); text-decoration: none; font-size: 13px; }
   .resume-nav a:hover { color: var(--accent); }
-  .resume-h1 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 6px; letter-spacing: -0.02em; }
-  .resume-lede { color: var(--muted); margin: 0 0 26px; }
+  .resume-h1 { font-size: clamp(24px, 4vw, 32px); margin: 0 0 5px; letter-spacing: -0.02em; }
+  .resume-lede { color: var(--muted); font-size: 14px; margin: 0 0 22px; }
   .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
   .tab { font: inherit; background: var(--panel); border: 1px solid var(--line); color: var(--muted); padding: 6px 13px; border-radius: 999px; cursor: pointer; }
   .tab:hover { color: var(--fg); }
