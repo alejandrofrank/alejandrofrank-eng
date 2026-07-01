@@ -4,12 +4,12 @@ import pompeii from "./pompeii.json";
 import making_science from "./making_science.json";
 import accenture from "./accenture.json";
 import unipol from "./unipol.json";
+import novartis from "./novartis.json";
 import sanofi from "./sanofi.json";
 import airbus from "./airbus.json";
 import loewe from "./loewe.json";
-import novartis from "./novartis.json";
 import xing from "./xing.json";
 import adevinta from "./adevinta.json";
 import permira from "./permira.json";
 
-export const SCENES = [pompeii, making_science, accenture, unipol, sanofi, airbus, loewe, novartis, xing, adevinta, permira];
+export const SCENES = [pompeii, making_science, accenture, unipol, novartis, sanofi, airbus, loewe, xing, adevinta, permira];

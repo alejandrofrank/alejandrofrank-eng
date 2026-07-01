@@ -24,6 +24,12 @@
     "period": "Jun 2022 – May 2023"
   },
   {
+    "id": "novartis",
+    "title": "Novartis",
+    "role": "AI Engineer · via CortexLabs",
+    "period": "2023"
+  },
+  {
     "id": "sanofi",
     "title": "Sanofi",
     "role": "Data Engineer · via CortexLabs",
@@ -39,12 +45,6 @@
     "id": "loewe",
     "title": "Loewe",
     "role": "Data Engineer · via CortexLabs",
-    "period": "2024"
-  },
-  {
-    "id": "novartis",
-    "title": "Novartis",
-    "role": "AI Engineer · via CortexLabs",
     "period": "2024"
   },
   {
