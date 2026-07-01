@@ -19,14 +19,17 @@ export const PLAYER_STYLES = `
   .tab { font: inherit; background: var(--panel); border: 1px solid var(--line); color: var(--muted); padding: 6px 13px; border-radius: 999px; cursor: pointer; }
   .tab:hover { color: var(--fg); }
   .tab.on { color: var(--bg); background: var(--accent); border-color: var(--accent); }
-  .job-details { margin: 2px 0 14px; }
-  .job-details > summary { cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .job-details > summary::-webkit-details-marker { display: none; }
-  .job-details > summary::before { content: "▸"; color: var(--muted); display: inline-block; transition: transform .2s ease; }
-  .job-details[open] > summary::before { transform: rotate(90deg); }
+  .job-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 2px 0 10px; }
   .jd-role { font-size: 18px; font-weight: 600; color: var(--fg); }
   .jd-meta { color: var(--accent); font-size: 13px; }
-  .job-summary { color: var(--muted); margin: 10px 0 0 20px; max-width: 74ch; }
+  .job-details { margin: 0 0 14px; }
+  .jd-toggle { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; list-style: none; font-size: 13px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px; width: fit-content; }
+  .jd-toggle::-webkit-details-marker { display: none; }
+  .jd-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .job-details[open] .jd-toggle { border-color: var(--accent); color: var(--accent); }
+  .jd-caret { display: inline-block; transition: transform .2s ease; }
+  .job-details[open] .jd-caret { transform: rotate(90deg); }
+  .job-summary { color: var(--muted); margin: 12px 0 0; max-width: 74ch; }
   .stage { margin: 16px 0 6px; padding: 6px; }
   #scene { width: 100%; height: auto; display: block; }
   .node-box { fill: #14141a; stroke-width: 1.5; }

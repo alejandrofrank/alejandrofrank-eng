@@ -42,11 +42,12 @@ ${FAVICON}
 
       <div class="tabs" id="jobTabs"></div>
 
+      <div class="job-line">
+        <span class="jd-role" id="jobRole"></span>
+        <span class="jd-meta" id="jobMeta"></span>
+      </div>
       <details class="job-details">
-        <summary>
-          <span class="jd-role" id="jobRole"></span>
-          <span class="jd-meta" id="jobMeta"></span>
-        </summary>
+        <summary class="jd-toggle"><span class="jd-caret">▸</span> Explanation</summary>
         <p class="job-summary" id="jobSummary"></p>
       </details>
 
