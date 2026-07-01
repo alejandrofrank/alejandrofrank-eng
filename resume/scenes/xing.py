@@ -11,7 +11,7 @@ LEGACY = "#9a8f80"
 scene = Scene(
     id="xing",
     title="Xing",
-    role="Data Engineer · via CortexLabs",
+    role="Data Engineer",
     period="Jan 2025 – Mar 2025",
     summary=(
         "Migrated Xing's on-prem Hadoop / Hive pipelines to Snowflake — rebuilt "

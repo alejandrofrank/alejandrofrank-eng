@@ -1,7 +1,7 @@
 {
   "id": "permira",
   "title": "Permira",
-  "role": "Data / AI Engineer · via CortexLabs",
+  "role": "Data / AI Engineer",
   "period": "Oct 2025 – Jul 2026",
   "summary": "Built an LLM analytics agent on Snowflake that lets non-technical stakeholders self-serve financial metrics in plain English, querying real production tables. Collapsed a 6-role, multi-week request pipeline into one real-time query, grounded in the finance team's real source files for full auditability.",
   "nodes": [

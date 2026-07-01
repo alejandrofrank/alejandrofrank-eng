@@ -14,7 +14,7 @@ LEGACY = "#9a8f80"
 scene = Scene(
     id="adevinta",
     title="Adevinta",
-    role="Data Engineer · via CortexLabs",
+    role="Data Engineer",
     period="Mar 2025 – Oct 2025",
     summary=(
         "During Adevinta's split into independent companies, led technical "

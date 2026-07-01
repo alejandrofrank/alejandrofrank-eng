@@ -1,7 +1,7 @@
 {
   "id": "sanofi",
   "title": "Sanofi",
-  "role": "Data Engineer · via CortexLabs",
+  "role": "Data Engineer",
   "period": "Jan 2024 – Jan 2025",
   "summary": "Led Sanofi's migration from AWS to Snowflake — designing the new architecture and engineering an automated, bidirectional transfer layer so legacy systems on AWS kept running throughout. Zero operational downtime, reporting never interrupted.",
   "nodes": [

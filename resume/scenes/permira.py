@@ -12,7 +12,7 @@ from resume.scene import Scene, Node, Flow, Beat
 scene = Scene(
     id="permira",
     title="Permira",
-    role="Data / AI Engineer · via CortexLabs",
+    role="Data / AI Engineer",
     period="Oct 2025 – Jul 2026",
     summary=(
         "Built an LLM analytics agent on Snowflake that lets non-technical "

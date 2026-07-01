@@ -13,7 +13,7 @@ LEGACY = "#9a8f80"
 scene = Scene(
     id="sanofi",
     title="Sanofi",
-    role="Data Engineer · via CortexLabs",
+    role="Data Engineer",
     period="Jan 2024 – Jan 2025",
     summary=(
         "Led Sanofi's migration from AWS to Snowflake — designing the new "

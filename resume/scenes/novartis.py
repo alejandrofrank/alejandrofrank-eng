@@ -9,7 +9,7 @@ from resume.scene import Scene, Node, Flow, Beat
 scene = Scene(
     id="novartis",
     title="Novartis",
-    role="AI Engineer · via CortexLabs",
+    role="AI Engineer",
     period="2023",
     summary=(
         "Made Novartis's internal GPT tool actually useful: built an efficient "

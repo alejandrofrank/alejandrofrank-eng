@@ -1,7 +1,7 @@
 {
   "id": "adevinta",
   "title": "Adevinta",
-  "role": "Data Engineer · via CortexLabs",
+  "role": "Data Engineer",
   "period": "Mar 2025 – Oct 2025",
   "summary": "During Adevinta's split into independent companies, led technical delivery for the housing vertical (Fotocasa / Realia). Built an algorithm that migrated every Adobe Analytics report — bespoke logic and all — into GA4, with zero loss of data or business-critical metrics.",
   "nodes": [

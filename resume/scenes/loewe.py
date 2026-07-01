@@ -9,7 +9,7 @@ from resume.scene import Scene, Node, Flow, Beat
 scene = Scene(
     id="loewe",
     title="Loewe",
-    role="Data Engineer · via CortexLabs",
+    role="Data Engineer",
     period="2023",
     summary=(
         "Set up Loewe's data pipelines in Dataform and automated large-scale "
