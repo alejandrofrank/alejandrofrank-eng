@@ -2,5 +2,6 @@
 
 import pompeii from "./pompeii.json";
 import making_science from "./making_science.json";
+import accenture from "./accenture.json";
 
-export const SCENES = [pompeii, making_science];
+export const SCENES = [pompeii, making_science, accenture];

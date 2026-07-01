@@ -1,0 +1,168 @@
+{
+  "id": "accenture",
+  "title": "Accenture",
+  "role": "Data Engineer",
+  "period": "Jul 2021 – May 2022",
+  "summary": "Accenture had gone all-in as a Google Cloud partner and needed its on-prem stack moved to GCP. Migrated four applications — three Hadoop / Spark-Scala pipelines plus one with an ML layer — to Cloud Storage, PySpark, BigQuery and Cloud Composer. Terabytes of data, running natively on GCP.",
+  "nodes": [
+    {
+      "id": "hdfs",
+      "label": "Hadoop",
+      "kind": "source",
+      "x": 0.08,
+      "y": 0.16,
+      "sublabel": "HDFS storage",
+      "color": "#9a8f80"
+    },
+    {
+      "id": "spark",
+      "label": "Spark",
+      "kind": "source",
+      "x": 0.08,
+      "y": 0.38,
+      "sublabel": "Scala",
+      "color": "#9a8f80"
+    },
+    {
+      "id": "hive",
+      "label": "Hive",
+      "kind": "source",
+      "x": 0.08,
+      "y": 0.6,
+      "sublabel": "tables",
+      "color": "#9a8f80"
+    },
+    {
+      "id": "talend",
+      "label": "Talend",
+      "kind": "source",
+      "x": 0.08,
+      "y": 0.82,
+      "sublabel": "orchestration",
+      "color": "#9a8f80"
+    },
+    {
+      "id": "gcs",
+      "label": "Cloud Storage",
+      "kind": "core",
+      "x": 0.84,
+      "y": 0.16,
+      "sublabel": "GCS",
+      "color": ""
+    },
+    {
+      "id": "dataproc",
+      "label": "PySpark",
+      "kind": "core",
+      "x": 0.84,
+      "y": 0.38,
+      "sublabel": "on Dataproc",
+      "color": ""
+    },
+    {
+      "id": "bq",
+      "label": "BigQuery",
+      "kind": "core",
+      "x": 0.84,
+      "y": 0.6,
+      "sublabel": "warehouse",
+      "color": ""
+    },
+    {
+      "id": "composer",
+      "label": "Cloud Composer",
+      "kind": "core",
+      "x": 0.84,
+      "y": 0.82,
+      "sublabel": "Airflow",
+      "color": ""
+    }
+  ],
+  "flows": [
+    {
+      "id": "f_storage",
+      "src": "hdfs",
+      "dst": "gcs",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_spark",
+      "src": "spark",
+      "dst": "dataproc",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_hive",
+      "src": "hive",
+      "dst": "bq",
+      "label": "",
+      "glow": true,
+      "color": ""
+    },
+    {
+      "id": "f_orch",
+      "src": "talend",
+      "dst": "composer",
+      "label": "",
+      "glow": true,
+      "color": ""
+    }
+  ],
+  "beats": [
+    {
+      "title": "On-prem, four apps",
+      "caption": "Accenture had become a Google Cloud partner and needed its on-prem apps moved over. The stack: Hadoop clusters, Spark in Scala, Hive tables and Talend — four applications in all.",
+      "nodes": [
+        "hdfs",
+        "spark",
+        "hive",
+        "talend"
+      ],
+      "flows": []
+    },
+    {
+      "title": "Storage → Cloud Storage",
+      "caption": "First, the data itself: everything on HDFS lifted into Cloud Storage as the new landing layer.",
+      "nodes": [
+        "gcs"
+      ],
+      "flows": [
+        "f_storage"
+      ]
+    },
+    {
+      "title": "Spark Scala → PySpark",
+      "caption": "The heavy lifting: Spark jobs re-written from Scala to PySpark and run on Dataproc — refactored for maintainability along the way.",
+      "nodes": [
+        "dataproc"
+      ],
+      "flows": [
+        "f_spark"
+      ]
+    },
+    {
+      "title": "Hive → BigQuery",
+      "caption": "The Hive tables became a BigQuery warehouse — same data, no cluster to babysit.",
+      "nodes": [
+        "bq"
+      ],
+      "flows": [
+        "f_hive"
+      ]
+    },
+    {
+      "title": "Orchestrated on Cloud Composer",
+      "caption": "Finally, Talend's orchestration moved to Airflow on Cloud Composer. All four apps — three pipelines plus one with an ML layer — fully migrated and running natively on GCP.",
+      "nodes": [
+        "composer"
+      ],
+      "flows": [
+        "f_orch"
+      ]
+    }
+  ]
+}
