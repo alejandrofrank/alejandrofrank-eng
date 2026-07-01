@@ -17,7 +17,13 @@ export const styles = `
   }
   .wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
   .rain { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-  header.hero { padding: 96px 0 56px; container-type: inline-size; position: relative; overflow: hidden; }
+  .topnav { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 22px 0; position: relative; z-index: 2; }
+  .topnav-brand { color: var(--fg); text-decoration: none; font-weight: 600; letter-spacing: -0.01em; }
+  .topnav-brand:hover { color: var(--accent); }
+  .topnav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+  .topnav-links a { color: var(--muted); text-decoration: none; font-size: 14px; }
+  .topnav-links a:hover { color: var(--accent); }
+  header.hero { padding: 64px 0 56px; container-type: inline-size; position: relative; overflow: hidden; }
   .mobius { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
   .hero-content { position: relative; z-index: 1; }
   .tag { color: var(--accent); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }

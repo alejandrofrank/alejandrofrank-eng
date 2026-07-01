@@ -42,6 +42,12 @@ ${FAVICON}
 <body>
   ${RAIN_CANVAS}
   <div class="wrap">
+    <nav class="topnav">
+      <a class="topnav-brand" href="/">${SITE.name}</a>
+      <div class="topnav-links">
+        ${LINKS.map((l) => `<a href="${l.href}">${l.label}</a>`).join("")}
+      </div>
+    </nav>
     <header class="hero">
       ${MOBIUS_CANVAS}
       <div class="hero-content">
@@ -65,8 +71,7 @@ ${FAVICON}
     </section>
 
     <footer class="wrap">
-      ${LINKS.map((l) => `<a href="${l.href}">${l.label}</a>`).join(" · ")}
-      &nbsp;·&nbsp; v0.1 · deployed on Cloudflare Workers
+      ${SITE.name} · v0.1 · deployed on Cloudflare Workers
     </footer>
   </div>
   ${RAIN_SCRIPT}
