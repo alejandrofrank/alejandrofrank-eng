@@ -46,6 +46,16 @@ ${FAVICON}
       <a class="topnav-brand" href="/">${SITE.name}</a>
       <div class="topnav-links">
         ${LINKS.map((l) => {
+          if (l.href.startsWith("mailto:")) {
+            const email = l.href.slice("mailto:".length);
+            return `<details class="email-pop">
+              <summary>${l.label}</summary>
+              <div class="email-box">
+                <a href="${l.href}">${email}</a>
+                <button type="button" class="email-copy" data-email="${email}">copy</button>
+              </div>
+            </details>`;
+          }
           const ext = l.href.startsWith("http");
           const attrs = ext ? ' target="_blank" rel="noopener noreferrer"' : "";
           return `<a href="${l.href}"${attrs}>${l.label}</a>`;
@@ -80,6 +90,19 @@ ${FAVICON}
   </div>
   ${RAIN_SCRIPT}
   ${MOBIUS_SCRIPT}
+  <script>
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('.email-copy') : null;
+    if (!b) return;
+    var email = b.getAttribute('data-email');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(email).then(function () {
+        var prev = b.textContent; b.textContent = 'copied!';
+        setTimeout(function () { b.textContent = prev; }, 1200);
+      });
+    }
+  });
+  </script>
 </body>
 </html>`;
 }

@@ -23,6 +23,15 @@ export const styles = `
   .topnav-links { display: flex; gap: 20px; flex-wrap: wrap; }
   .topnav-links a { color: var(--muted); text-decoration: none; font-size: 14px; }
   .topnav-links a:hover { color: var(--accent); }
+  .email-pop { position: relative; }
+  .email-pop > summary { list-style: none; cursor: pointer; color: var(--muted); font-size: 14px; }
+  .email-pop > summary::-webkit-details-marker { display: none; }
+  .email-pop > summary:hover, .email-pop[open] > summary { color: var(--accent); }
+  .email-box { position: absolute; top: 150%; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; display: flex; align-items: center; gap: 10px; white-space: nowrap; z-index: 5; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+  .email-box a { color: var(--fg); text-decoration: none; font-size: 14px; }
+  .email-box a:hover { color: var(--accent); }
+  .email-copy { font: inherit; font-size: 12px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+  .email-copy:hover { color: var(--accent); border-color: var(--accent); }
   header.hero { padding: 64px 0 56px; container-type: inline-size; position: relative; overflow: hidden; }
   .mobius { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
   .hero-content { position: relative; z-index: 1; }
