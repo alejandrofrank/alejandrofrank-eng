@@ -25,11 +25,22 @@ const TIMELINE_STYLES = `
   .tlp-line::before { left: 0; } .tlp-line::after { right: 0; }
   .tlp-tick { position: absolute; width: 1px; background: var(--line); transform: translateX(-50%); }
   .tlp-year { position: absolute; transform: translateX(-50%); color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
-  .tlp-bar { position: absolute; height: 13px; background: rgba(110,231,183,.15); border: 1px solid rgba(110,231,183,.5); border-radius: 7px; cursor: pointer; padding: 0; overflow: visible; transition: background .2s, border-color .2s; }
-  .tlp-bar:hover { background: rgba(110,231,183,.34); border-color: var(--accent); }
+  .tlp-bar { position: absolute; height: 13px; border: 1px solid; border-radius: 7px; cursor: pointer; padding: 0; overflow: visible; transition: background .2s, border-color .2s; }
+  .tlp-bar.job { background: rgba(110,231,183,.15); border-color: rgba(110,231,183,.55); }
+  .tlp-bar.job:hover { background: rgba(110,231,183,.34); border-color: #6ee7b7; }
+  .tlp-bar.contract { background: rgba(199,146,234,.15); border-color: rgba(199,146,234,.55); }
+  .tlp-bar.contract:hover { background: rgba(199,146,234,.34); border-color: #c792ea; }
+  .tlp-bar.project { background: rgba(255,176,32,.15); border-color: rgba(255,176,32,.55); }
+  .tlp-bar.project:hover { background: rgba(255,176,32,.34); border-color: #ffb020; }
   .tlp-bar-name { position: absolute; left: 0; top: -19px; white-space: nowrap; color: var(--fg); font: inherit; font-size: 13px; }
-  .tlp-bar:hover .tlp-bar-name { color: var(--accent); }
   .tlp-bar-name small { color: var(--muted); font-size: 11px; margin-left: 6px; }
+  .tlp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .tlp-legend { display: flex; flex-direction: column; gap: 6px; flex: none; }
+  .tlp-legend .lg { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .tlp-legend .lg i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; flex: none; }
+  .tlp-legend .lg.job i { background: #6ee7b7; }
+  .tlp-legend .lg.contract i { background: #c792ea; }
+  .tlp-legend .lg.project i { background: #ffb020; }
   .tlp-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
   .tlp-foot span { color: var(--fg); font-size: 13px; }
   .tlp-foot a { color: var(--muted); text-decoration: none; font-size: 13px; }
@@ -67,6 +78,10 @@ const TIMELINE_SCRIPT = `<script>
     capText: document.getElementById('tlpCapText')
   };
   var controller = null;
+
+  // role classification -> bar colour (default: project)
+  var CAT = { pompeii:'job', making_science:'job', accenture:'job', unipol:'contract', sanofi:'contract', adevinta:'contract', permira:'contract', airbus:'contract' };
+  function catOf(s) { return CAT[s.id] || 'project'; }
 
   function frac(period) {
     var mon = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
@@ -153,7 +168,7 @@ const TIMELINE_SCRIPT = `<script>
       var barTop = baseY - 34 - lane * laneH;
 
       var bar = document.createElement('button');
-      bar.className = 'tlp-bar';
+      bar.className = 'tlp-bar ' + catOf(scenes[it.i]);
       bar.style.left = sx + 'px'; bar.style.width = barW + 'px'; bar.style.top = barTop + 'px'; bar.style.height = barH + 'px';
       var name = document.createElement('span');
       name.className = 'tlp-bar-name';
@@ -205,8 +220,17 @@ ${FAVICON}
   ${RAIN_CANVAS}
   <div class="wrap tlp-wrap">
     <nav class="tlp-nav"><a href="/">‹ dashboard</a></nav>
-    <h1 class="tlp-h1">My experience over the years</h1>
-    <p class="tlp-lede">Every role on one line. Click any company to watch how it was built.</p>
+    <div class="tlp-head">
+      <div>
+        <h1 class="tlp-h1">My experience over the years</h1>
+        <p class="tlp-lede">Every role on one line. Click any company to watch how it was built.</p>
+      </div>
+      <div class="tlp-legend">
+        <span class="lg job"><i></i> Regular job</span>
+        <span class="lg contract"><i></i> Contractor</span>
+        <span class="lg project"><i></i> Project</span>
+      </div>
+    </div>
     <div class="tlp" id="tlp"></div>
     <div class="tlp-foot">
       <span>click a company</span>
