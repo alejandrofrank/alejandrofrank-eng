@@ -30,7 +30,10 @@ const TIMELINE_STYLES = `
   .tlp-bar-name { position: absolute; left: 0; top: -19px; white-space: nowrap; color: var(--fg); font: inherit; font-size: 13px; }
   .tlp-bar:hover .tlp-bar-name { color: var(--accent); }
   .tlp-bar-name small { color: var(--muted); font-size: 11px; margin-left: 6px; }
-  .tlp-hint { color: var(--muted); font-size: 13px; text-align: center; margin-top: 6px; }
+  .tlp-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+  .tlp-foot span { color: var(--muted); font-size: 13px; }
+  .tlp-foot a { color: var(--muted); text-decoration: none; font-size: 13px; }
+  .tlp-foot a:hover { color: var(--accent); }
   /* modal */
   .tlp-modal { position: fixed; inset: 0; z-index: 50; display: none; }
   .tlp-modal.open { display: block; }
@@ -201,11 +204,14 @@ ${FAVICON}
 <body>
   ${RAIN_CANVAS}
   <div class="wrap tlp-wrap">
-    <nav class="tlp-nav"><a href="/">‹ dashboard</a><a href="/resume">list view →</a></nav>
+    <nav class="tlp-nav"><a href="/">‹ dashboard</a></nav>
     <h1 class="tlp-h1">The build, year by year</h1>
     <p class="tlp-lede">Every role on one line. Click any company to watch how it was built.</p>
     <div class="tlp" id="tlp"></div>
-    <p class="tlp-hint">click a company →</p>
+    <div class="tlp-foot">
+      <span>click a company</span>
+      <a href="/resume">switch to list view →</a>
+    </div>
   </div>
 
   <div class="tlp-modal" id="tlpModal" aria-hidden="true">
