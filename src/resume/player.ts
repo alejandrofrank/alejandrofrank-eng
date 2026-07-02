@@ -62,8 +62,12 @@ export const PLAYER_STYLES = `
   /* Career timeline: white marker slides 2019 -> 2021 with the beats; arrows move between roles. */
   .timeline { display: flex; align-items: center; gap: 14px; margin: 6px 0 26px; }
   .tl-year { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; min-width: 40px; text-align: center; }
-  .tl-track { position: relative; flex: 1; height: 2px; background: var(--line); border-radius: 2px; }
-  .tl-marker { position: absolute; top: 50%; left: 0; width: 2px; height: 16px; background: #fff; border-radius: 1px; transform: translate(-50%, -50%); transition: left .6s cubic-bezier(.2,.8,.2,1); box-shadow: 0 0 6px rgba(255,255,255,.6); }
+  .tl-track { position: relative; flex: 1; height: 1px; background: var(--line); margin: 0 4px; }
+  .tl-track::before, .tl-track::after { content: ""; position: absolute; top: -4px; height: 9px; width: 1px; background: var(--line); }
+  .tl-track::before { left: 0; }
+  .tl-track::after { right: 0; }
+  .tl-co { position: absolute; top: 50%; transform: translate(-50%, -50%); background: var(--bg); padding: 0 7px; font-size: 11px; letter-spacing: .02em; color: var(--muted); white-space: nowrap; }
+  .tl-co.on { color: var(--accent); font-weight: 600; }
   /* Dart arrows sit at the ends of the timeline. */
   .tl-arrow { background: none; border: none; padding: 2px; color: var(--muted); cursor: pointer; flex: none; display: flex; align-items: center; transition: color .2s ease, transform .2s ease; }
   .tl-arrow:hover:not(:disabled) { color: var(--accent); transform: scale(1.18); }
@@ -91,7 +95,7 @@ export const PLAYER_SCRIPT = `<script>
   var capText = document.getElementById('capText');
   var tlStart = document.getElementById('tlStart');
   var tlEnd = document.getElementById('tlEnd');
-  var tlMarker = document.getElementById('tlMarker');
+  var tlTrack = document.getElementById('tlTrack');
   var tlPrev = document.getElementById('tlPrev');
   var tlNext = document.getElementById('tlNext');
 
@@ -230,10 +234,6 @@ export const PLAYER_SCRIPT = `<script>
     for (var q = 0; q < dots.length; q++) dots[q].classList.toggle('on', q === i);
     capTitle.textContent = cur.title;
     capText.textContent = cur.caption;
-
-    // white marker slides across the job's span with the beats
-    var n = scene.beats.length;
-    tlMarker.style.left = (n > 1 ? (i / (n - 1)) * 100 : 100) + '%';
   }
 
   function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
@@ -262,6 +262,40 @@ export const PLAYER_SCRIPT = `<script>
     return m ? [m[0], m[m.length - 1]] : ['', ''];
   }
 
+  // parse a period to fractional [start, end] years, e.g. "Mar 2021" -> 2021.17
+  function frac(period) {
+    var mon = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+    var re = /([A-Za-z]{3})?[a-z]*\\s*(\\d{4})/g;
+    var m, pts = [];
+    while ((m = re.exec(period))) {
+      if (!m[2]) continue;
+      var mm = m[1] ? (mon[m[1].toLowerCase()] || 0) : 0;
+      pts.push(parseInt(m[2], 10) + mm / 12);
+    }
+    return pts.length ? [pts[0], pts[pts.length - 1]] : null;
+  }
+
+  // blueprint: label every company whose span overlaps the active job's window,
+  // positioned along the line; highlight the active one.
+  function buildTimeline() {
+    clear(tlTrack);
+    var w = frac(scene.period);
+    if (!w) return;
+    var lo = w[0], hi = w[1];
+    if (hi <= lo) { lo = w[0] - 0.5; hi = w[1] + 0.5; }
+    for (var i = 0; i < scenes.length; i++) {
+      var f = frac(scenes[i].period);
+      if (!f || f[1] < lo || f[0] > hi) continue;
+      var pos = ((f[0] + f[1]) / 2 - lo) / (hi - lo);
+      pos = Math.max(0.06, Math.min(0.94, pos));
+      var d = document.createElement('div');
+      d.className = 'tl-co' + (i === sceneIdx ? ' on' : '');
+      d.textContent = scenes[i].title;
+      d.style.left = (pos * 100) + '%';
+      tlTrack.appendChild(d);
+    }
+  }
+
   function selectScene(idx) {
     clearTimer();
     sceneIdx = idx;
@@ -278,6 +312,7 @@ export const PLAYER_SCRIPT = `<script>
     tlStart.textContent = yr[0]; tlEnd.textContent = yr[1];
     tlPrev.disabled = (idx === 0);
     tlNext.disabled = (idx === scenes.length - 1);
+    buildTimeline();
     // autoplay through the beats; reduced-motion jumps straight to the end
     if (reduce) showBeat(scene.beats.length - 1); else runFrom(0);
   }

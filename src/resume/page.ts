@@ -35,7 +35,7 @@ ${FAVICON}
       <div class="timeline">
         <button class="tl-arrow" id="tlPrev" aria-label="previous role"><svg class="tl-ico" viewBox="0 0 24 24" aria-hidden="true"><polygon points="3,12 19,3 13,12 19,21"/></svg></button>
         <span class="tl-year" id="tlStart"></span>
-        <div class="tl-track"><div class="tl-marker" id="tlMarker"></div></div>
+        <div class="tl-track" id="tlTrack"></div>
         <span class="tl-year" id="tlEnd"></span>
         <button class="tl-arrow" id="tlNext" aria-label="next role"><svg class="tl-ico" viewBox="0 0 24 24" aria-hidden="true"><polygon points="21,12 5,3 11,12 5,21"/></svg></button>
       </div>
