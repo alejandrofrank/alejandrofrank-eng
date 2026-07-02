@@ -18,17 +18,18 @@ const TIMELINE_STYLES = `
   .tlp-nav a:hover { color: var(--accent); }
   .tlp-h1 { font-size: clamp(24px, 4vw, 34px); margin: 0 0 4px; letter-spacing: -0.02em; }
   .tlp-lede { color: var(--muted); font-size: 14px; margin: 0 0 8px; }
-  .tlp { position: relative; width: 100%; height: 66vh; min-height: 460px; }
+  .tlp { position: relative; width: 100%; height: 76vh; min-height: 540px; }
+  .tlp-grid { position: absolute; width: 1px; background: var(--line); opacity: .3; transform: translateX(-50%); }
   .tlp-line { position: absolute; height: 1px; background: var(--line); }
   .tlp-line::before, .tlp-line::after { content: ""; position: absolute; top: -6px; height: 13px; width: 1px; background: var(--line); }
   .tlp-line::before { left: 0; } .tlp-line::after { right: 0; }
   .tlp-tick { position: absolute; width: 1px; background: var(--line); transform: translateX(-50%); }
   .tlp-year { position: absolute; transform: translateX(-50%); color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
-  .tlp-dot { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transform: translate(-50%, -50%); box-shadow: 0 0 8px rgba(110,231,183,.5); }
-  .tlp-conn { position: absolute; width: 1px; background: var(--line); transform: translateX(-50%); }
-  .tlp-co { position: absolute; transform: translate(-50%, -100%); background: var(--panel); border: 1px solid var(--line); color: var(--fg); font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px; cursor: pointer; white-space: nowrap; transition: border-color .2s, color .2s, transform .15s; }
-  .tlp-co:hover { border-color: var(--accent); color: var(--accent); transform: translate(-50%, -100%) scale(1.05); }
-  .tlp-co small { color: var(--muted); font-size: 11px; margin-left: 7px; }
+  .tlp-bar { position: absolute; height: 13px; background: rgba(110,231,183,.15); border: 1px solid rgba(110,231,183,.5); border-radius: 7px; cursor: pointer; padding: 0; overflow: visible; transition: background .2s, border-color .2s; }
+  .tlp-bar:hover { background: rgba(110,231,183,.34); border-color: var(--accent); }
+  .tlp-bar-name { position: absolute; left: 0; top: -19px; white-space: nowrap; color: var(--fg); font: inherit; font-size: 13px; }
+  .tlp-bar:hover .tlp-bar-name { color: var(--accent); }
+  .tlp-bar-name small { color: var(--muted); font-size: 11px; margin-left: 6px; }
   .tlp-hint { color: var(--muted); font-size: 13px; text-align: center; margin-top: 6px; }
   /* modal */
   .tlp-modal { position: fixed; inset: 0; z-index: 50; display: none; }
@@ -93,58 +94,70 @@ const TIMELINE_SCRIPT = `<script>
 
   function build() {
     while (tlp.firstChild) tlp.removeChild(tlp.firstChild);
-    var W = tlp.clientWidth || 900, H = tlp.clientHeight || 460;
+    var W = tlp.clientWidth || 900, H = tlp.clientHeight || 540;
     var padX = 48;
     var innerW = Math.max(1, W - padX * 2);
-    var lineY = H - 74;
+    var baseY = H - 44;
     function xf(y) { return padX + (y - minY) / (maxY - minY) * innerW; }
 
+    // faint vertical gridline per year
+    for (var gy = minY; gy <= maxY; gy++) {
+      var grid = document.createElement('div');
+      grid.className = 'tlp-grid';
+      grid.style.left = xf(gy) + 'px'; grid.style.top = '6px'; grid.style.height = (baseY - 6) + 'px';
+      tlp.appendChild(grid);
+    }
+
+    // baseline + year ticks/labels
     var line = document.createElement('div');
     line.className = 'tlp-line';
-    line.style.left = padX + 'px'; line.style.right = padX + 'px'; line.style.top = lineY + 'px';
+    line.style.left = padX + 'px'; line.style.right = padX + 'px'; line.style.top = baseY + 'px';
     tlp.appendChild(line);
-
     for (var y = minY; y <= maxY; y++) {
       var tx = xf(y);
       var tick = document.createElement('div');
       tick.className = 'tlp-tick';
-      tick.style.left = tx + 'px'; tick.style.top = (lineY - 5) + 'px'; tick.style.height = '11px';
+      tick.style.left = tx + 'px'; tick.style.top = (baseY - 5) + 'px'; tick.style.height = '11px';
       tlp.appendChild(tick);
       var yl = document.createElement('div');
       yl.className = 'tlp-year';
-      yl.style.left = tx + 'px'; yl.style.top = (lineY + 13) + 'px';
+      yl.style.left = tx + 'px'; yl.style.top = (baseY + 12) + 'px';
       yl.textContent = y;
       tlp.appendChild(yl);
     }
 
-    var rows = [], rowH = 36, gap = 10, baseGap = 24;
-    for (var k = 0; k < items.length; k++) {
-      var it = items[k];
-      var cx = xf(it.mid);
-      var w = it.title.length * 8 + 34;
-      var L = cx - w / 2, R = cx + w / 2;
-      var row = -1;
-      for (var r = 0; r < rows.length; r++) { if (rows[r] + gap <= L) { row = r; break; } }
-      if (row === -1) { row = rows.length; rows.push(0); }
-      rows[row] = R;
-      var labelY = lineY - baseGap - row * rowH;
+    // roles as range bars, packed into lanes (Gantt-style)
+    var roles = [];
+    for (var ri = 0; ri < scenes.length; ri++) {
+      var f = frac(scenes[ri].period); if (!f) continue;
+      var s = f[0], e = f[1];
+      if (e <= s) { s = Math.floor(s); e = s + 1; } // year-only -> full-year block
+      roles.push({ i: ri, title: scenes[ri].title, s: s, e: e });
+    }
+    roles.sort(function (a, b) { return a.s - b.s; });
 
-      var conn = document.createElement('div');
-      conn.className = 'tlp-conn';
-      conn.style.left = cx + 'px'; conn.style.top = labelY + 'px'; conn.style.height = (lineY - labelY) + 'px';
-      tlp.appendChild(conn);
+    var lanes = [], laneH = 42, barH = 13, gap = 10;
+    for (var k = 0; k < roles.length; k++) {
+      var it = roles[k];
+      var sx = xf(it.s), ex = xf(it.e);
+      var barW = Math.max(12, ex - sx);
+      var nameW = it.title.length * 8 + 72;
+      var occR = Math.max(sx + barW, sx + nameW);
+      var lane = -1;
+      for (var r = 0; r < lanes.length; r++) { if (lanes[r] + gap <= sx) { lane = r; break; } }
+      if (lane === -1) { lane = lanes.length; lanes.push(0); }
+      lanes[lane] = occR;
+      var barTop = baseY - 34 - lane * laneH;
 
-      var dot = document.createElement('div');
-      dot.className = 'tlp-dot';
-      dot.style.left = cx + 'px'; dot.style.top = lineY + 'px';
-      tlp.appendChild(dot);
-
-      var co = document.createElement('button');
-      co.className = 'tlp-co';
-      co.style.left = cx + 'px'; co.style.top = labelY + 'px';
-      co.innerHTML = it.title + ' <small>' + yrLabel(scenes[it.i].period) + '</small>';
-      (function (idx) { co.addEventListener('click', function () { open(idx); }); })(it.i);
-      tlp.appendChild(co);
+      var bar = document.createElement('button');
+      bar.className = 'tlp-bar';
+      bar.style.left = sx + 'px'; bar.style.width = barW + 'px'; bar.style.top = barTop + 'px'; bar.style.height = barH + 'px';
+      var name = document.createElement('span');
+      name.className = 'tlp-bar-name';
+      name.innerHTML = it.title + ' <small>' + yrLabel(scenes[it.i].period) + '</small>';
+      bar.appendChild(name);
+      (function (idx) { bar.addEventListener('click', function () { open(idx); }); })(it.i);
+      tlp.appendChild(bar);
     }
   }
 
