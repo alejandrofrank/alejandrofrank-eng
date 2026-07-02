@@ -8,6 +8,7 @@ import { FAVICON } from "../favicon";
 import { RAIN_CANVAS, RAIN_SCRIPT } from "../anim";
 import { SITE } from "../content";
 import { SCENES } from "./data/scenes.generated";
+import { SCENE_STYLES, SCENE_ENGINE_SCRIPT } from "../scene-engine";
 import { PLAYER_STYLES, PLAYER_SCRIPT } from "./player";
 
 export function renderResumePage(): string {
@@ -22,13 +23,13 @@ export function renderResumePage(): string {
 ${FAVICON}
 <title>${SITE.name} · experience</title>
 <meta name="description" content="Each role as a keynote of what I actually built." />
-<style>${styles}${PLAYER_STYLES}</style>
+<style>${styles}${SCENE_STYLES}${PLAYER_STYLES}</style>
 </head>
 <body>
   ${RAIN_CANVAS}
   <div class="wrap resumewrap">
     <div class="resume">
-      <nav class="resume-nav"><a href="/">‹ dashboard</a></nav>
+      <nav class="resume-nav"><a href="/">‹ dashboard</a> &nbsp;·&nbsp; <a href="/timeline">timeline view →</a></nav>
       <h1 class="resume-h1">Experience</h1>
       <p class="resume-lede">Each role, as a keynote of the systems I actually built.</p>
 
@@ -52,7 +53,7 @@ ${FAVICON}
       </details>
 
       <div class="stage">
-        <svg id="scene" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Systems diagram"></svg>
+        <svg id="scene" class="scene-svg" viewBox="0 0 1180 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Systems diagram"></svg>
       </div>
 
       <div class="player-controls">
@@ -67,6 +68,7 @@ ${FAVICON}
   </div>
   <script>window.__SCENES__ = ${data};</script>
   ${RAIN_SCRIPT}
+  ${SCENE_ENGINE_SCRIPT}
   ${PLAYER_SCRIPT}
 </body>
 </html>`;
