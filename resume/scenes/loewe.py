@@ -10,7 +10,7 @@ scene = Scene(
     id="loewe",
     title="Loewe",
     role="Data Engineer",
-    period="2023",
+    period="Jun 2023 – Nov 2023",
     summary=(
         "Set up Loewe's data pipelines in Dataform and automated large-scale "
         "data transfers in Python — a clean, repeatable path from sources into "

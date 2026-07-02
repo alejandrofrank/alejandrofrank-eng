@@ -10,7 +10,7 @@ scene = Scene(
     id="novartis",
     title="Novartis",
     role="AI Engineer",
-    period="2023",
+    period="Jun 2023 – Oct 2023",
     summary=(
         "Made Novartis's internal GPT tool actually useful: built an efficient "
         "embedding pipeline and vector database so it could retrieve and answer "
