@@ -31,7 +31,7 @@ const TIMELINE_STYLES = `
   .tlp-bar:hover .tlp-bar-name { color: var(--accent); }
   .tlp-bar-name small { color: var(--muted); font-size: 11px; margin-left: 6px; }
   .tlp-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
-  .tlp-foot span { color: var(--muted); font-size: 13px; }
+  .tlp-foot span { color: var(--fg); font-size: 13px; }
   .tlp-foot a { color: var(--muted); text-decoration: none; font-size: 13px; }
   .tlp-foot a:hover { color: var(--accent); }
   /* modal */
@@ -205,7 +205,7 @@ ${FAVICON}
   ${RAIN_CANVAS}
   <div class="wrap tlp-wrap">
     <nav class="tlp-nav"><a href="/">‹ dashboard</a></nav>
-    <h1 class="tlp-h1">The build, year by year</h1>
+    <h1 class="tlp-h1">My experience over the years</h1>
     <p class="tlp-lede">Every role on one line. Click any company to watch how it was built.</p>
     <div class="tlp" id="tlp"></div>
     <div class="tlp-foot">
