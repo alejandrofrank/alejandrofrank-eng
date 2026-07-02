@@ -11,7 +11,7 @@ const ICON = "▸";
 
 function item(e: ShipEntry): string {
   const title = e.href
-    ? `<a class="ship-title" href="${esc(e.href)}">${esc(e.title)}</a>`
+    ? `<a class="ship-title" href="${esc(e.href)}" target="_blank" rel="noopener noreferrer">${esc(e.title)}</a>`
     : `<span class="ship-title">${esc(e.title)}</span>`;
   return `<li class="ship-item">
     <div class="ship-row">

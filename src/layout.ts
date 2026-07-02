@@ -45,7 +45,11 @@ ${FAVICON}
     <nav class="topnav">
       <a class="topnav-brand" href="/">${SITE.name}</a>
       <div class="topnav-links">
-        ${LINKS.map((l) => `<a href="${l.href}">${l.label}</a>`).join("")}
+        ${LINKS.map((l) => {
+          const ext = l.href.startsWith("http");
+          const attrs = ext ? ' target="_blank" rel="noopener noreferrer"' : "";
+          return `<a href="${l.href}"${attrs}>${l.label}</a>`;
+        }).join("")}
       </div>
     </nav>
     <header class="hero">

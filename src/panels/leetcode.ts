@@ -78,7 +78,7 @@ export const leetcode: Panel = {
         ? `<div class="lc-streak">current streak · ${s.streak}d</div>`
         : `<div class="lc-streak">no active streak yet</div>`;
 
-    const badge = `<a class="badge" href="https://leetcode.com/u/${esc(user)}/">@${esc(user)}</a>`;
+    const badge = `<a class="badge" href="https://leetcode.com/u/${esc(user)}/" target="_blank" rel="noopener noreferrer">@${esc(user)}</a>`;
 
     return `<div class="panel" id="leetcode">
       ${panelHead(ICON, "LeetCode", badge)}

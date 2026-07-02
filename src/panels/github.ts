@@ -184,7 +184,7 @@ export const github: Panel = {
       ? `<div class="gh-latest">↳ last push · ${timeAgo(latest.when)}</div>`
       : "";
 
-    const badge = `<a class="badge" href="${esc(profile.html_url)}">@${esc(profile.login)}</a>`;
+    const badge = `<a class="badge" href="${esc(profile.html_url)}" target="_blank" rel="noopener noreferrer">@${esc(profile.login)}</a>`;
 
     return `<div class="panel span2" id="github">
       ${panelHead(ICON, "GitHub activity", badge)}
