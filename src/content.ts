@@ -65,3 +65,61 @@ export const LINKS: { label: string; href: string }[] = [
   { label: "LinkedIn", href: "https://www.linkedin.com/in/alejandrofrank" },
   { label: "Email", href: "mailto:alejandrofranks@gmail.com" },
 ];
+
+// Service status board — deployed things I'm responsible for keeping up.
+// Entries WITH a url get pinged (edge-cached ~60s). The entry without a url is
+// this site itself: if you're reading the page, it's up by definition.
+export interface ServiceEntry {
+  name: string;
+  /** Health/root URL to ping (GET). Omit for this site itself. */
+  url?: string;
+  /** Public link for the row label. */
+  href?: string;
+}
+
+export const SERVICES: ServiceEntry[] = [
+  { name: "this dashboard", href: "https://me.alejandrofranks.workers.dev" },
+  // add services as they ship, e.g.:
+  // { name: "DataMarket API", url: "https://api.example.com/health", href: "https://example.com" },
+];
+
+// Site changelog (/log) — the build-in-public journal of the site itself.
+// Newest first. Every entry = a shipped change = a postable update.
+export interface LogEntry {
+  date: string; // e.g. "Jul 5, 2026"
+  title: string;
+  blurb: string;
+}
+
+export const CHANGELOG: LogEntry[] = [
+  {
+    date: "Jul 5, 2026",
+    title: "Mobile pass + status board + this changelog",
+    blurb:
+      "Panels stack on phones, the timeline scrolls sideways with tilted year labels, diagrams pan instead of shrinking. Plus: service status panel, /log, og:image, and edge-caching for the GraphQL calls.",
+  },
+  {
+    date: "Jul 2, 2026",
+    title: "/timeline — the career on one line",
+    blurb:
+      "Gantt-style blueprint of every role since 2019, colour-coded by type. Click a company and its keynote plays in a modal.",
+  },
+  {
+    date: "Jul 1, 2026",
+    title: "/resume — roles as animated keynotes",
+    blurb:
+      "A Python scene DSL compiles each job into JSON; an SVG engine plays it beat by beat: sources, cores, sinks, glowing flows.",
+  },
+  {
+    date: "Jun 29, 2026",
+    title: "Live GitHub + LeetCode panels",
+    blurb:
+      "Contribution heatmap, streak, a daily 'shipped today' nudge, and solved-problem counts — all fetched live at the edge.",
+  },
+  {
+    date: "Jun 29, 2026",
+    title: "v0.1 — the skeleton ships",
+    blurb:
+      "Hono on Cloudflare Workers. Hero with ASCII Möbius + rain, outcomes header, dashboard grid. The site is the first build-in-public project.",
+  },
+];

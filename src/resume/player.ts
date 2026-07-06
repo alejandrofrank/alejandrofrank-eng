@@ -45,6 +45,16 @@ export const PLAYER_STYLES = `
   .tl-arrow:hover:not(:disabled) { color: var(--accent); transform: scale(1.18); }
   .tl-arrow:disabled { opacity: .22; cursor: default; }
   .tl-ico { width: 18px; height: 18px; fill: currentColor; display: block; }
+  @media (max-width: 640px) {
+    .resume-nav { margin-bottom: 18px; }
+    .timeline { gap: 8px; margin-bottom: 20px; }
+    .tl-co:not(.on) { display: none; } /* only the active company label — the rest overlap */
+    .caption { padding-bottom: 48px; }
+  }
+  @media (pointer: coarse) {
+    .tl-arrow { padding: 8px; }
+    .tab { padding: 8px 14px; }
+  }
 `;
 
 export const PLAYER_SCRIPT = `<script>

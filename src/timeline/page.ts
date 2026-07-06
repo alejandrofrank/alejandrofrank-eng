@@ -18,6 +18,7 @@ const TIMELINE_STYLES = `
   .tlp-nav a:hover { color: var(--accent); }
   .tlp-h1 { font-size: clamp(24px, 4vw, 34px); margin: 0 0 4px; letter-spacing: -0.02em; }
   .tlp-lede { color: var(--muted); font-size: 14px; margin: 0 0 8px; }
+  .tlp-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .tlp { position: relative; width: 100%; height: 76vh; min-height: 540px; }
   .tlp-grid { position: absolute; width: 1px; background: var(--line); opacity: .3; transform: translateX(-50%); }
   .tlp-line { position: absolute; height: 1px; background: var(--line); }
@@ -26,6 +27,7 @@ const TIMELINE_STYLES = `
   .tlp-tick { position: absolute; width: 1px; background: var(--line); transform: translateX(-50%); }
   .tlp-year { position: absolute; transform: translateX(-50%); color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
   .tlp-bar { position: absolute; height: 13px; border: 1px solid; border-radius: 7px; cursor: pointer; padding: 0; overflow: visible; transition: background .2s, border-color .2s; }
+  .tlp-bar::after { content: ""; position: absolute; inset: -10px -6px; } /* bigger touch target */
   .tlp-bar.job { background: rgba(110,231,183,.15); border-color: rgba(110,231,183,.55); }
   .tlp-bar.job:hover { background: rgba(110,231,183,.34); border-color: #6ee7b7; }
   .tlp-bar.contract { background: rgba(199,146,234,.15); border-color: rgba(199,146,234,.55); }
@@ -45,11 +47,25 @@ const TIMELINE_STYLES = `
   .tlp-foot span { color: var(--fg); font-size: 13px; }
   .tlp-foot a { color: var(--muted); text-decoration: none; font-size: 13px; }
   .tlp-foot a:hover { color: var(--accent); }
+  .tlp-hint-mobile { display: none; }
+  @media (max-width: 700px) {
+    .tlp { min-width: 780px; height: 62vh; min-height: 430px; }
+    /* tilt year labels so they never crowd each other on small screens */
+    .tlp-year { transform: rotate(35deg); transform-origin: 0 0; font-size: 11px; }
+    .tlp-hint-desktop { display: none; }
+    .tlp-hint-mobile { display: inline; }
+    .tlp-head { flex-direction: column; gap: 8px; }
+    .tlp-legend { flex-direction: row; flex-wrap: wrap; gap: 14px; }
+  }
   /* modal */
   .tlp-modal { position: fixed; inset: 0; z-index: 50; display: none; }
   .tlp-modal.open { display: block; }
   .tlp-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.72); backdrop-filter: blur(2px); }
-  .tlp-dialog { position: relative; max-width: 1000px; margin: 4vh auto; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 22px 26px 26px; box-shadow: 0 24px 70px rgba(0,0,0,.6); max-height: 92vh; overflow: auto; }
+  .tlp-dialog { position: relative; width: min(1000px, calc(100% - 20px)); margin: 4vh auto; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 22px 26px 26px; box-shadow: 0 24px 70px rgba(0,0,0,.6); max-height: 92vh; overflow: auto; }
+  @media (max-width: 700px) {
+    .tlp-dialog { margin: 2.5vh auto; padding: 18px 14px; max-height: 95vh; }
+    .tlp-role { padding-right: 30px; } /* keep clear of the close button */
+  }
   .tlp-close { position: absolute; top: 10px; right: 14px; background: none; border: none; color: var(--muted); font-size: 26px; line-height: 1; cursor: pointer; }
   .tlp-close:hover { color: var(--accent); }
   .tlp-role { font-size: 18px; font-weight: 600; }
@@ -168,6 +184,8 @@ const TIMELINE_SCRIPT = `<script>
       var barTop = baseY - 34 - lane * laneH;
 
       var bar = document.createElement('button');
+      bar.type = 'button';
+      bar.setAttribute('aria-label', it.title + ', ' + yrLabel(scenes[it.i].period));
       bar.className = 'tlp-bar ' + catOf(scenes[it.i]);
       bar.style.left = sx + 'px'; bar.style.width = barW + 'px'; bar.style.top = barTop + 'px'; bar.style.height = barH + 'px';
       var name = document.createElement('span');
@@ -179,19 +197,24 @@ const TIMELINE_SCRIPT = `<script>
     }
   }
 
+  var lastFocus = null;
   function open(idx) {
     var s = scenes[idx];
     roleEl.textContent = s.role;
     metaEl.textContent = s.title + ' \\u00B7 ' + s.period;
+    lastFocus = document.activeElement;
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
+    closeBtn.focus();
     if (controller) controller.stop();
     controller = window.SceneEngine.mount(s, els);
   }
   function close() {
+    if (!modal.classList.contains('open')) return;
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
     if (controller) { controller.stop(); controller = null; }
+    if (lastFocus && lastFocus.focus) { lastFocus.focus(); lastFocus = null; }
   }
   closeBtn.addEventListener('click', close);
   backdrop.addEventListener('click', close);
@@ -210,7 +233,8 @@ export function renderTimelinePage(): string {
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0a0b" />
 ${FAVICON}
 <title>${SITE.name} · timeline</title>
 <meta name="description" content="A career timeline you can walk through, role by role." />
@@ -231,9 +255,12 @@ ${FAVICON}
         <span class="lg project"><i></i> Project</span>
       </div>
     </div>
-    <div class="tlp" id="tlp"></div>
+    <div class="tlp-scroll">
+      <div class="tlp" id="tlp"></div>
+    </div>
     <div class="tlp-foot">
-      <span>click a company</span>
+      <span class="tlp-hint-desktop">click a company</span>
+      <span class="tlp-hint-mobile">swipe ↔ · tap a company</span>
       <a href="/resume">switch to list view →</a>
     </div>
   </div>
@@ -244,7 +271,9 @@ ${FAVICON}
       <button class="tlp-close" id="tlpClose" aria-label="close">×</button>
       <div class="tlp-role" id="tlpRole"></div>
       <div class="tlp-meta" id="tlpMeta"></div>
-      <svg id="tlpScene" class="scene-svg" viewBox="0 0 1180 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Systems diagram"></svg>
+      <div class="scene-scroll">
+        <svg id="tlpScene" class="scene-svg" viewBox="0 0 1180 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Systems diagram"></svg>
+      </div>
       <div class="beat-dots" id="tlpDots"></div>
       <div class="tlp-cap">
         <div class="tlp-cap-title" id="tlpCapTitle"></div>

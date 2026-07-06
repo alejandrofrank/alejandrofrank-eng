@@ -19,7 +19,8 @@ export function renderResumePage(): string {
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0a0b" />
 ${FAVICON}
 <title>${SITE.name} · experience</title>
 <meta name="description" content="Each role as a keynote of what I actually built." />
@@ -52,7 +53,7 @@ ${FAVICON}
         <p class="job-summary" id="jobSummary"></p>
       </details>
 
-      <div class="stage">
+      <div class="stage scene-scroll">
         <svg id="scene" class="scene-svg" viewBox="0 0 1180 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Systems diagram"></svg>
       </div>
 

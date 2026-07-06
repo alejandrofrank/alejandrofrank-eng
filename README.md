@@ -11,9 +11,14 @@ Built with [Hono](https://hono.dev) on **Cloudflare Workers**.
 ```
 src/
   index.ts      routes only (the Hono app)
-  content.ts    editable content — copy, numbers, panels, links (edit this most)
+  content.ts    editable content — copy, numbers, services, changelog, links (edit this most)
   styles.ts     all CSS
-  layout.ts     HTML page template
+  layout.ts     HTML page template (home)
+  log.ts        /log — the site's own build-in-public changelog
+  panels/       dashboard panel modules (github, leetcode, shipping, status, …)
+  resume/       /resume — roles as animated SVG keynotes
+  timeline/     /timeline — the career Gantt view
+public/         static assets (og.png social card)
 wrangler.jsonc  Cloudflare Worker config (URL slug = "name" field)
 _personal/      job-application materials — gitignored, never pushed
 ```

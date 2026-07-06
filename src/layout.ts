@@ -12,31 +12,41 @@ import { FAVICON } from "./favicon";
 import { esc } from "./panels/helpers";
 import { PANELS, type Env } from "./panels";
 
-export async function renderPage(env: Env): Promise<string> {
-  const outcomes = await buildOutcomes(env);
-
-  // Render panels concurrently; one failure can't take down the page.
-  const cards = await Promise.all(
-    PANELS.map(async (p) => {
-      try {
-        return await p.render(env);
-      } catch {
-        return `<div class="panel" id="${p.key}">
-          <div class="panel-head"><h3>${p.title}</h3></div>
-          <div class="note">temporarily unavailable</div>
-        </div>`;
-      }
-    })
-  );
+export async function renderPage(env: Env, origin: string): Promise<string> {
+  // Outcomes + all panels fetch concurrently; one failure can't take down the page.
+  const [outcomes, cards] = await Promise.all([
+    buildOutcomes(env),
+    Promise.all(
+      PANELS.map(async (p) => {
+        try {
+          return await p.render(env);
+        } catch {
+          return `<div class="panel" id="${p.key}">
+            <div class="panel-head"><h3>${p.title}</h3></div>
+            <div class="note">temporarily unavailable</div>
+          </div>`;
+        }
+      })
+    ),
+  ]);
 
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0a0b" />
 ${FAVICON}
 <title>${SITE.name} · builder dashboard</title>
 <meta name="description" content="${SITE.subtitle}" />
+<link rel="canonical" href="${origin}/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="${SITE.name} · builder dashboard" />
+<meta property="og:description" content="${SITE.subtitle}" />
+<meta property="og:url" content="${origin}/" />
+<meta property="og:image" content="${origin}/og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="${origin}/og.png" />
 <style>${styles}</style>
 </head>
 <body>
@@ -85,7 +95,7 @@ ${FAVICON}
     </section>
 
     <footer class="wrap">
-      ${SITE.name} · v0.1 · deployed on Cloudflare Workers
+      ${SITE.name} · v0.1 · <a href="/log">build log</a> · deployed on Cloudflare Workers
     </footer>
   </div>
   ${RAIN_SCRIPT}

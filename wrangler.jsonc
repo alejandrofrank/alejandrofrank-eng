@@ -5,6 +5,8 @@
   "name": "me",
   "main": "src/index.ts",
   "compatibility_date": "2026-06-29",
+  // Static files (og.png). Requests matching a file here skip the Worker.
+  "assets": { "directory": "public" },
   "vars": {
     "GITHUB_USER": "alejandrofrank",
     "LEETCODE_USER": "alexfrank"

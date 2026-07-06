@@ -103,10 +103,22 @@ export const MOBIUS_SCRIPT = `<script>
     }
 
     A += SPEED_A; B += SPEED_B;
-    if (!reduce) requestAnimationFrame(frame);
   }
 
-  requestAnimationFrame(frame);
+  // Render loop pauses while the hero is scrolled out of view (saves battery).
+  var visible = true, raf = 0;
+  function loop() {
+    raf = 0;
+    frame();
+    if (!reduce && visible) raf = requestAnimationFrame(loop);
+  }
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      visible = entries[0].isIntersecting;
+      if (visible && !raf && !reduce) raf = requestAnimationFrame(loop);
+    }).observe(canvas);
+  }
+  raf = requestAnimationFrame(loop);
 })();
 </script>`;
 
@@ -125,7 +137,13 @@ export const RAIN_SCRIPT = `<script>
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var drops = [];
 
-  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  function resize() {
+    var w = window.innerWidth, h = window.innerHeight;
+    // Mobile URL-bar show/hide fires resize on scroll; ignore small height-only
+    // changes so the canvas isn't cleared and reallocated mid-animation.
+    if (canvas.width === w && Math.abs(canvas.height - h) < 140) return;
+    canvas.width = w; canvas.height = h;
+  }
   resize();
   window.addEventListener('resize', resize);
 

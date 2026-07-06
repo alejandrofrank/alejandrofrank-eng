@@ -29,6 +29,15 @@ export const SCENE_STYLES = `
   .beat-dots { display: flex; gap: 8px; }
   .beat-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--line); border: none; cursor: pointer; padding: 0; }
   .beat-dot.on { background: var(--accent); }
+  /* On phones the diagram scrolls sideways instead of shrinking to unreadable. */
+  .scene-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  @media (max-width: 700px) {
+    .scene-scroll .scene-svg { min-width: 640px; }
+  }
+  @media (pointer: coarse) {
+    .beat-dots { gap: 12px; }
+    .beat-dot { width: 16px; height: 16px; }
+  }
 `;
 
 export const SCENE_ENGINE_SCRIPT = `<script>
@@ -166,7 +175,9 @@ window.SceneEngine = (function () {
       clear(dotsEl);
       for (var di = 0; di < scene.beats.length; di++) {
         var dot = document.createElement('button');
+        dot.type = 'button';
         dot.className = 'beat-dot'; dot.title = scene.beats[di].title;
+        dot.setAttribute('aria-label', 'beat ' + (di + 1) + ': ' + scene.beats[di].title);
         (function (idx) { dot.addEventListener('click', function () { runFrom(idx); }); })(di);
         dotsEl.appendChild(dot);
       }

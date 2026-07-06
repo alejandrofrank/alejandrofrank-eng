@@ -45,7 +45,7 @@ async function fetchProfile(user: string, env: Env): Promise<Profile | null> {
   return (await res.json()) as Profile;
 }
 
-// Most-recently-pushed repo (reliable, unlike anonymous event commit counts).
+// Most-recently-pushed repo (owned + public only — used as a fallback).
 async function fetchLatestRepo(user: string, env: Env): Promise<LatestRepo | null> {
   const res = await cachedFetch(
     `https://api.github.com/users/${user}/repos?sort=pushed&direction=desc&per_page=1`,
@@ -57,6 +57,25 @@ async function fetchLatestRepo(user: string, env: Env): Promise<LatestRepo | nul
   const r = repos?.[0];
   if (!r) return null;
   return { repo: r.full_name as string, when: r.pushed_at as string };
+}
+
+// The user's most recent push across ALL repos — own, org, and (with the
+// user's own token) private. The events feed tracks pushes the user made,
+// unlike /users/:u/repos which only sees repos they own publicly. Falls back
+// to the latest-pushed owned repo if the feed is empty or unreachable.
+async function fetchLatestPushISO(user: string, env: Env): Promise<string | null> {
+  const res = await cachedFetch(
+    `https://api.github.com/users/${user}/events?per_page=100`,
+    { headers: ghHeaders(env.GITHUB_TOKEN) },
+    300
+  );
+  if (res.ok) {
+    const events = (await res.json()) as any[];
+    const push = events?.find((e) => e?.type === "PushEvent");
+    if (push?.created_at) return push.created_at as string;
+  }
+  const repo = await fetchLatestRepo(user, env);
+  return repo?.when ?? null;
 }
 
 async function fetchCalendar(user: string, env: Env): Promise<Calendar | null> {
@@ -105,8 +124,8 @@ async function fetchCalendar(user: string, env: Env): Promise<Calendar | null> {
 /** Shared with the topline header: "last shipped" signal. Edge-cached. */
 export async function latestPushAgo(env: Env): Promise<string | null> {
   const user = env.GITHUB_USER || DEFAULT_USER;
-  const r = await fetchLatestRepo(user, env);
-  return r ? timeAgo(r.when) : null;
+  const when = await fetchLatestPushISO(user, env);
+  return when ? timeAgo(when) : null;
 }
 
 // --- Rendering ---------------------------------------------------------------
@@ -147,9 +166,9 @@ export const github: Panel = {
   async render(env: Env): Promise<string> {
     const user = env.GITHUB_USER || DEFAULT_USER;
 
-    const [profile, latest, cal] = await Promise.all([
+    const [profile, latestPush, cal] = await Promise.all([
       fetchProfile(user, env),
-      fetchLatestRepo(user, env),
+      fetchLatestPushISO(user, env),
       fetchCalendar(user, env),
     ]);
 
@@ -180,8 +199,8 @@ export const github: Panel = {
 
     // Intentionally no repo name/link here: the last-pushed repo can be a
     // private/client repo, so we surface recency only, never the name.
-    const latestLine = latest
-      ? `<div class="gh-latest">↳ last push · ${timeAgo(latest.when)}</div>`
+    const latestLine = latestPush
+      ? `<div class="gh-latest">↳ last push · ${timeAgo(latestPush)}</div>`
       : "";
 
     const badge = `<a class="badge" href="${esc(profile.html_url)}" target="_blank" rel="noopener noreferrer">@${esc(profile.login)}</a>`;
