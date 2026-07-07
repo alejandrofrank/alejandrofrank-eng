@@ -12,9 +12,9 @@ export const PLAYER_STYLES = `
   .resume-nav a:hover { color: var(--accent); }
   .resume-h1 { font-size: clamp(24px, 4vw, 32px); margin: 0 0 5px; letter-spacing: -0.02em; }
   .resume-lede { color: var(--muted); font-size: 14px; margin: 0 0 22px; }
-  /* Equal-size bubbles: grid columns share one width instead of hugging each name. */
-  .tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; margin-bottom: 22px; }
-  .tab { font: inherit; background: var(--panel); border: 1px solid var(--line); color: var(--muted); padding: 6px 10px; border-radius: 999px; cursor: pointer; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Equal-size bubbles, centered rows; wide enough that no name truncates. */
+  .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 22px; }
+  .tab { flex: 0 1 170px; min-width: 0; font: inherit; background: var(--panel); border: 1px solid var(--line); color: var(--muted); padding: 6px 10px; border-radius: 999px; cursor: pointer; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tab:hover { color: var(--fg); }
   .tab.on { color: var(--bg); background: var(--accent); border-color: var(--accent); }
   .job-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 2px 0 10px; }
@@ -108,6 +108,9 @@ export const PLAYER_SCRIPT = `<script>
       var f = frac(scenes[i].period);
       if (!f || f[1] < lo || f[0] > hi) continue;
       var pos = ((f[0] + f[1]) / 2 - lo) / (hi - lo);
+      // Neighbours whose midpoint falls outside the window would clamp onto
+      // the track edges (over the year labels) — drop them instead.
+      if (i !== sceneIdx && (pos < 0.03 || pos > 0.97)) continue;
       pos = Math.max(0.06, Math.min(0.94, pos));
       var d = document.createElement('div');
       d.className = 'tl-co' + (i === sceneIdx ? ' on' : '');
