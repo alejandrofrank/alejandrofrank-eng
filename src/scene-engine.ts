@@ -55,7 +55,7 @@ window.SceneEngine = (function () {
 
   function mount(scene, els) {
     var svg = els.svg, dotsEl = els.dots, capTitle = els.capTitle, capText = els.capText;
-    var timer = null, nodeEls = {}, flowEls = {};
+    var timer = null, nodeEls = {}, flowEls = {}, beatIdx = 0;
 
     clear(svg);
     svg.setAttribute('viewBox', '0 0 ' + VB_W + ' ' + VB_H);
@@ -133,6 +133,7 @@ window.SceneEngine = (function () {
     }
 
     function showBeat(i) {
+      beatIdx = i;
       var showN = {}, showF = {};
       for (var b2 = 0; b2 <= i; b2++) {
         var bt = scene.beats[b2];
@@ -183,9 +184,43 @@ window.SceneEngine = (function () {
       }
     }
 
+    // Swipe on the diagram: left = next beat, right = previous. The scene
+    // also pans horizontally inside its scroll container on small screens,
+    // so a swipe only navigates when the pan already sits at the relevant
+    // edge (or there's nothing to pan) — same convention as photo carousels.
+    var scroller = svg.parentElement, touchState = null;
+    function onTouchStart(e) {
+      if (e.touches.length !== 1) return;
+      touchState = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        t: Date.now(),
+        atL: scroller.scrollLeft <= 2,
+        atR: scroller.scrollLeft >= scroller.scrollWidth - scroller.clientWidth - 2
+      };
+    }
+    function onTouchEnd(e) {
+      var st = touchState;
+      touchState = null;
+      if (!st || !e.changedTouches.length) return;
+      var dx = e.changedTouches[0].clientX - st.x;
+      var dy = e.changedTouches[0].clientY - st.y;
+      if (Date.now() - st.t > 700 || Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      if (dx < 0 && st.atR && beatIdx < scene.beats.length - 1) runFrom(beatIdx + 1);
+      else if (dx > 0 && st.atL && beatIdx > 0) runFrom(beatIdx - 1);
+    }
+    scroller.addEventListener('touchstart', onTouchStart, { passive: true });
+    scroller.addEventListener('touchend', onTouchEnd, { passive: true });
+
     if (reduce) showBeat(scene.beats.length - 1); else runFrom(0);
 
-    return { stop: clearTimer };
+    return {
+      stop: function () {
+        clearTimer();
+        scroller.removeEventListener('touchstart', onTouchStart);
+        scroller.removeEventListener('touchend', onTouchEnd);
+      }
+    };
   }
 
   return { mount: mount };
