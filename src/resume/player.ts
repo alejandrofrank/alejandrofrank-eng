@@ -12,8 +12,9 @@ export const PLAYER_STYLES = `
   .resume-nav a:hover { color: var(--accent); }
   .resume-h1 { font-size: clamp(24px, 4vw, 32px); margin: 0 0 5px; letter-spacing: -0.02em; }
   .resume-lede { color: var(--muted); font-size: 14px; margin: 0 0 22px; }
-  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
-  .tab { font: inherit; background: var(--panel); border: 1px solid var(--line); color: var(--muted); padding: 6px 13px; border-radius: 999px; cursor: pointer; }
+  /* Equal-size bubbles: grid columns share one width instead of hugging each name. */
+  .tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; margin-bottom: 22px; }
+  .tab { font: inherit; background: var(--panel); border: 1px solid var(--line); color: var(--muted); padding: 6px 10px; border-radius: 999px; cursor: pointer; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tab:hover { color: var(--fg); }
   .tab.on { color: var(--bg); background: var(--accent); border-color: var(--accent); }
   .job-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 2px 0 10px; }
