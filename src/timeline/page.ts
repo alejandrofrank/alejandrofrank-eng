@@ -9,7 +9,8 @@ import { FAVICON } from "../favicon";
 import { RAIN_CANVAS, RAIN_SCRIPT } from "../anim";
 import { SITE } from "../content";
 import { SCENES } from "../resume/data/scenes.generated";
-import { SCENE_STYLES, SCENE_ENGINE_SCRIPT } from "../scene-engine";
+import { SCENE_STYLES, SCENE_ENGINE_SCRIPT, playButton } from "../scene-engine";
+import { renderFullText, FULLTEXT_STYLES, FULLTEXT_SCRIPT } from "../resume/fulltext";
 
 const TIMELINE_STYLES = `
   .tlp-wrap { max-width: 1240px; }
@@ -69,8 +70,9 @@ const TIMELINE_STYLES = `
   .tlp-close { position: absolute; top: 10px; right: 14px; background: none; border: none; color: var(--muted); font-size: 26px; line-height: 1; cursor: pointer; }
   .tlp-close:hover { color: var(--accent); }
   .tlp-role { font-size: 18px; font-weight: 600; }
-  .tlp-meta { color: var(--accent); font-size: 13px; margin: 3px 0 16px; }
-  .tlp-dialog .beat-dots { margin: 14px 0 0; justify-content: center; }
+  .tlp-meta { color: var(--accent); font-size: 13px; margin: 3px 0 14px; }
+  .tlp-controls { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 14px 0 0; }
+  .tlp-dialog .ft-panel { max-width: none; }
   .tlp-cap { margin-top: 16px; min-height: 52px; }
   .tlp-cap-title { color: var(--fg); font-weight: 600; }
   .tlp-cap-text { color: var(--muted); margin-top: 5px; line-height: 1.55; max-width: 74ch; }
@@ -87,11 +89,13 @@ const TIMELINE_SCRIPT = `<script>
   var closeBtn = document.getElementById('tlpClose');
   var roleEl = document.getElementById('tlpRole');
   var metaEl = document.getElementById('tlpMeta');
+  var fullEl = modal.querySelector('.fulltext');
   var els = {
     svg: document.getElementById('tlpScene'),
     dots: document.getElementById('tlpDots'),
     capTitle: document.getElementById('tlpCapTitle'),
-    capText: document.getElementById('tlpCapText')
+    capText: document.getElementById('tlpCapText'),
+    play: document.getElementById('tlpPlay')
   };
   var controller = null;
 
@@ -99,17 +103,7 @@ const TIMELINE_SCRIPT = `<script>
   var CAT = { pompeii:'job', making_science:'job', accenture:'job', unipol:'contract', sanofi:'contract', adevinta:'contract', permira:'contract', airbus:'contract' };
   function catOf(s) { return CAT[s.id] || 'project'; }
 
-  function frac(period) {
-    var mon = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
-    var re = /([A-Za-z]{3})?[a-z]*\\s*(\\d{4})/g;
-    var m, pts = [];
-    while ((m = re.exec(period))) {
-      if (!m[2]) continue;
-      var mm = m[1] ? (mon[m[1].toLowerCase()] || 0) : 0;
-      pts.push(parseInt(m[2], 10) + mm / 12);
-    }
-    return pts.length ? [pts[0], pts[pts.length - 1]] : null;
-  }
+  var frac = window.SceneEngine.period;
   function yrLabel(period) {
     var m = String(period).match(/\\d{4}/g);
     if (!m) return '';
@@ -202,6 +196,7 @@ const TIMELINE_SCRIPT = `<script>
     var s = scenes[idx];
     roleEl.textContent = s.role;
     metaEl.textContent = s.title + ' \\u00B7 ' + s.period;
+    if (window.FullText) window.FullText.show(fullEl, s.id);
     lastFocus = document.activeElement;
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
@@ -219,6 +214,7 @@ const TIMELINE_SCRIPT = `<script>
   closeBtn.addEventListener('click', close);
   backdrop.addEventListener('click', close);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  if (window.FullText) window.FullText.wire(fullEl, function () { if (controller) controller.pause(); });
 
   build();
   var rt;
@@ -238,7 +234,7 @@ export function renderTimelinePage(): string {
 ${FAVICON}
 <title>${SITE.name} · timeline</title>
 <meta name="description" content="A career timeline you can walk through, role by role." />
-<style>${styles}${SCENE_STYLES}${TIMELINE_STYLES}</style>
+<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${TIMELINE_STYLES}</style>
 </head>
 <body>
   ${RAIN_CANVAS}
@@ -267,15 +263,19 @@ ${FAVICON}
 
   <div class="tlp-modal" id="tlpModal" aria-hidden="true">
     <div class="tlp-backdrop" id="tlpBackdrop"></div>
-    <div class="tlp-dialog" role="dialog" aria-modal="true">
+    <div class="tlp-dialog" role="dialog" aria-modal="true" aria-labelledby="tlpRole">
       <button class="tlp-close" id="tlpClose" aria-label="close">×</button>
       <div class="tlp-role" id="tlpRole"></div>
       <div class="tlp-meta" id="tlpMeta"></div>
+      ${renderFullText(SCENES)}
       <div class="scene-scroll">
         <svg id="tlpScene" class="scene-svg" viewBox="0 0 1180 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Systems diagram"></svg>
       </div>
-      <div class="beat-dots" id="tlpDots"></div>
-      <div class="tlp-cap">
+      <div class="tlp-controls">
+        ${playButton("tlpPlay")}
+        <div class="beat-dots" id="tlpDots"></div>
+      </div>
+      <div class="tlp-cap" aria-live="polite">
         <div class="tlp-cap-title" id="tlpCapTitle"></div>
         <div class="tlp-cap-text" id="tlpCapText"></div>
       </div>
@@ -285,6 +285,7 @@ ${FAVICON}
   <script>window.__SCENES__ = ${data};</script>
   ${RAIN_SCRIPT}
   ${SCENE_ENGINE_SCRIPT}
+  ${FULLTEXT_SCRIPT}
   ${TIMELINE_SCRIPT}
 </body>
 </html>`;

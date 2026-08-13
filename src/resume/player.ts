@@ -20,14 +20,6 @@ export const PLAYER_STYLES = `
   .job-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 2px 0 10px; }
   .jd-role { font-size: 18px; font-weight: 600; color: var(--fg); }
   .jd-meta { color: var(--accent); font-size: 13px; }
-  .job-details { margin: 0 0 14px; }
-  .jd-toggle { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; list-style: none; font-size: 13px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px; width: fit-content; }
-  .jd-toggle::-webkit-details-marker { display: none; }
-  .jd-toggle:hover { border-color: var(--accent); color: var(--accent); }
-  .job-details[open] .jd-toggle { border-color: var(--accent); color: var(--accent); }
-  .jd-caret { display: inline-block; transition: transform .2s ease; }
-  .job-details[open] .jd-caret { transform: rotate(90deg); }
-  .job-summary { color: var(--muted); margin: 12px 0 0; max-width: 74ch; }
   .stage { margin: 16px 0 6px; padding: 6px; }
   .player-controls { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
   .player-controls .beat-dots { margin-left: auto; }
@@ -67,7 +59,8 @@ export const PLAYER_SCRIPT = `<script>
   var tabsEl = document.getElementById('jobTabs');
   var roleEl = document.getElementById('jobRole');
   var metaEl = document.getElementById('jobMeta');
-  var sumEl = document.getElementById('jobSummary');
+  var playEl = document.getElementById('playBtn');
+  var fullEl = document.querySelector('.fulltext');
   var dotsEl = document.getElementById('beatDots');
   var capTitle = document.getElementById('capTitle');
   var capText = document.getElementById('capText');
@@ -86,17 +79,7 @@ export const PLAYER_SCRIPT = `<script>
     return m ? [m[0], m[m.length - 1]] : ['', ''];
   }
 
-  function frac(period) {
-    var mon = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
-    var re = /([A-Za-z]{3})?[a-z]*\\s*(\\d{4})/g;
-    var m, pts = [];
-    while ((m = re.exec(period))) {
-      if (!m[2]) continue;
-      var mm = m[1] ? (mon[m[1].toLowerCase()] || 0) : 0;
-      pts.push(parseInt(m[2], 10) + mm / 12);
-    }
-    return pts.length ? [pts[0], pts[pts.length - 1]] : null;
-  }
+  var frac = window.SceneEngine.period;
 
   function buildTimeline(scene) {
     clear(tlTrack);
@@ -120,33 +103,51 @@ export const PLAYER_SCRIPT = `<script>
     }
   }
 
-  function selectScene(idx) {
+  function selectScene(idx, link) {
     if (controller) controller.stop();
     sceneIdx = idx;
     var scene = scenes[idx];
     roleEl.textContent = scene.role;
     metaEl.textContent = scene.title + ' \\u00B7 ' + scene.period;
-    sumEl.textContent = scene.summary;
+    if (window.FullText) window.FullText.show(fullEl, scene.id);
     var tabs = tabsEl.children;
-    for (var t = 0; t < tabs.length; t++) tabs[t].classList.toggle('on', t === idx);
+    for (var t = 0; t < tabs.length; t++) {
+      tabs[t].classList.toggle('on', t === idx);
+      tabs[t].setAttribute('aria-pressed', t === idx ? 'true' : 'false');
+    }
     var yr = years(scene.period);
     tlStart.textContent = yr[0]; tlEnd.textContent = yr[1];
     tlPrev.disabled = (idx === 0);
     tlNext.disabled = (idx === scenes.length - 1);
     buildTimeline(scene);
-    controller = window.SceneEngine.mount(scene, { svg: svg, dots: dotsEl, capTitle: capTitle, capText: capText });
+    // Deep link: /resume#sanofi opens straight on that role (and stays shareable
+    // as you click around). replaceState so back still leaves the page.
+    if (link && history.replaceState) history.replaceState(null, '', '#' + scene.id);
+    controller = window.SceneEngine.mount(scene, {
+      svg: svg, dots: dotsEl, capTitle: capTitle, capText: capText, play: playEl
+    });
   }
 
-  tlPrev.addEventListener('click', function () { if (sceneIdx > 0) selectScene(sceneIdx - 1); });
-  tlNext.addEventListener('click', function () { if (sceneIdx < scenes.length - 1) selectScene(sceneIdx + 1); });
+  tlPrev.addEventListener('click', function () { if (sceneIdx > 0) selectScene(sceneIdx - 1, true); });
+  tlNext.addEventListener('click', function () { if (sceneIdx < scenes.length - 1) selectScene(sceneIdx + 1, true); });
 
   for (var i = 0; i < scenes.length; i++) {
     var tab = document.createElement('button');
+    tab.type = 'button';
     tab.className = 'tab'; tab.textContent = scenes[i].title;
-    (function (idx) { tab.addEventListener('click', function () { selectScene(idx); }); })(i);
+    (function (idx) { tab.addEventListener('click', function () { selectScene(idx, true); }); })(i);
     tabsEl.appendChild(tab);
   }
 
-  selectScene(0);
+  // Reading the full text and watching it animate are two different intents.
+  if (window.FullText) window.FullText.wire(fullEl, function () { if (controller) controller.pause(); });
+
+  function indexFromHash() {
+    var id = (location.hash || '').replace('#', '');
+    for (var h = 0; h < scenes.length; h++) if (scenes[h].id === id) return h;
+    return 0;
+  }
+  selectScene(indexFromHash(), false);
+  window.addEventListener('hashchange', function () { selectScene(indexFromHash(), false); });
 })();
 </script>`;

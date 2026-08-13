@@ -2,10 +2,14 @@
 // Shared scene engine — the SVG keynote renderer used by BOTH the resume page
 // and the timeline modal. One source of truth for the animation.
 //
-//   window.SceneEngine.mount(scene, { svg, dots, capTitle, capText }) -> { stop }
+//   window.SceneEngine.mount(scene, { svg, dots, capTitle, capText, play })
+//     -> { stop, pause, play }
+//   window.SceneEngine.period("May 2019 – Mar 2021") -> [2019.33, 2021.16]
 //
 // Builds the scene into `svg`, wires the beat dots, autoplays through the beats
-// and holds on the last one (glowing). Call the returned .stop() to halt (e.g.
+// and holds on the last one (glowing). Touching a dot or swiping pauses — once
+// you take control the captions stop moving under you; the play button (if the
+// page supplies one) resumes. Call the returned .stop() to halt entirely (e.g.
 // when a modal closes). Reduced-motion jumps straight to the final frame.
 // ----------------------------------------------------------------------------
 
@@ -29,6 +33,13 @@ export const SCENE_STYLES = `
   .beat-dots { display: flex; gap: 8px; }
   .beat-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--line); border: none; cursor: pointer; padding: 0; }
   .beat-dot.on { background: var(--accent); }
+  /* play/pause — the engine unhides it, so no-JS never sees a dead button */
+  .pp { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: 12px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 5px 13px; cursor: pointer; }
+  .pp[hidden] { display: none; } /* author \`display\` would beat the UA [hidden] rule */
+  .pp:hover { color: var(--accent); border-color: var(--accent); }
+  .pp svg { width: 10px; height: 10px; fill: currentColor; display: block; }
+  .pp .ic-pause, .pp.playing .ic-play { display: none; }
+  .pp.playing .ic-pause { display: block; }
   /* On phones the diagram scrolls sideways instead of shrinking to unreadable. */
   .scene-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   @media (max-width: 700px) {
@@ -37,8 +48,18 @@ export const SCENE_STYLES = `
   @media (pointer: coarse) {
     .beat-dots { gap: 12px; }
     .beat-dot { width: 16px; height: 16px; }
+    .pp { padding: 8px 15px; }
   }
 `;
+
+/** Markup for the play/pause button. Pass the element to mount() as `play`. */
+export function playButton(id: string): string {
+  return `<button type="button" class="pp" id="${id}" hidden aria-label="pause the walkthrough">
+        <svg class="ic-play" viewBox="0 0 24 24" aria-hidden="true"><polygon points="5,3 21,12 5,21"/></svg>
+        <svg class="ic-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="6" height="18"/><rect x="14" y="3" width="6" height="18"/></svg>
+        <span class="pp-label">Pause</span>
+      </button>`;
+}
 
 export const SCENE_ENGINE_SCRIPT = `<script>
 window.SceneEngine = (function () {
@@ -53,12 +74,28 @@ window.SceneEngine = (function () {
   function el(name) { return document.createElementNS(NS, name); }
   function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
 
+  // "May 2019 – Mar 2021" -> [2019.33, 2021.16]. Shared by the resume rail and
+  // the timeline axis so they can't drift apart.
+  function period(str) {
+    var mon = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+    var re = /([A-Za-z]{3})?[a-z]*\\s*(\\d{4})/g;
+    var m, pts = [];
+    while ((m = re.exec(str))) {
+      if (!m[2]) continue;
+      var mm = m[1] ? (mon[m[1].toLowerCase()] || 0) : 0;
+      pts.push(parseInt(m[2], 10) + mm / 12);
+    }
+    return pts.length ? [pts[0], pts[pts.length - 1]] : null;
+  }
+
   function mount(scene, els) {
     var svg = els.svg, dotsEl = els.dots, capTitle = els.capTitle, capText = els.capText;
-    var timer = null, nodeEls = {}, flowEls = {}, beatIdx = 0;
+    var playBtn = els.play || null;
+    var timer = null, nodeEls = {}, flowEls = {}, beatIdx = 0, playing = false;
 
     clear(svg);
     svg.setAttribute('viewBox', '0 0 ' + VB_W + ' ' + VB_H);
+    svg.setAttribute('aria-label', scene.title + ' — systems diagram');
 
     var defs = el('defs');
     var f = el('filter');
@@ -166,10 +203,43 @@ window.SceneEngine = (function () {
     }
 
     function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setPlaying(on) {
+      playing = on;
+      if (!playBtn) return;
+      playBtn.classList.toggle('playing', on);
+      var lb = playBtn.querySelector('.pp-label');
+      if (lb) lb.textContent = on ? 'Pause' : 'Play';
+      playBtn.setAttribute('aria-label', (on ? 'pause' : 'play') + ' the walkthrough');
+    }
+
     function runFrom(i) {
       clearTimer();
       showBeat(i);
-      if (!reduce && i < scene.beats.length - 1) timer = setTimeout(function () { runFrom(i + 1); }, BEAT_MS);
+      if (!reduce && i < scene.beats.length - 1) {
+        setPlaying(true);
+        timer = setTimeout(function () { runFrom(i + 1); }, BEAT_MS);
+      } else {
+        setPlaying(false);
+      }
+    }
+
+    function pause() { clearTimer(); setPlaying(false); }
+
+    function play() {
+      if (beatIdx >= scene.beats.length - 1) { runFrom(0); return; } // ended -> replay
+      clearTimer();
+      setPlaying(true);
+      timer = setTimeout(function () { runFrom(beatIdx + 1); }, BEAT_MS);
+    }
+
+    // Stepping by hand pauses: you asked for this beat, you get to read it.
+    function step(i) { pause(); showBeat(i); }
+
+    function onPlayClick() { if (playing) pause(); else play(); }
+    if (playBtn && !reduce) {
+      playBtn.hidden = false;
+      playBtn.addEventListener('click', onPlayClick);
     }
 
     if (dotsEl) {
@@ -179,7 +249,7 @@ window.SceneEngine = (function () {
         dot.type = 'button';
         dot.className = 'beat-dot'; dot.title = scene.beats[di].title;
         dot.setAttribute('aria-label', 'beat ' + (di + 1) + ': ' + scene.beats[di].title);
-        (function (idx) { dot.addEventListener('click', function () { runFrom(idx); }); })(di);
+        (function (idx) { dot.addEventListener('click', function () { step(idx); }); })(di);
         dotsEl.appendChild(dot);
       }
     }
@@ -206,8 +276,8 @@ window.SceneEngine = (function () {
       var dx = e.changedTouches[0].clientX - st.x;
       var dy = e.changedTouches[0].clientY - st.y;
       if (Date.now() - st.t > 700 || Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-      if (dx < 0 && st.atR && beatIdx < scene.beats.length - 1) runFrom(beatIdx + 1);
-      else if (dx > 0 && st.atL && beatIdx > 0) runFrom(beatIdx - 1);
+      if (dx < 0 && st.atR && beatIdx < scene.beats.length - 1) step(beatIdx + 1);
+      else if (dx > 0 && st.atL && beatIdx > 0) step(beatIdx - 1);
     }
     scroller.addEventListener('touchstart', onTouchStart, { passive: true });
     scroller.addEventListener('touchend', onTouchEnd, { passive: true });
@@ -215,14 +285,18 @@ window.SceneEngine = (function () {
     if (reduce) showBeat(scene.beats.length - 1); else runFrom(0);
 
     return {
+      pause: pause,
+      play: play,
       stop: function () {
         clearTimer();
+        setPlaying(false);
+        if (playBtn) playBtn.removeEventListener('click', onPlayClick);
         scroller.removeEventListener('touchstart', onTouchStart);
         scroller.removeEventListener('touchend', onTouchEnd);
       }
     };
   }
 
-  return { mount: mount };
+  return { mount: mount, period: period };
 })();
 </script>`;

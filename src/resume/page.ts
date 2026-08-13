@@ -8,8 +8,9 @@ import { FAVICON } from "../favicon";
 import { RAIN_CANVAS, RAIN_SCRIPT } from "../anim";
 import { SITE } from "../content";
 import { SCENES } from "./data/scenes.generated";
-import { SCENE_STYLES, SCENE_ENGINE_SCRIPT } from "../scene-engine";
+import { SCENE_STYLES, SCENE_ENGINE_SCRIPT, playButton } from "../scene-engine";
 import { PLAYER_STYLES, PLAYER_SCRIPT } from "./player";
+import { renderFullText, FULLTEXT_STYLES, FULLTEXT_SCRIPT } from "./fulltext";
 
 export function renderResumePage(): string {
   // Guard against a data payload accidentally closing the <script>.
@@ -24,7 +25,7 @@ export function renderResumePage(): string {
 ${FAVICON}
 <title>${SITE.name} · experience</title>
 <meta name="description" content="Each role as a keynote of what I actually built." />
-<style>${styles}${SCENE_STYLES}${PLAYER_STYLES}</style>
+<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${PLAYER_STYLES}</style>
 </head>
 <body>
   ${RAIN_CANVAS}
@@ -48,20 +49,18 @@ ${FAVICON}
         <span class="jd-role" id="jobRole"></span>
         <span class="jd-meta" id="jobMeta"></span>
       </div>
-      <details class="job-details">
-        <summary class="jd-toggle"><span class="jd-caret">▸</span> Explanation</summary>
-        <p class="job-summary" id="jobSummary"></p>
-      </details>
+      ${renderFullText(SCENES)}
 
       <div class="stage scene-scroll">
         <svg id="scene" class="scene-svg" viewBox="0 0 1180 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Systems diagram"></svg>
       </div>
 
       <div class="player-controls">
+        ${playButton("playBtn")}
         <div class="beat-dots" id="beatDots"></div>
       </div>
 
-      <div class="caption">
+      <div class="caption" aria-live="polite">
         <div class="caption-title" id="capTitle"></div>
         <div class="caption-text" id="capText"></div>
       </div>
@@ -70,6 +69,7 @@ ${FAVICON}
   <script>window.__SCENES__ = ${data};</script>
   ${RAIN_SCRIPT}
   ${SCENE_ENGINE_SCRIPT}
+  ${FULLTEXT_SCRIPT}
   ${PLAYER_SCRIPT}
 </body>
 </html>`;
