@@ -10,6 +10,9 @@
 /** The slice of a compiled scene this module needs (see resume/scene.py). */
 export interface FullTextScene {
   id: string;
+  title: string;
+  role: string;
+  period: string;
   summary: string;
   beats: { title: string; caption: string }[];
 }
@@ -39,6 +42,9 @@ export function renderFullText(scenes: readonly FullTextScene[], activeId?: stri
         .join("");
       return (
         `<article class="ft-body" data-scene="${esc(s.id)}"${s.id === active ? "" : " hidden"}>` +
+        // Named on paper (where all roles print at once) and for crawlers; on
+        // screen the company is already in the header right above.
+        `<h2 class="ft-h">${esc(s.title)}<small>${esc(s.role)} · ${esc(s.period)}</small></h2>` +
         `<p class="ft-lede">${esc(s.summary)}</p>` +
         `<ol class="ft-beats">${beats}</ol>` +
         `</article>`
@@ -63,6 +69,7 @@ export const FULLTEXT_STYLES = `
   .fulltext[open] .ft-hint { display: none; }
   .ft-panel { border-left: 1px solid var(--line); margin: 14px 0 2px; padding: 2px 0 2px 18px; max-width: 76ch; }
   .ft-body[hidden] { display: none; }
+  .ft-h { display: none; } /* print only — see print.ts */
   .ft-lede { color: var(--fg); margin: 0; line-height: 1.6; }
   .ft-beats { list-style: none; counter-reset: ft; margin: 20px 0 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
   .ft-beats li { counter-increment: ft; position: relative; padding-left: 34px; }

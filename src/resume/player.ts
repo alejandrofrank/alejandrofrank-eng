@@ -7,6 +7,7 @@
 export const PLAYER_STYLES = `
   .wrap.resumewrap { max-width: 1030px; }
   .resume { max-width: 1030px; margin: 0 auto; }
+  .print-head { display: none; } /* print only — see print.ts */
   .resume-nav { margin-bottom: 26px; }
   .resume-nav a { color: var(--muted); text-decoration: none; font-size: 13px; }
   .resume-nav a:hover { color: var(--accent); }

@@ -11,6 +11,7 @@ import { SITE } from "../content";
 import { SCENES } from "../resume/data/scenes.generated";
 import { SCENE_STYLES, SCENE_ENGINE_SCRIPT, playButton } from "../scene-engine";
 import { renderFullText, FULLTEXT_STYLES, FULLTEXT_SCRIPT } from "../resume/fulltext";
+import { PRINT_STYLES, PRINT_SCRIPT } from "../print";
 
 const TIMELINE_STYLES = `
   .tlp-wrap { max-width: 1240px; }
@@ -234,7 +235,7 @@ export function renderTimelinePage(): string {
 ${FAVICON}
 <title>${SITE.name} · timeline</title>
 <meta name="description" content="A career timeline you can walk through, role by role." />
-<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${TIMELINE_STYLES}</style>
+<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${TIMELINE_STYLES}${PRINT_STYLES}</style>
 </head>
 <body>
   ${RAIN_CANVAS}
@@ -286,6 +287,7 @@ ${FAVICON}
   ${RAIN_SCRIPT}
   ${SCENE_ENGINE_SCRIPT}
   ${FULLTEXT_SCRIPT}
+  ${PRINT_SCRIPT}
   ${TIMELINE_SCRIPT}
 </body>
 </html>`;

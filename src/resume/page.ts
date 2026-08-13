@@ -6,7 +6,8 @@
 import { styles } from "../styles";
 import { FAVICON } from "../favicon";
 import { RAIN_CANVAS, RAIN_SCRIPT } from "../anim";
-import { SITE } from "../content";
+import { SITE, LINKS } from "../content";
+import { PRINT_STYLES, PRINT_SCRIPT } from "../print";
 import { SCENES } from "./data/scenes.generated";
 import { SCENE_STYLES, SCENE_ENGINE_SCRIPT, playButton } from "../scene-engine";
 import { PLAYER_STYLES, PLAYER_SCRIPT } from "./player";
@@ -25,13 +26,23 @@ export function renderResumePage(): string {
 ${FAVICON}
 <title>${SITE.name} · experience</title>
 <meta name="description" content="Each role as a keynote of what I actually built." />
-<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${PLAYER_STYLES}</style>
+<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${PLAYER_STYLES}${PRINT_STYLES}</style>
 </head>
 <body>
   ${RAIN_CANVAS}
   <div class="wrap resumewrap">
     <div class="resume">
       <nav class="resume-nav"><a href="/">‹ dashboard</a> &nbsp;·&nbsp; <a href="/timeline">timeline view →</a></nav>
+      <div class="print-head">
+        <b>${SITE.name}</b>
+        ${[`<span>${SITE.location}</span>`]
+          .concat(
+            LINKS.filter((l) => !l.href.startsWith("/")).map(
+              (l) => `<span>${l.href.replace(/^mailto:/, "").replace(/^https?:\/\//, "")}</span>`
+            )
+          )
+          .join("\n        ")}
+      </div>
       <h1 class="resume-h1">Experience</h1>
       <p class="resume-lede">Each role, as a keynote of the systems I actually built.</p>
 
@@ -70,6 +81,7 @@ ${FAVICON}
   ${RAIN_SCRIPT}
   ${SCENE_ENGINE_SCRIPT}
   ${FULLTEXT_SCRIPT}
+  ${PRINT_SCRIPT}
   ${PLAYER_SCRIPT}
 </body>
 </html>`;
