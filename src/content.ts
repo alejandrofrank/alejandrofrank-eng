@@ -93,6 +93,12 @@ export interface LogEntry {
 
 export const CHANGELOG: LogEntry[] = [
   {
+    date: "Aug 13, 2026",
+    title: "Read the experience instead of watching it",
+    blurb:
+      "Every role now has a 'Full text' dropdown: the summary plus every beat written out, so you can take a job in at once instead of slide by slide. The walkthrough got a pause button (clicking a dot or swiping pauses too), roles are deep-linkable at /resume#company, and ctrl-P prints the whole thing as a real 11-page CV.",
+  },
+  {
     date: "Jul 5, 2026",
     title: "Mobile pass + status board + this changelog",
     blurb:
