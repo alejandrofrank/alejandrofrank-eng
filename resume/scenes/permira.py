@@ -14,6 +14,7 @@ scene = Scene(
     title="Permira",
     role="Data / AI Engineer",
     period="Oct 2025 – Jul 2026",
+    category="contract",
     summary=(
         "Built an LLM analytics agent on Snowflake that lets non-technical "
         "stakeholders self-serve financial metrics in plain English, querying "

@@ -15,6 +15,7 @@ scene = Scene(
     title="Sanofi",
     role="Data Engineer",
     period="Jan 2024 – Jan 2025",
+    category="contract",
     summary=(
         "Led Sanofi's migration from AWS to Snowflake — designing the new "
         "architecture and engineering an automated, bidirectional transfer layer "

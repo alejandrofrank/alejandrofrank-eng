@@ -17,6 +17,12 @@ from typing import List, Literal
 #   science = ML / analytics layered on top (right)
 Kind = Literal["source", "core", "sink", "science"]
 
+# How the role was held. Drives the bar colour + legend on /timeline.
+#   job      = permanent employee
+#   contract = contractor / consultancy placement
+#   project  = shorter engagement or side project
+Category = Literal["job", "contract", "project"]
+
 
 @dataclass
 class Node:
@@ -59,6 +65,7 @@ class Scene:
     nodes: List[Node]
     flows: List[Flow]
     beats: List[Beat]
+    category: Category = "project"
 
     def validate(self) -> "Scene":
         """Fail loudly if any flow/beat points at a node/flow that doesn't exist."""
@@ -78,6 +85,9 @@ class Scene:
             if f.dst not in node_set:
                 raise ValueError(f"scene '{self.id}': flow '{f.id}' dst '{f.dst}' is not a node")
 
+        if self.category not in ("job", "contract", "project"):
+            raise ValueError(f"scene '{self.id}': unknown category '{self.category}'")
+
         for i, b in enumerate(self.beats):
             for nid in b.nodes:
                 if nid not in node_set:
@@ -94,6 +104,7 @@ class Scene:
             "title": self.title,
             "role": self.role,
             "period": self.period,
+            "category": self.category,
             "summary": self.summary,
             "nodes": [asdict(n) for n in self.nodes],
             "flows": [asdict(f) for f in self.flows],

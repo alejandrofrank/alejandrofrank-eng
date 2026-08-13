@@ -13,6 +13,7 @@ scene = Scene(
     title="Xing",
     role="Data Engineer",
     period="Jan 2025 – Mar 2025",
+    category="project",
     summary=(
         "Migrated Xing's on-prem Hadoop / Hive pipelines to Snowflake — rebuilt "
         "the transformations in dbt and orchestrated the whole thing with Airflow "

@@ -16,6 +16,7 @@ scene = Scene(
     title="Adevinta",
     role="Data Engineer",
     period="Mar 2025 – Oct 2025",
+    category="contract",
     summary=(
         "During Adevinta's split into independent companies, led technical "
         "delivery for the housing vertical (Fotocasa / Realia). Built an "

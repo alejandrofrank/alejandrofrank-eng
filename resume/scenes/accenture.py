@@ -19,6 +19,7 @@ scene = Scene(
     title="Accenture",
     role="Data Engineer",
     period="Jul 2021 – May 2022",
+    category="job",
     summary=(
         "Accenture had gone all-in as a Google Cloud partner and needed its "
         "on-prem apps rebuilt on GCP. Recreated four applications — three "

@@ -3,66 +3,77 @@
     "id": "pompeii",
     "title": "Pompeii",
     "role": "Data Engineer / Data Analyst",
-    "period": "May 2019 – Mar 2021"
+    "period": "May 2019 – Mar 2021",
+    "category": "job"
   },
   {
     "id": "making_science",
     "title": "Making Science",
     "role": "Data Engineer",
-    "period": "Mar 2021 – Jul 2021"
+    "period": "Mar 2021 – Jul 2021",
+    "category": "job"
   },
   {
     "id": "accenture",
     "title": "Accenture",
     "role": "Data Engineer",
-    "period": "Jul 2021 – May 2022"
+    "period": "Jul 2021 – May 2022",
+    "category": "job"
   },
   {
     "id": "unipol",
     "title": "Unipol",
     "role": "Data Engineer",
-    "period": "Jun 2022 – May 2023"
+    "period": "Jun 2022 – May 2023",
+    "category": "contract"
   },
   {
     "id": "loewe",
     "title": "Loewe",
     "role": "Data Engineer",
-    "period": "Jun 2023 – Nov 2023"
+    "period": "Jun 2023 – Nov 2023",
+    "category": "project"
   },
   {
     "id": "novartis",
     "title": "Novartis",
     "role": "AI Engineer",
-    "period": "Jun 2023 – Oct 2023"
+    "period": "Jun 2023 – Oct 2023",
+    "category": "project"
   },
   {
     "id": "airbus",
     "title": "Airbus",
     "role": "Data Engineer",
-    "period": "Nov 2023 – Jan 2024"
+    "period": "Nov 2023 – Jan 2024",
+    "category": "contract"
   },
   {
     "id": "sanofi",
     "title": "Sanofi",
     "role": "Data Engineer",
-    "period": "Jan 2024 – Jan 2025"
+    "period": "Jan 2024 – Jan 2025",
+    "category": "contract"
   },
   {
     "id": "xing",
     "title": "Xing",
     "role": "Data Engineer",
-    "period": "Jan 2025 – Mar 2025"
+    "period": "Jan 2025 – Mar 2025",
+    "category": "project"
   },
   {
     "id": "adevinta",
     "title": "Adevinta",
     "role": "Data Engineer",
-    "period": "Mar 2025 – Oct 2025"
+    "period": "Mar 2025 – Oct 2025",
+    "category": "contract"
   },
   {
     "id": "permira",
     "title": "Permira",
     "role": "Data / AI Engineer",
-    "period": "Oct 2025 – Jul 2026"
+    "period": "Oct 2025 – Jul 2026",
+    "category": "contract"
   }
 ]

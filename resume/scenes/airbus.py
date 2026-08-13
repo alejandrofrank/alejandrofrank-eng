@@ -11,6 +11,7 @@ scene = Scene(
     title="Airbus",
     role="Data Engineer",
     period="Nov 2023 – Jan 2024",
+    category="contract",
     summary=(
         "Built the AWS data pipelines feeding a chip-failure prediction model, "
         "putting reliable failure analysis in the hands of Airbus's in-house "

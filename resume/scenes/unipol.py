@@ -13,6 +13,7 @@ scene = Scene(
     title="Unipol",
     role="Data Engineer",
     period="Jun 2022 – May 2023",
+    category="contract",
     summary=(
         "Unipol had no data platform — so I built one from the ground up: a full "
         "dbt setup on AWS with best practices from day one, and Airflow "

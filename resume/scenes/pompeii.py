@@ -15,6 +15,7 @@ scene = Scene(
     title="Pompeii",
     role="Data Engineer / Data Analyst",
     period="May 2019 – Mar 2021",
+    category="job",
     summary=(
         "Joined to build the data function from zero. Turned a sprawl of "
         "operational and marketing systems into one clean warehouse every "

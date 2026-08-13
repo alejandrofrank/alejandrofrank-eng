@@ -65,7 +65,9 @@ def main() -> None:
         s.validate()
         path = DATA_DIR / f"{s.id}.json"
         path.write_text(json.dumps(s.to_dict(), indent=2, ensure_ascii=False), encoding="utf-8")
-        index.append({"id": s.id, "title": s.title, "role": s.role, "period": s.period})
+        index.append(
+            {"id": s.id, "title": s.title, "role": s.role, "period": s.period, "category": s.category}
+        )
 
     (DATA_DIR / "index.json").write_text(
         json.dumps(index, indent=2, ensure_ascii=False), encoding="utf-8"

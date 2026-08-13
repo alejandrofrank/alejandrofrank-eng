@@ -99,9 +99,9 @@ const TIMELINE_SCRIPT = `<script>
   };
   var controller = null;
 
-  // role classification -> bar colour (default: project)
-  var CAT = { pompeii:'job', making_science:'job', accenture:'job', unipol:'contract', sanofi:'contract', adevinta:'contract', permira:'contract', airbus:'contract' };
-  function catOf(s) { return CAT[s.id] || 'project'; }
+  // Bar colour comes from the scene's own category (set in resume/scenes/*.py),
+  // so a new role can't quietly land in the wrong colour.
+  function catOf(s) { return s.category || 'project'; }
 
   var frac = window.SceneEngine.period;
   function yrLabel(period) {

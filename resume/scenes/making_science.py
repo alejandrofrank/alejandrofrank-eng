@@ -16,6 +16,7 @@ scene = Scene(
     title="Making Science",
     role="Data Engineer",
     period="Mar 2021 – Jul 2021",
+    category="job",
     summary=(
         "Built the pipeline for a very high-load ad-optimization system: ~1.4 TB "
         "of ad data a day fanned out across ~1000 Cloud Functions into BigQuery, "
