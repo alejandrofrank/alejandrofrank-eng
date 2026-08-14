@@ -56,6 +56,9 @@ ${FAVICON}
       <a class="topnav-brand" href="/">${SITE.name}</a>
       <div class="topnav-links">
         ${LINKS.map((l) => {
+          if (l.cta) {
+            return `<a class="cta" href="${l.href}">${l.label} <span class="cta-arrow" aria-hidden="true">→</span></a>`;
+          }
           if (l.href.startsWith("mailto:")) {
             const email = l.href.slice("mailto:".length);
             return `<details class="email-pop">

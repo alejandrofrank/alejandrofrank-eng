@@ -59,11 +59,14 @@ export const SHIPLOG: ShipEntry[] = [
   },
 ];
 
-export const LINKS: { label: string; href: string }[] = [
-  { label: "Experience", href: "/timeline" },
+// Nav links. Exactly one entry should carry `cta: true` — it renders as the
+// filled primary button (the one thing you want a visitor to click); the rest
+// stay quiet text links. Put the CTA last so it sits rightmost in the nav.
+export const LINKS: { label: string; href: string; cta?: boolean }[] = [
   { label: "GitHub", href: "https://github.com/alejandrofrank" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/alejandrofrank" },
   { label: "Email", href: "mailto:alejandrofranks@gmail.com" },
+  { label: "Resume / CV", href: "/timeline", cta: true },
 ];
 
 // Service status board — deployed things I'm responsible for keeping up.

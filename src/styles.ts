@@ -22,9 +22,30 @@ export const styles = `
   .topnav { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 22px 0; position: relative; z-index: 2; }
   .topnav-brand { color: var(--fg); text-decoration: none; font-weight: 600; letter-spacing: -0.01em; }
   .topnav-brand:hover { color: var(--accent); }
-  .topnav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+  .topnav-links { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
   .topnav-links a { color: var(--muted); text-decoration: none; font-size: 14px; }
   .topnav-links a:hover { color: var(--accent); }
+  /* Primary CTA — the one filled button in the nav (LINKS entry with cta: true). */
+  .topnav-links a.cta {
+    color: var(--bg); background: var(--accent); border: 1px solid var(--accent);
+    font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    padding: 9px 16px; border-radius: 999px; white-space: nowrap; margin-left: 4px;
+    box-shadow: 0 0 0 4px rgba(110,231,183,.10), 0 6px 18px rgba(110,231,183,.20);
+    transition: background .15s, transform .15s, box-shadow .15s;
+  }
+  .topnav-links a.cta:hover {
+    color: var(--bg); background: #8df0cb; transform: translateY(-1px);
+    box-shadow: 0 0 0 5px rgba(110,231,183,.16), 0 10px 26px rgba(110,231,183,.30);
+  }
+  .topnav-links a.cta:active { transform: translateY(0); box-shadow: 0 0 0 3px rgba(110,231,183,.14); }
+  .topnav-links a.cta:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  .cta-arrow { display: inline-block; transition: transform .15s; }
+  .topnav-links a.cta:hover .cta-arrow { transform: translateX(3px); }
+  @media (prefers-reduced-motion: reduce) {
+    .topnav-links a.cta, .cta-arrow { transition: none; }
+    .topnav-links a.cta:hover { transform: none; }
+    .topnav-links a.cta:hover .cta-arrow { transform: none; }
+  }
   .email-pop { position: relative; }
   .email-pop > summary { list-style: none; cursor: pointer; color: var(--muted); font-size: 14px; }
   .email-pop > summary::-webkit-details-marker { display: none; }
@@ -113,6 +134,9 @@ export const styles = `
   footer a { color: var(--accent); text-decoration: none; }
   @media (max-width: 640px) {
     .wrap { padding: 0 16px; }
+    .topnav { padding: 18px 0; gap: 12px; }
+    .topnav-links { gap: 16px; }
+    .topnav-links a.cta { padding: 10px 15px; margin-left: 0; }
     header.hero { padding: 40px 0 36px; }
     section { padding: 16px 0 56px; }
     .outcomes { grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 32px; }
