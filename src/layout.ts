@@ -56,8 +56,14 @@ ${FAVICON}
       <a class="topnav-brand" href="/">${SITE.name}</a>
       <div class="topnav-links">
         ${LINKS.map((l) => {
+          const ext = l.href.startsWith("http");
+          const attrs = ext ? ' target="_blank" rel="noopener noreferrer"' : "";
           if (l.cta) {
-            return `<a class="cta" href="${l.href}">${l.label} <span class="cta-arrow" aria-hidden="true">→</span></a>`;
+            // Same pill markup for both; .cta-alt strips the fill. The arrow
+            // turns diagonal on the secondary because it leaves the site.
+            const cls = l.cta === "primary" ? "cta" : "cta cta-alt";
+            const arrow = l.cta === "primary" ? "→" : "↗";
+            return `<a class="${cls}" href="${l.href}"${attrs}>${l.label} <span class="cta-arrow" aria-hidden="true">${arrow}</span></a>`;
           }
           if (l.href.startsWith("mailto:")) {
             const email = l.href.slice("mailto:".length);
@@ -69,8 +75,6 @@ ${FAVICON}
               </div>
             </details>`;
           }
-          const ext = l.href.startsWith("http");
-          const attrs = ext ? ' target="_blank" rel="noopener noreferrer"' : "";
           return `<a href="${l.href}"${attrs}>${l.label}</a>`;
         }).join("")}
       </div>

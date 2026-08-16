@@ -25,7 +25,7 @@ export const styles = `
   .topnav-links { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
   .topnav-links a { color: var(--muted); text-decoration: none; font-size: 14px; }
   .topnav-links a:hover { color: var(--accent); }
-  /* Primary CTA — the one filled button in the nav (LINKS entry with cta: true). */
+  /* Primary CTA — the one filled button in the nav (LINKS entry with cta: "primary"). */
   .topnav-links a.cta {
     color: var(--bg); background: var(--accent); border: 1px solid var(--accent);
     font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
@@ -39,12 +39,27 @@ export const styles = `
   }
   .topnav-links a.cta:active { transform: translateY(0); box-shadow: 0 0 0 3px rgba(110,231,183,.14); }
   .topnav-links a.cta:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  /* Secondary CTA (cta: "secondary") — same pill, outlined instead of filled.
+     Keeps the shape and caps of the primary so they read as a pair, but drops
+     the fill, the glow and a step of weight: above the plain links, below the
+     one button that matters. */
+  .topnav-links a.cta.cta-alt {
+    color: var(--accent); background: transparent; border-color: rgba(110,231,183,.40);
+    font-weight: 600; letter-spacing: .04em; padding: 8px 14px; box-shadow: none;
+  }
+  .topnav-links a.cta.cta-alt:hover {
+    color: var(--accent); background: rgba(110,231,183,.10); border-color: var(--accent);
+    box-shadow: none;
+  }
+  .topnav-links a.cta.cta-alt:active { transform: translateY(0); background: rgba(110,231,183,.16); box-shadow: none; }
   .cta-arrow { display: inline-block; transition: transform .15s; }
   .topnav-links a.cta:hover .cta-arrow { transform: translateX(3px); }
+  .topnav-links a.cta.cta-alt:hover .cta-arrow { transform: translate(2px, -2px); }
   @media (prefers-reduced-motion: reduce) {
     .topnav-links a.cta, .cta-arrow { transition: none; }
     .topnav-links a.cta:hover { transform: none; }
-    .topnav-links a.cta:hover .cta-arrow { transform: none; }
+    .topnav-links a.cta:hover .cta-arrow,
+    .topnav-links a.cta.cta-alt:hover .cta-arrow { transform: none; }
   }
   .email-pop { position: relative; }
   .email-pop > summary { list-style: none; cursor: pointer; color: var(--muted); font-size: 14px; }
@@ -137,6 +152,7 @@ export const styles = `
     .topnav { padding: 18px 0; gap: 12px; }
     .topnav-links { gap: 16px; }
     .topnav-links a.cta { padding: 10px 15px; margin-left: 0; }
+    .topnav-links a.cta.cta-alt { padding: 9px 13px; }
     header.hero { padding: 40px 0 36px; }
     section { padding: 16px 0 56px; }
     .outcomes { grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 32px; }

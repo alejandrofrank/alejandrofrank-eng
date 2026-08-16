@@ -59,14 +59,15 @@ export const SHIPLOG: ShipEntry[] = [
   },
 ];
 
-// Nav links. Exactly one entry should carry `cta: true` — it renders as the
-// filled primary button (the one thing you want a visitor to click); the rest
-// stay quiet text links. Put the CTA last so it sits rightmost in the nav.
-export const LINKS: { label: string; href: string; cta?: boolean }[] = [
-  { label: "GitHub", href: "https://github.com/alejandrofrank" },
+// Nav links. `cta` promotes a link out of the quiet text row: "primary" is the
+// filled pill (the one thing you want a visitor to click), "secondary" is the
+// same pill outlined — louder than plain text, clearly quieter than the fill.
+// At most one of each, both last so the two pills sit together on the right.
+export const LINKS: { label: string; href: string; cta?: "primary" | "secondary" }[] = [
   { label: "LinkedIn", href: "https://www.linkedin.com/in/alejandrofrank" },
   { label: "Email", href: "mailto:alejandrofranks@gmail.com" },
-  { label: "Resume / CV", href: "/timeline", cta: true },
+  { label: "GitHub", href: "https://github.com/alejandrofrank", cta: "secondary" },
+  { label: "Resume / CV", href: "/timeline", cta: "primary" },
 ];
 
 // Service status board — deployed things I'm responsible for keeping up.
