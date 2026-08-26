@@ -8,7 +8,7 @@ export const SITE = {
   location: "Madrid",
   thesis: "The wall is never the code.",
   subtitle:
-    "Forward-deployed engineer. I take ambiguous problems and ship the ambitious version: live systems other people can depend on.",
+    "Engineer. I take ambiguous problems and ship the ambitious version: live systems other people can depend on.",
 };
 
 // Outcomes header — the two static credibility numbers. The header module
