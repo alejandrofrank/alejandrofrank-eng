@@ -60,6 +60,8 @@ export const styles = `
     .topnav-links a.cta:hover { transform: none; }
     .topnav-links a.cta:hover .cta-arrow,
     .topnav-links a.cta.cta-alt:hover .cta-arrow { transform: none; }
+    .venture-cta { transition: none; }
+    .venture-cta:hover .cta-arrow { transform: none; }
   }
   .email-pop { position: relative; }
   .email-pop > summary { list-style: none; cursor: pointer; color: var(--muted); font-size: 14px; }
@@ -134,6 +136,53 @@ export const styles = `
   .svc-all.up { color: var(--accent); border-color: rgba(110,231,183,.45); }
   .svc-all.down { color: #ff375f; border-color: rgba(255,55,95,.45); }
   .svc-note { color: var(--muted); font-size: 11px; margin-top: 14px; }
+  /* Bakiano venture section — full-width block inside the dashboard grid,
+     directly under the GitHub card. Deliberately louder than a .panel: accent
+     hairline along the top, tinted ground, its own type scale. */
+  .venture {
+    grid-column: 1 / -1; position: relative; overflow: hidden;
+    background: linear-gradient(163deg, rgba(110,231,183,.075), rgba(20,20,23,0) 52%), var(--panel);
+    border: 1px solid rgba(110,231,183,.22); border-radius: 16px;
+    padding: 24px 24px 26px; margin: 0;
+  }
+  .venture::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: .75;
+  }
+  .venture-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .venture-top .tag { font-size: 11px; }
+  .badge.venture-badge { color: var(--accent); border-color: rgba(110,231,183,.45); align-self: auto; }
+  .venture-name { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 14px 0 0; font-size: 30px; letter-spacing: -0.02em; line-height: 1.1; }
+  .venture-name a { color: var(--fg); text-decoration: none; }
+  .venture-name a:hover { color: var(--accent); }
+  .venture-host { font-size: 12px; font-weight: 400; letter-spacing: .04em; color: var(--muted); }
+  .venture-headline { margin: 10px 0 0; font-size: 18px; color: var(--accent); letter-spacing: -0.01em; }
+  .venture-blurb { margin: 10px 0 0; color: var(--muted); font-size: 14px; max-width: 68ch; }
+  .stats.venture-stats { margin: 22px 0 4px; gap: 26px; }
+  .venture-label { margin: 22px 0 12px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  /* Datasets — four chips, the shipped one badged. */
+  .vsets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .vset { background: rgba(10,10,11,.5); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .vset.live { border-color: rgba(110,231,183,.32); }
+  .vset-name { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg); }
+  .vset-live { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--bg); background: var(--accent); border-radius: 999px; padding: 1px 6px; }
+  .vset-blurb { color: var(--muted); font-size: 11px; margin-top: 5px; line-height: 1.45; }
+  /* Products built on the data. */
+  .vprods { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; }
+  .vprod-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .vprod-head b { font-size: 14px; }
+  .vprod-head span { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); opacity: .75; }
+  .vprod-blurb { color: var(--muted); font-size: 12px; margin-top: 3px; line-height: 1.5; }
+  .venture-cta {
+    display: inline-flex; align-items: center; gap: 7px; margin-top: 24px;
+    color: var(--accent); background: transparent; border: 1px solid rgba(110,231,183,.40);
+    font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    padding: 9px 16px; border-radius: 999px; text-decoration: none;
+    transition: background .15s, border-color .15s;
+  }
+  .venture-cta:hover { background: rgba(110,231,183,.10); border-color: var(--accent); }
+  .venture-cta:hover .cta-arrow { transform: translate(2px, -2px); }
+  .venture-cta:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
   /* Shipping log panel */
   .ship { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
   .ship-row { display: flex; align-items: center; gap: 8px; }
@@ -157,6 +206,13 @@ export const styles = `
     section { padding: 16px 0 56px; }
     .outcomes { grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 32px; }
     .grid { grid-template-columns: 1fr; }
+    .venture { padding: 20px 18px 22px; border-radius: 14px; }
+    .venture-name { font-size: 25px; }
+    .venture-headline { font-size: 16px; }
+    .stats.venture-stats { gap: 18px; }
+    .vsets { grid-template-columns: 1fr 1fr; }
+    .vprods { grid-template-columns: 1fr; gap: 14px; }
+    .venture-cta { width: 100%; justify-content: center; }
     .stats { gap: 16px; }
     /* heatmap: show the most recent ~6 months, larger cells */
     .hm, .hm-col { gap: 2px; }

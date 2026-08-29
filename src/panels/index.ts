@@ -5,6 +5,7 @@
 
 import type { Panel } from "./types";
 import { github } from "./github";
+import { bakiano } from "./bakiano";
 import { leetcode } from "./leetcode";
 import { shipping } from "./shipping";
 import { status } from "./status";
@@ -12,6 +13,8 @@ import { placeholder } from "./placeholder";
 
 export const PANELS: Panel[] = [
   github,
+  // Full-width venture section — sits directly under the GitHub card.
+  bakiano,
   leetcode,
   shipping,
   status,

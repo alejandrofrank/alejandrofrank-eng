@@ -41,12 +41,6 @@ export const SHIPLOG: ShipEntry[] = [
   },
   {
     date: "2026",
-    title: "DataMarket",
-    status: "building",
-    blurb: "Live retail-pricing platform: daily data from 22 retailers, LLM enrichment layer.",
-  },
-  {
-    date: "2026",
     title: "Fitness & meal-planning app", // TODO: rename once it has a name
     status: "building",
     blurb: "Personalized weekly plan from your budget + stores: shopping list, recipes, workouts.",
@@ -58,6 +52,49 @@ export const SHIPLOG: ShipEntry[] = [
     blurb: "Open-source TypeScript MCP server automating invoicing via the Holded API.",
   },
 ];
+
+// Bakiano (bakiano.com) — the business. Rendered as its own full-width section
+// in the dashboard, directly under the GitHub panel. Static copy: no fetching,
+// so edits here are the only thing that moves it.
+export interface VentureDataset {
+  name: string;
+  blurb: string;
+  /** Shipped and serving data today — badges the chip. */
+  live?: boolean;
+}
+export interface VentureProduct {
+  name: string;
+  kind: string;
+  blurb: string;
+}
+
+export const BAKIANO = {
+  name: "Bakiano",
+  href: "https://bakiano.com",
+  eyebrow: "Market intelligence platform · Venezuela",
+  headline: "The price of everything in Venezuela.",
+  blurb:
+    "An AI engine tracking tens of thousands of prices every day across supermarkets, retail, real estate and telecom — every price normalized to USD at the official BCV rate, every movement recorded.",
+  stats: [
+    { value: "4", label: "data domains" },
+    { value: "8", label: "live sources" },
+    { value: "60K+", label: "rows / snapshot" },
+    { value: "Daily", label: "refresh" },
+  ] as { value: string; label: string }[],
+  datasets: [
+    { name: "Supermarket", blurb: "8 chains, every shelf, every day", live: true },
+    { name: "Retail", blurb: "catalogue + price history" },
+    { name: "Real estate", blurb: "listings, comps, yields" },
+    { name: "Telecom", blurb: "plans and tariffs" },
+  ] as VentureDataset[],
+  products: [
+    { name: "Canasta", kind: "AI meal planner", blurb: "Weekly plans on your budget; picks the cheapest store per ingredient." },
+    { name: "Vitrina", kind: "Real estate terminal", blurb: "Bloomberg-style terminal: fair value, yields, comp analysis." },
+    { name: "OpenClaw", kind: "Data assistant", blurb: "Ask about Venezuelan prices in plain language, over live data." },
+    { name: "PrecioRadar", kind: "Alert engine", blurb: "Set a target price; get pinged the moment any chain drops under it." },
+  ] as VentureProduct[],
+  cta: "Open bakiano.com",
+};
 
 // Nav links. `cta` promotes a link out of the quiet text row: "primary" is the
 // filled pill (the one thing you want a visitor to click), "secondary" is the
@@ -96,6 +133,12 @@ export interface LogEntry {
 }
 
 export const CHANGELOG: LogEntry[] = [
+  {
+    date: "Aug 29, 2026",
+    title: "Bakiano gets its own section",
+    blurb:
+      "The market-intelligence business is public, so it stops being a line in the shipping log and becomes a full-width section under the GitHub panel: the four datasets, the numbers behind them, and the four products built on top. DataMarket — its working title — retires from the log.",
+  },
   {
     date: "Aug 13, 2026",
     title: "Read the experience instead of watching it",
