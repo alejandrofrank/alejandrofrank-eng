@@ -77,7 +77,6 @@ export const BAKIANO = {
     "An AI engine tracking tens of thousands of prices every day across supermarkets, retail, real estate and telecom — every price normalized to USD at the official BCV rate, every movement recorded.",
   stats: [
     { value: "4", label: "data domains" },
-    { value: "8", label: "live sources" },
     { value: "60K+", label: "rows / snapshot" },
     { value: "Daily", label: "refresh" },
   ] as { value: string; label: string }[],
