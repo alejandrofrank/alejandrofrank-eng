@@ -61,8 +61,10 @@ export interface VentureDataset {
   blurb: string;
   /** Shipped and serving data today — badges the chip. */
   live?: boolean;
+  /** Announced, not yet serving. Mutually exclusive with `live`. */
+  soon?: boolean;
 }
-export interface VentureProduct {
+export interface VentureFeature {
   name: string;
   kind: string;
   blurb: string;
@@ -81,17 +83,21 @@ export const BAKIANO = {
     { value: "Daily", label: "refresh" },
   ] as { value: string; label: string }[],
   datasets: [
-    { name: "Supermarket", blurb: "8 chains, every shelf, every day", live: true },
-    { name: "Retail", blurb: "catalogue + price history" },
-    { name: "Real estate", blurb: "listings, comps, yields" },
-    { name: "Telecom", blurb: "plans and tariffs" },
+    { name: "Supermarket", blurb: "8 chains · 60K+ rows daily", live: true },
+    { name: "Retail", blurb: "9 retailers · 40K+ rows daily", live: true },
+    { name: "Real estate", blurb: "5 platforms, sale + rental", soon: true },
+    { name: "Telecom", blurb: "mobile plans, monthly", live: true },
   ] as VentureDataset[],
-  products: [
-    { name: "Canasta", kind: "AI meal planner", blurb: "Weekly plans on your budget; picks the cheapest store per ingredient." },
-    { name: "Vitrina", kind: "Real estate terminal", blurb: "Bloomberg-style terminal: fair value, yields, comp analysis." },
-    { name: "OpenClaw", kind: "Data assistant", blurb: "Ask about Venezuelan prices in plain language, over live data." },
-    { name: "PrecioRadar", kind: "Alert engine", blurb: "Set a target price; get pinged the moment any chain drops under it." },
-  ] as VentureProduct[],
+  // Shipped surfaces, not a roadmap — everything here is live in the product.
+  workspaceNote: "None of this is a roadmap: it's all live in the product right now, running on this morning's prices.",
+  features: [
+    { name: "Chat", kind: "AI analyst over live data", blurb: "Ask in plain language and get real prices, never invented ones. Quotes your whole shopping list in one pass and shows its work while it searches." },
+    { name: "Shopping list", kind: "The basket, optimized", blurb: "Every item priced at every chain, stores ranked by coverage and total, and a two-stop split suggested only when it genuinely saves money." },
+    { name: "Alerts", kind: "What changed today", blurb: "Real price moves, net of currency noise. Follow products, filter by chain and magnitude, compare against yesterday or the fortnight." },
+    { name: "Dashboard", kind: "Series, minimums and candles", blurb: "Per-product charts: median, daily minimum, bands and distribution candles — every point traceable to the exact products inside it." },
+    { name: "Menu", kind: "The week, costed", blurb: "Plan the week's meals and price them against one chain's real catalog. What the cooking consumes and what you pay at the register are two numbers — you see both." },
+    { name: "Real estate", kind: "Search with history", blurb: "Search listings by zone, price and surface across more than a million historical records from the major networks." },
+  ] as VentureFeature[],
   cta: "Open bakiano.com",
 };
 
@@ -136,7 +142,7 @@ export const CHANGELOG: LogEntry[] = [
     date: "Aug 29, 2026",
     title: "Bakiano gets its own section",
     blurb:
-      "The market-intelligence business is public, so it stops being a line in the shipping log and becomes a full-width section under the GitHub panel: the four datasets, the numbers behind them, and the four products built on top. DataMarket — its working title — retires from the log.",
+      "The market-intelligence business is public, so it stops being a line in the shipping log and becomes a full-width section under the GitHub panel: the four datasets, the numbers behind them, and the six things the product already does. DataMarket — its working title — retires from the log.",
   },
   {
     date: "Aug 13, 2026",

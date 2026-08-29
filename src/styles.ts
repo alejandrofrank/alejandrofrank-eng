@@ -159,13 +159,16 @@ export const styles = `
   .venture-headline { margin: 10px 0 0; font-size: 18px; color: var(--accent); letter-spacing: -0.01em; }
   .venture-blurb { margin: 10px 0 0; color: var(--muted); font-size: 14px; max-width: 68ch; }
   .stats.venture-stats { margin: 22px 0 4px; gap: 26px; }
-  .venture-label { margin: 22px 0 12px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .venture-label { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 22px 0 12px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .venture-note { font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--accent); opacity: .78; }
   /* Datasets — four chips, the shipped one badged. */
   .vsets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .vset { background: rgba(10,10,11,.5); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
   .vset.live { border-color: rgba(110,231,183,.32); }
   .vset-name { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg); }
-  .vset-live { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--bg); background: var(--accent); border-radius: 999px; padding: 1px 6px; }
+  .vset-flag { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; border-radius: 999px; padding: 1px 6px; }
+  .vset-flag.live { color: var(--bg); background: var(--accent); }
+  .vset-flag.soon { color: var(--muted); background: transparent; border: 1px solid var(--line); }
   .vset-blurb { color: var(--muted); font-size: 11px; margin-top: 5px; line-height: 1.45; }
   /* Products built on the data. */
   .vprods { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; }

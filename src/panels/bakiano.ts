@@ -8,7 +8,7 @@
 // ----------------------------------------------------------------------------
 
 import type { Env, Panel } from "./types";
-import { BAKIANO, type VentureDataset, type VentureProduct } from "../content";
+import { BAKIANO, type VentureDataset, type VentureFeature } from "../content";
 import { esc } from "./helpers";
 
 function stat(s: { value: string; label: string }): string {
@@ -16,16 +16,21 @@ function stat(s: { value: string; label: string }): string {
 }
 
 function dataset(d: VentureDataset): string {
+  const flag = d.live
+    ? '<span class="vset-flag live">live</span>'
+    : d.soon
+      ? '<span class="vset-flag soon">soon</span>'
+      : "";
   return `<div class="vset${d.live ? " live" : ""}">
-    <div class="vset-name">${esc(d.name)}${d.live ? '<span class="vset-live">live</span>' : ""}</div>
+    <div class="vset-name">${esc(d.name)}${flag}</div>
     <div class="vset-blurb">${esc(d.blurb)}</div>
   </div>`;
 }
 
-function product(p: VentureProduct): string {
+function feature(f: VentureFeature): string {
   return `<li class="vprod">
-    <div class="vprod-head"><b>${esc(p.name)}</b><span>${esc(p.kind)}</span></div>
-    <div class="vprod-blurb">${esc(p.blurb)}</div>
+    <div class="vprod-head"><b>${esc(f.name)}</b><span>${esc(f.kind)}</span></div>
+    <div class="vprod-blurb">${esc(f.blurb)}</div>
   </li>`;
 }
 
@@ -54,8 +59,11 @@ export const bakiano: Panel = {
       <div class="venture-label">Datasets</div>
       <div class="vsets">${BAKIANO.datasets.map(dataset).join("")}</div>
 
-      <div class="venture-label">Built on it</div>
-      <ul class="vprods">${BAKIANO.products.map(product).join("")}</ul>
+      <div class="venture-label">
+        Inside the workspace
+        <span class="venture-note">${esc(BAKIANO.workspaceNote)}</span>
+      </div>
+      <ul class="vprods">${BAKIANO.features.map(feature).join("")}</ul>
 
       <a class="venture-cta" href="${esc(BAKIANO.href)}" target="_blank" rel="noopener noreferrer">
         ${esc(BAKIANO.cta)} <span class="cta-arrow" aria-hidden="true">↗</span>
