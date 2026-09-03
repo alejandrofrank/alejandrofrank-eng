@@ -16,9 +16,12 @@ node_modules/
 # Build output
 dist/
 
-# Env & secrets
+# Env & secrets. The dotted forms aren't enough: a bare `env.live` or
+# `env.prod` is not hidden by `.env.*`, and this repo is public.
 .env
 .env.*
+env
+env.*
 
 # OS / editor
 .DS_Store
