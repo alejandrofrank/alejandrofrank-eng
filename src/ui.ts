@@ -44,6 +44,8 @@ export interface CardOpts {
   /** Draw the divider node on the seam toward the right-hand neighbour. */
   node?: boolean;
   extraClass?: string;
+  /** Skip the title + index row; the body starts at the top of the block. */
+  noHead?: boolean;
   body: string;
   /** Left side of the footer block — one line, ellipsised. */
   foot: string;
@@ -61,7 +63,7 @@ export function card(o: CardOpts): string {
   return `<article class="${cls}" id="${o.key}" style="--i:${o.n}">
       <div class="card">
         <div class="block main chamfer ${tone}">
-          <div class="card-head"><h3>${o.title}</h3><span class="card-idx">${idx(o.n)}</span></div>
+          ${o.noHead ? "" : `<div class="card-head"><h3>${o.title}</h3><span class="card-idx">${idx(o.n)}</span></div>`}
           ${o.body}
         </div>
         <div class="block foot chamfer ${tone}">

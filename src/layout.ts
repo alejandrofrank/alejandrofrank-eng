@@ -9,7 +9,7 @@ import { styles } from "./styles";
 import { buildOutcomes } from "./header";
 import { FAVICON } from "./favicon";
 import { FONTS_LINK, DIAMOND, sectionLabel, media, card } from "./ui";
-import { mobiusArt } from "./art";
+import { mobiusArt, MOBIUS_SCRIPT } from "./art";
 import { PANELS, type Env, type Slot } from "./panels";
 
 /**
@@ -80,9 +80,11 @@ export async function renderPage(env: Env, origin: string): Promise<string> {
     ),
   ]);
 
+  // No title row: the strip is the whole card. It turns via MOBIUS_SCRIPT.
   const heroArt = card({
     key: "hero-art",
-    title: "Möbius",
+    title: "",
+    noHead: true,
     n: 0,
     extraClass: "hero-art",
     body: media(mobiusArt(), true),
@@ -147,6 +149,7 @@ ${FONTS_LINK}
       <span>${SITE.name}</span><span class="sep">·</span><span>v0.2</span><span class="sep">·</span><a href="/log">build log</a><span class="sep">·</span><span>deployed on Cloudflare Workers</span>
     </footer>
   </div>
+  ${MOBIUS_SCRIPT}
   <script>
   document.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('.email-copy') : null;

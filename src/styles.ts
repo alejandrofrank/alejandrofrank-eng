@@ -160,7 +160,6 @@ export const styles = `
   .hero h1 { font-size: clamp(42px, 6.6vw, 74px); line-height: .98; letter-spacing: -0.035em; margin: 20px 0 20px; color: var(--cream); text-wrap: balance; }
   .hero .sub { color: var(--muted); font-size: 17px; line-height: 1.5; max-width: 44ch; margin: 0; }
   .hero-art { --i: 0; }
-  .hero-art .card-head h3 { font-size: 18px; }
 
   /* Outcomes: four small cream tiles */
   .outcomes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 8px 0 52px; }

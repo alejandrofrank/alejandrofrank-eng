@@ -57,7 +57,7 @@ export function mobiusArt(): string {
     );
   }
 
-  return `<svg class="art-svg" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  return `<svg id="mobius" class="art-svg" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <g stroke-width=".7" opacity=".65">${rungs.join("")}</g>
     ${loops
       .map(
@@ -67,3 +67,65 @@ export function mobiusArt(): string {
       .join("\n    ")}
   </svg>`;
 }
+
+// ----------------------------------------------------------------------------
+// Client side: the same strip, turning. The server-rendered frame above is
+// what you see first (and all you see with JS off or reduced motion); this
+// script then re-projects the same points every frame with a slowly
+// advancing yaw and a gentle tilt wobble. Same constants, same maths as
+// point() — keep the two in step. Paused while the card is off screen.
+// ----------------------------------------------------------------------------
+
+export const MOBIUS_SCRIPT = `<script>
+(function () {
+  var svg = document.getElementById('mobius');
+  if (!svg) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var R = ${R}, CX = ${CX}, CY = ${CY}, TILT = ${TILT}, YAW = ${YAW}, HALF = ${HALF_W}, STEPS = ${STEPS}, RUNGS = ${RUNGS};
+  var SPIN = 0.00032, WOBBLE = 0.14, WOBBLE_RATE = 0.00045;
+  var loops = svg.querySelectorAll('path'), rungs = svg.querySelectorAll('line');
+  var VS = [1, 0.5, 0];
+  if (loops.length !== VS.length || rungs.length !== RUNGS) return;
+
+  function pt(u, v, yaw, tilt) {
+    var w = v * HALF;
+    var x = (1 + w * Math.cos(u / 2)) * Math.cos(u);
+    var y = (1 + w * Math.cos(u / 2)) * Math.sin(u);
+    var z = w * Math.sin(u / 2);
+    var x1 = x * Math.cos(yaw) - y * Math.sin(yaw);
+    var y1 = x * Math.sin(yaw) + y * Math.cos(yaw);
+    var y2 = y1 * Math.cos(tilt) - z * Math.sin(tilt);
+    return (CX + x1 * R).toFixed(1) + ' ' + (CY - y2 * R).toFixed(1);
+  }
+  function turn(v, yaw, tilt, out) {
+    for (var i = 0; i <= STEPS; i++) out.push(pt(2 * Math.PI * i / STEPS, v, yaw, tilt));
+  }
+
+  var raf = null, visible = true;
+  function frame(t) {
+    var yaw = YAW + t * SPIN;
+    var tilt = TILT + WOBBLE * Math.sin(t * WOBBLE_RATE);
+    for (var k = 0; k < VS.length; k++) {
+      var pts = [];
+      turn(VS[k], yaw, tilt, pts);
+      if (VS[k]) turn(-VS[k], yaw, tilt, pts);
+      loops[k].setAttribute('d', 'M' + pts.join('L') + 'Z');
+    }
+    for (var r = 0; r < RUNGS; r++) {
+      var u = 2 * Math.PI * r / RUNGS;
+      var a = pt(u, -1, yaw, tilt).split(' '), b = pt(u, 1, yaw, tilt).split(' ');
+      rungs[r].setAttribute('x1', a[0]); rungs[r].setAttribute('y1', a[1]);
+      rungs[r].setAttribute('x2', b[0]); rungs[r].setAttribute('y2', b[1]);
+    }
+    raf = visible ? requestAnimationFrame(frame) : null;
+  }
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) {
+      visible = es[0].isIntersecting;
+      if (visible && raf === null) raf = requestAnimationFrame(frame);
+    }).observe(svg);
+  }
+  raf = requestAnimationFrame(frame);
+})();
+</script>`;
