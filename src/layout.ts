@@ -1,42 +1,102 @@
 // ----------------------------------------------------------------------------
 // Page template. Composes the panel modules into the dashboard grid.
-// Data lives in content.ts + each panel module; CSS in styles.ts.
+// Data lives in content.ts + each panel module; CSS in styles.ts; the card,
+// label and media markup in ui.ts.
 // ----------------------------------------------------------------------------
 
 import { SITE, LINKS } from "./content";
 import { styles } from "./styles";
 import { buildOutcomes } from "./header";
-import { BANNER } from "./banner";
-import { MOBIUS_CANVAS, MOBIUS_SCRIPT, RAIN_CANVAS, RAIN_SCRIPT } from "./anim";
 import { FAVICON } from "./favicon";
-import { esc } from "./panels/helpers";
-import { PANELS, type Env } from "./panels";
+import { FONTS_LINK, DIAMOND, sectionLabel, media, card } from "./ui";
+import { mobiusArt } from "./art";
+import { PANELS, type Env, type Slot } from "./panels";
+
+/**
+ * Where each panel lands in the two-column grid decides whether it gets the
+ * divider node on its right seam: only a single-column card in the left
+ * column, with a single-column neighbour to its right.
+ */
+function slots(): Slot[] {
+  let col = 0;
+  return PANELS.map((p, i) => {
+    const next = PANELS[i + 1];
+    let node = false;
+    if (p.span === 2) {
+      col = 0;
+    } else {
+      node = col === 0 && !!next && next.span !== 2;
+      col = col === 0 ? 1 : 0;
+    }
+    return { n: i + 1, node };
+  });
+}
+
+function navLink(l: (typeof LINKS)[number]): string {
+  const ext = l.href.startsWith("http");
+  const attrs = ext ? ' target="_blank" rel="noopener noreferrer"' : "";
+  if (l.cta) {
+    // Same chamfered button for both; the arrow turns diagonal on the
+    // secondary because it leaves the site.
+    const cls = l.cta === "primary" ? "btn primary chamfer" : "btn secondary chamfer";
+    const arrow = l.cta === "primary" ? "→" : "↗";
+    return `<a class="${cls}" href="${l.href}"${attrs}>${l.label} <span class="cta-arrow" aria-hidden="true">${arrow}</span></a>`;
+  }
+  if (l.href.startsWith("mailto:")) {
+    const email = l.href.slice("mailto:".length);
+    return `<details class="email-pop">
+          <summary>${l.label}</summary>
+          <div class="email-box on-cream chamfer">
+            <a href="${l.href}">${email}</a>
+            <button type="button" class="email-copy chamfer" data-email="${email}">copy</button>
+          </div>
+        </details>`;
+  }
+  return `<a href="${l.href}"${attrs}>${l.label}</a>`;
+}
 
 export async function renderPage(env: Env, origin: string): Promise<string> {
+  const placed = slots();
+
   // Outcomes + all panels fetch concurrently; one failure can't take down the page.
   const [outcomes, cards] = await Promise.all([
     buildOutcomes(env),
     Promise.all(
-      PANELS.map(async (p) => {
+      PANELS.map(async (p, i) => {
         try {
-          return await p.render(env);
+          return await p.render(env, placed[i]);
         } catch {
-          return `<div class="panel" id="${p.key}">
-            <div class="panel-head"><h3>${p.title}</h3></div>
-            <div class="note">temporarily unavailable</div>
-          </div>`;
+          return card({
+            key: p.key,
+            title: p.title,
+            n: placed[i].n,
+            node: placed[i].node,
+            span2: p.span === 2,
+            body: `<div class="note">temporarily unavailable</div>`,
+            foot: `<span class="badge">offline</span>`,
+          });
         }
       })
     ),
   ]);
+
+  const heroArt = card({
+    key: "hero-art",
+    title: "Möbius",
+    n: 0,
+    extraClass: "hero-art",
+    body: media(mobiusArt(), true),
+    foot: `<span class="badge">one surface · no edges</span>`,
+  });
 
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#0a0a0b" />
+<meta name="theme-color" content="#2b2b29" />
 ${FAVICON}
+${FONTS_LINK}
 <title>${SITE.name} · builder dashboard</title>
 <meta name="description" content="${SITE.subtitle}" />
 <link rel="canonical" href="${origin}/" />
@@ -50,63 +110,43 @@ ${FAVICON}
 <style>${styles}</style>
 </head>
 <body>
-  ${RAIN_CANVAS}
   <div class="wrap">
     <nav class="topnav">
       <a class="topnav-brand" href="/">${SITE.name}</a>
       <div class="topnav-links">
-        ${LINKS.map((l) => {
-          const ext = l.href.startsWith("http");
-          const attrs = ext ? ' target="_blank" rel="noopener noreferrer"' : "";
-          if (l.cta) {
-            // Same pill markup for both; .cta-alt strips the fill. The arrow
-            // turns diagonal on the secondary because it leaves the site.
-            const cls = l.cta === "primary" ? "cta" : "cta cta-alt";
-            const arrow = l.cta === "primary" ? "→" : "↗";
-            return `<a class="${cls}" href="${l.href}"${attrs}>${l.label} <span class="cta-arrow" aria-hidden="true">${arrow}</span></a>`;
-          }
-          if (l.href.startsWith("mailto:")) {
-            const email = l.href.slice("mailto:".length);
-            return `<details class="email-pop">
-              <summary>${l.label}</summary>
-              <div class="email-box">
-                <a href="${l.href}">${email}</a>
-                <button type="button" class="email-copy" data-email="${email}">copy</button>
-              </div>
-            </details>`;
-          }
-          return `<a href="${l.href}"${attrs}>${l.label}</a>`;
-        }).join("")}
+        ${LINKS.map(navLink).join("")}
       </div>
     </nav>
+
     <header class="hero">
-      ${MOBIUS_CANVAS}
-      <div class="hero-content">
-        <div class="tag">${SITE.name} · ${SITE.location}</div>
-        <h1 class="sr-only">${SITE.thesis}</h1>
-        <pre class="banner" aria-hidden="true">${esc(BANNER)}</pre>
+      <div class="hero-copy">
+        <div class="hero-eyebrow label">${DIAMOND}<span>${SITE.name} — ${SITE.location}</span></div>
+        <h1>${SITE.thesis}</h1>
         <p class="sub">${SITE.subtitle}</p>
-        <div class="outcomes">
-          ${outcomes
-            .map((o) => `<div class="outcome"><b>${o.value}</b><span>${o.label}</span></div>`)
-            .join("")}
-        </div>
       </div>
+      ${heroArt}
     </header>
 
-    <section>
-      <div class="sec-head"><h2>Live dashboard</h2><span class="tag">building in public</span></div>
+    <div class="outcomes">
+      ${outcomes
+        .map(
+          (o, i) =>
+            `<div class="outcome on-cream chamfer rise" style="--i:${i}"><span class="outcome-idx">${String(i + 1).padStart(2, "0")}</span><b>${o.value}</b><span class="lab">${o.label}</span></div>`
+        )
+        .join("")}
+    </div>
+
+    <section class="dash">
+      ${sectionLabel("Live dashboard", "building in public")}
       <div class="grid">
         ${cards.join("")}
       </div>
     </section>
 
-    <footer class="wrap">
-      ${SITE.name} · v0.1 · <a href="/log">build log</a> · deployed on Cloudflare Workers
+    <footer class="site">
+      <span>${SITE.name}</span><span class="sep">·</span><span>v0.2</span><span class="sep">·</span><a href="/log">build log</a><span class="sep">·</span><span>deployed on Cloudflare Workers</span>
     </footer>
   </div>
-  ${RAIN_SCRIPT}
-  ${MOBIUS_SCRIPT}
   <script>
   document.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('.email-copy') : null;
@@ -114,7 +154,7 @@ ${FAVICON}
     var email = b.getAttribute('data-email');
     if (navigator.clipboard) {
       navigator.clipboard.writeText(email).then(function () {
-        var prev = b.textContent; b.textContent = 'copied!';
+        var prev = b.textContent; b.textContent = 'copied';
         setTimeout(function () { b.textContent = prev; }, 1200);
       });
     }

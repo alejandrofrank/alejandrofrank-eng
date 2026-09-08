@@ -6,11 +6,11 @@
 // datacenter IPs; we degrade gracefully if so.
 // ----------------------------------------------------------------------------
 
-import type { Env, Panel } from "./types";
-import { esc, cachedFetch, panelHead } from "./helpers";
+import type { Env, Panel, Slot } from "./types";
+import { esc, cachedFetch } from "./helpers";
+import { card } from "../ui";
 
 const DEFAULT_USER = "alexfrank";
-const ICON = "λ";
 
 interface LCStats {
   user: string;
@@ -59,36 +59,38 @@ export const leetcode: Panel = {
   key: "leetcode",
   title: "LeetCode",
 
-  async render(env: Env): Promise<string> {
+  async render(env: Env, slot: Slot): Promise<string> {
     const user = env.LEETCODE_USER || DEFAULT_USER;
     const s = await fetchStats(user);
+    const base = { key: "leetcode", title: "LeetCode", n: slot.n, node: slot.node };
 
     if (!s) {
-      return `<div class="panel" id="leetcode">
-        ${panelHead(ICON, "LeetCode", '<span class="badge">● live</span>')}
-        <div class="note">Couldn't reach LeetCode right now. Refresh in a bit.</div>
-      </div>`;
+      return card({
+        ...base,
+        body: `<div class="note">Couldn't reach LeetCode right now. Refresh in a bit.</div>`,
+        foot: `<span class="badge"><span class="dot-live">●</span> live</span>`,
+      });
     }
 
     const row = (cls: string, label: string, n: number) =>
-      `<div class="lc-row"><span class="lc-dot ${cls}"></span>${label}<b>${n}</b></div>`;
+      `<div class="lc-row"><span class="diamond lc-dot ${cls}"></span>${label}<b>${n}</b></div>`;
 
-    const streakLine =
+    const streak =
       s.streak > 0
-        ? `<div class="lc-streak">current streak · ${s.streak}d</div>`
-        : `<div class="lc-streak">no active streak yet</div>`;
+        ? `<span class="badge">streak · ${s.streak}d</span>`
+        : `<span class="badge">no active streak</span>`;
 
-    const badge = `<a class="badge" href="https://leetcode.com/u/${esc(user)}/" target="_blank" rel="noopener noreferrer">@${esc(user)}</a>`;
+    const handle = `<a class="badge handle" href="https://leetcode.com/u/${esc(user)}/" target="_blank" rel="noopener noreferrer">@${esc(user)}</a>`;
 
-    return `<div class="panel" id="leetcode">
-      ${panelHead(ICON, "LeetCode", badge)}
-      <div class="lc-total"><b>${s.total}</b><span>solved</span></div>
+    return card({
+      ...base,
+      body: `<div class="lc-total"><b>${s.total}</b><span>solved</span></div>
       <div class="lc-breakdown">
         ${row("easy", "Easy", s.easy)}
         ${row("med", "Medium", s.medium)}
         ${row("hard", "Hard", s.hard)}
-      </div>
-      ${streakLine}
-    </div>`;
+      </div>`,
+      foot: `${handle}<span class="sep">·</span>${streak}`,
+    });
   },
 };

@@ -1,11 +1,11 @@
 // ----------------------------------------------------------------------------
 // /resume page — job-selector tabs + a job header + the SVG scene player.
-// Reuses the site's theme tokens (styles) and ambient rain for consistency.
+// Reuses the site's theme tokens (styles) and card language for consistency.
 // ----------------------------------------------------------------------------
 
 import { styles } from "../styles";
 import { FAVICON } from "../favicon";
-import { RAIN_CANVAS, RAIN_SCRIPT } from "../anim";
+import { FONTS_LINK, sectionLabel, media } from "../ui";
 import { SITE, LINKS } from "../content";
 import { PRINT_STYLES, PRINT_SCRIPT } from "../print";
 import { SCENES } from "./data/scenes.generated";
@@ -22,17 +22,17 @@ export function renderResumePage(): string {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#0a0a0b" />
+<meta name="theme-color" content="#2b2b29" />
 ${FAVICON}
+${FONTS_LINK}
 <title>${SITE.name} · experience</title>
 <meta name="description" content="Each role as a keynote of what I actually built." />
 <style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${PLAYER_STYLES}${PRINT_STYLES}</style>
 </head>
 <body>
-  ${RAIN_CANVAS}
   <div class="wrap resumewrap">
     <div class="resume">
-      <nav class="resume-nav"><a href="/">‹ dashboard</a> &nbsp;·&nbsp; <a href="/timeline">timeline view →</a></nav>
+      <nav class="subnav"><a href="/">← dashboard</a><a href="/timeline">timeline view →</a></nav>
       <div class="print-head">
         <b>${SITE.name}</b>
         ${[`<span>${SITE.location}</span>`]
@@ -43,8 +43,9 @@ ${FAVICON}
           )
           .join("\n        ")}
       </div>
-      <h1 class="resume-h1">Experience</h1>
-      <p class="resume-lede">Each role, as a keynote of the systems I actually built.</p>
+      ${sectionLabel("Experience", `${SCENES.length} roles`)}
+      <h1 class="page-h1">Experience</h1>
+      <p class="page-lede">Each role, as a keynote of the systems I actually built.</p>
 
       <div class="timeline">
         <button class="tl-arrow" id="tlPrev" aria-label="previous role"><svg class="tl-ico" viewBox="0 0 24 24" aria-hidden="true"><polygon points="3,12 19,3 13,12 19,21"/></svg></button>
@@ -62,8 +63,10 @@ ${FAVICON}
       </div>
       ${renderFullText(SCENES)}
 
-      <div class="stage scene-scroll">
-        <svg id="scene" class="scene-svg" viewBox="0 0 1180 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Systems diagram"></svg>
+      <div class="stage on-cream chamfer">
+        ${media(
+          `<div class="scene-scroll"><svg id="scene" class="scene-svg" viewBox="0 0 1180 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Systems diagram"></svg></div>`
+        )}
       </div>
 
       <div class="player-controls">
@@ -78,7 +81,6 @@ ${FAVICON}
     </div>
   </div>
   <script>window.__SCENES__ = ${data};</script>
-  ${RAIN_SCRIPT}
   ${SCENE_ENGINE_SCRIPT}
   ${FULLTEXT_SCRIPT}
   ${PRINT_SCRIPT}

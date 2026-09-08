@@ -8,6 +8,8 @@ import { renderResumePage } from "./resume/page";
 import { renderTimelinePage } from "./timeline/page";
 import { renderLogPage } from "./log";
 import { styles } from "./styles";
+import { FAVICON } from "./favicon";
+import { FONTS_LINK, DIAMOND } from "./ui";
 import type { Env } from "./panels";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -32,15 +34,18 @@ app.notFound((c) =>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#2b2b29" />
+${FAVICON}
+${FONTS_LINK}
 <title>404 · not found</title>
 <style>${styles}</style>
 </head>
 <body>
-  <div class="wrap" style="padding-top:18vh; text-align:center;">
-    <div class="tag">404</div>
-    <h1 style="font-size:clamp(24px,5vw,40px);">This route doesn't exist.</h1>
-    <p class="sub" style="margin:0 auto;">The wall is never the code — but this URL might be.</p>
-    <p style="margin-top:28px;"><a href="/" style="color:var(--accent); text-decoration:none;">‹ back to the dashboard</a></p>
+  <div class="wrap narrow" style="padding-top:16vh;">
+    <div class="sec-label">${DIAMOND}<span>404</span><span class="leader"></span></div>
+    <h1 class="page-h1">This route doesn't exist.</h1>
+    <p class="page-lede">The wall is never the code — but this URL might be.</p>
+    <a class="btn secondary chamfer" href="/">← back to the dashboard</a>
   </div>
 </body>
 </html>`,

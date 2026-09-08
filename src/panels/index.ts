@@ -13,13 +13,13 @@ import { placeholder } from "./placeholder";
 
 export const PANELS: Panel[] = [
   github,
-  // Full-width venture section — sits directly under the GitHub card.
+  // Full-width venture card — sits directly under the GitHub card.
   bakiano,
   leetcode,
   shipping,
   status,
-  placeholder("x", "X / writing", "latest posts · cadence", "✎"),
-  placeholder("hackathons", "Hackathons", "events & builds", "◆"),
+  placeholder("x", "X / writing", "latest posts · cadence"),
+  placeholder("hackathons", "Hackathons", "events & builds"),
 ];
 
-export type { Panel, Env } from "./types";
+export type { Panel, Env, Slot } from "./types";

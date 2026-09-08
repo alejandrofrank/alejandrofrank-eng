@@ -7,10 +7,9 @@
 //            calendar → year total, current streak, and the heatmap.
 // ----------------------------------------------------------------------------
 
-import type { Env, Panel } from "./types";
-import { esc, timeAgo, cachedFetch, ghHeaders, panelHead } from "./helpers";
-
-const ICON = "▦";
+import type { Env, Panel, Slot } from "./types";
+import { esc, timeAgo, cachedFetch, ghHeaders } from "./helpers";
+import { card, media } from "../ui";
 
 const DEFAULT_USER = "alejandrofrank";
 
@@ -162,9 +161,11 @@ function renderHeatmap(cal: Calendar): string {
 export const github: Panel = {
   key: "github",
   title: "GitHub activity",
+  span: 2,
 
-  async render(env: Env): Promise<string> {
+  async render(env: Env, slot: Slot): Promise<string> {
     const user = env.GITHUB_USER || DEFAULT_USER;
+    const base = { key: "github", title: "GitHub activity", n: slot.n, node: slot.node, span2: true };
 
     const [profile, latestPush, cal] = await Promise.all([
       fetchProfile(user, env),
@@ -174,10 +175,11 @@ export const github: Panel = {
 
     // Total failure (rate-limited / offline): keep the card, show a soft note.
     if (!profile) {
-      return `<div class="panel span2" id="github">
-        ${panelHead(ICON, "GitHub activity", '<span class="badge">● live</span>')}
-        <div class="note">Couldn't reach GitHub right now. Refresh in a bit.</div>
-      </div>`;
+      return card({
+        ...base,
+        body: `<div class="note">Couldn't reach GitHub right now. Refresh in a bit.</div>`,
+        foot: `<span class="badge"><span class="dot-live">●</span> live</span>`,
+      });
     }
 
     const chips: string[] = [];
@@ -188,29 +190,25 @@ export const github: Panel = {
     chips.push(statChip(String(profile.public_repos), "public repos"));
     chips.push(statChip(String(profile.followers), "followers"));
 
-    // Daily nudge: amber/empty until today has a commit, then flips green.
+    // Daily nudge: quiet until today has a commit, then flips to the accent.
     const today = cal
       ? cal.todayCount > 0
-        ? `<div class="gh-today on">✓ shipped today · ${cal.todayCount}</div>`
-        : `<div class="gh-today off">○ nothing shipped today yet</div>`
+        ? `<div class="gh-today on">◆ shipped today · ${cal.todayCount}</div>`
+        : `<div class="gh-today off">◇ nothing shipped today yet</div>`
       : "";
 
-    const heatmap = cal ? renderHeatmap(cal) : "";
+    const heatmap = cal ? media(renderHeatmap(cal)) : "";
 
     // Intentionally no repo name/link here: the last-pushed repo can be a
     // private/client repo, so we surface recency only, never the name.
-    const latestLine = latestPush
-      ? `<div class="gh-latest">↳ last push · ${timeAgo(latestPush)}</div>`
-      : "";
+    const latest = latestPush ? `<span class="sep">·</span><span class="badge">last push ${timeAgo(latestPush)}</span>` : "";
 
-    const badge = `<a class="badge" href="${esc(profile.html_url)}" target="_blank" rel="noopener noreferrer">@${esc(profile.login)}</a>`;
+    const handle = `<a class="badge handle" href="${esc(profile.html_url)}" target="_blank" rel="noopener noreferrer">@${esc(profile.login)}</a>`;
 
-    return `<div class="panel span2" id="github">
-      ${panelHead(ICON, "GitHub activity", badge)}
-      <div class="stats">${chips.join("")}</div>
-      ${today}
-      ${heatmap}
-      ${latestLine}
-    </div>`;
+    return card({
+      ...base,
+      body: `<div class="stats">${chips.join("")}</div>${today}${heatmap}`,
+      foot: `${handle}${latest}`,
+    });
   },
 };

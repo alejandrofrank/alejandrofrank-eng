@@ -53,27 +53,27 @@ export function renderFullText(scenes: readonly FullTextScene[], activeId?: stri
     .join("");
 
   return `<details class="fulltext">
-        <summary class="ft-toggle"><span class="ft-caret" aria-hidden="true">▸</span> Full text <span class="ft-hint">read it in one go</span></summary>
+        <summary class="ft-toggle chamfer"><span class="ft-caret" aria-hidden="true">▸</span> Full text <span class="ft-hint">read it in one go</span></summary>
         <div class="ft-panel">${bodies}</div>
       </details>`;
 }
 
 export const FULLTEXT_STYLES = `
   .fulltext { margin: 0 0 14px; }
-  .ft-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; list-style: none; font-size: 13px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px; width: fit-content; }
+  .ft-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; list-style: none; font: 500 10px/1 var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--fg); background: var(--panel); padding: 10px 14px; width: fit-content; --c: 7px; }
   .ft-toggle::-webkit-details-marker { display: none; }
-  .ft-toggle:hover, .fulltext[open] .ft-toggle { border-color: var(--accent); color: var(--accent); }
+  .ft-toggle:hover, .fulltext[open] .ft-toggle { color: var(--accent); }
   .ft-caret { display: inline-block; transition: transform .2s ease; }
   .fulltext[open] .ft-caret { transform: rotate(90deg); }
-  .ft-hint { color: var(--muted); font-size: 11px; }
+  .ft-hint { color: var(--muted); }
   .fulltext[open] .ft-hint { display: none; }
-  .ft-panel { border-left: 1px solid var(--line); margin: 14px 0 2px; padding: 2px 0 2px 18px; max-width: 76ch; }
+  .ft-panel { border-left: 1px solid var(--line); margin: 16px 0 2px; padding: 2px 0 2px 18px; max-width: 76ch; }
   .ft-body[hidden] { display: none; }
   .ft-h { display: none; } /* print only — see print.ts */
   .ft-lede { color: var(--fg); margin: 0; line-height: 1.6; }
   .ft-beats { list-style: none; counter-reset: ft; margin: 20px 0 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
   .ft-beats li { counter-increment: ft; position: relative; padding-left: 34px; }
-  .ft-beats li::before { content: counter(ft); position: absolute; left: 0; top: 2px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); color: var(--muted); font-size: 11px; display: flex; align-items: center; justify-content: center; }
+  .ft-beats li::before { content: counter(ft, decimal-leading-zero); position: absolute; left: 0; top: 3px; font: 500 10px/1 var(--mono); letter-spacing: .06em; color: var(--muted); }
   .ft-beat-title { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--fg); }
   .ft-beat-text { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
   /* Progressive enhancement: browsers that can interpolate to height:auto get a
@@ -87,7 +87,7 @@ export const FULLTEXT_STYLES = `
     .ft-caret { transition: none; }
     .fulltext::details-content { transition: none; }
   }
-  @media (pointer: coarse) { .ft-toggle { padding: 8px 15px; } }
+  @media (pointer: coarse) { .ft-toggle { padding: 12px 16px; } }
 `;
 
 export const FULLTEXT_SCRIPT = `<script>

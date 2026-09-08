@@ -139,6 +139,12 @@ export interface LogEntry {
 
 export const CHANGELOG: LogEntry[] = [
   {
+    date: "Sep 8, 2026",
+    title: "Redesign: ink, cream, orange and chamfers",
+    blurb:
+      "The matrix rain and the ASCII banner retire. The whole site moves to a Dieter Rams-inspired system: a warm ink ground with a blueprint grid, cream and orange blocks with chamfered corners, Inter Tight for words and JetBrains Mono for labels, numbered cards with crop brackets, and a line-drawn Möbius that draws itself on load.",
+  },
+  {
     date: "Aug 29, 2026",
     title: "Bakiano gets its own section",
     blurb:

@@ -12,7 +12,9 @@ Built with [Hono](https://hono.dev) on **Cloudflare Workers**.
 src/
   index.ts      routes only (the Hono app)
   content.ts    editable content — copy, numbers, services, changelog, links (edit this most)
-  styles.ts     all CSS
+  styles.ts     all CSS — the design tokens and every component
+  ui.ts         shared markup: the numbered card, section label, media panel
+  art.ts        the hero Möbius line art (geometry -> SVG)
   layout.ts     HTML page template (home)
   log.ts        /log — the site's own build-in-public changelog
   panels/       dashboard panel modules (github, leetcode, shipping, status, …)
@@ -23,8 +25,8 @@ wrangler.jsonc  Cloudflare Worker config (URL slug = "name" field)
 _personal/      job-application materials — gitignored, never pushed
 ```
 
-Adding a live panel later: write its module under `src/panels/`, add an entry to
-`PANELS` in `content.ts`, render it in `layout.ts`.
+Adding a live panel later: write its module under `src/panels/` (return `card()`
+from `ui.ts`) and add it to `PANELS` in `panels/index.ts`.
 
 ## Develop
 

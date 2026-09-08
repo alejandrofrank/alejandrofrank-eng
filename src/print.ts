@@ -9,16 +9,19 @@
 
 export const PRINT_STYLES = `
 @media print {
-  /* Paper is white and ink is expensive. */
-  :root {
+  /* Paper is white and ink is expensive. Every surface goes flat white. */
+  :root, .on-cream, .on-orange {
     --bg: #fff; --panel: #fff; --line: #c8c8c8;
-    --fg: #111; --muted: #444; --accent: #0b6b4f;
+    --fg: #111; --muted: #444; --dim: #bbb; --accent: #0b6b4f;
+    background: #fff; color: #111;
   }
-  body { background: #fff; color: #111; font-size: 11pt; }
+  body { background: #fff; background-image: none; color: #111; font-size: 11pt; }
   @page { margin: 16mm 14mm; }
+  .chamfer { clip-path: none !important; }
+  .rise, .fade, .draw { animation: none !important; opacity: 1 !important; stroke-dashoffset: 0 !important; }
 
   /* Chrome that means nothing on paper. */
-  .rain, .mobius, .topnav, .resume-nav, .tlp-nav, .tlp-foot, .tlp-legend,
+  .topnav, .subnav, .sec-label, .dotgrid, .bracket, .grip, .tlp-foot, .tlp-legend,
   .tabs, .timeline, .player-controls, .tlp-controls, .caption, .tlp-cap,
   .ft-toggle, .tlp-close, .tlp-backdrop, .tlp-lede, footer { display: none !important; }
 
@@ -42,8 +45,8 @@ export const PRINT_STYLES = `
   .resume .ft-body[hidden] { display: block !important; }
   .resume .ft-body + .ft-body { break-before: page; }
   .resume .ft-body { padding-top: 2mm; }
-  .resume-h1 { font-size: 20pt; margin-bottom: 2px; }
-  .resume-lede { color: #444; margin-bottom: 18px; }
+  .page-h1 { font-size: 20pt; margin-bottom: 2px; }
+  .page-lede { color: #444; margin-bottom: 18px; }
   .print-head { display: block !important; color: #444; font-size: 10pt; margin: 0 0 22px; }
   .print-head b { display: block; color: #111; font-size: 15pt; margin-bottom: 3px; }
   .print-head span + span::before { content: " · "; }
@@ -53,9 +56,10 @@ export const PRINT_STYLES = `
   .tlp-modal:not(.open) { display: none !important; }
   .tlp-modal.open { position: static; display: block; }
   .tlp-dialog { position: static; width: auto; max-height: none; overflow: visible;
-                margin: 0; padding: 0; border: none; border-radius: 0; box-shadow: none; }
+                margin: 0; padding: 0; border: none; box-shadow: none; }
   body:has(.tlp-modal.open) .tlp-wrap { display: none !important; }
   .tlp-dialog .ft-h { display: none; } /* the modal already prints role + period */
+  .stage, .media, .media-inner { padding: 0; background: #fff; }
 
   /* A half-played diagram would print half-drawn; show the finished state, and
      drop the colour coding — most printers are black and white anyway. */
@@ -65,7 +69,7 @@ export const PRINT_STYLES = `
   .node-label { fill: #111 !important; }
   .node-sub { fill: #555 !important; }
   .flow-path { stroke: #888 !important; stroke-dashoffset: 0 !important; opacity: 1 !important;
-               filter: none !important; animation: none !important; }
+               animation: none !important; }
   .flow-pulse { display: none; }
 }
 `;

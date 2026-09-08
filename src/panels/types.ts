@@ -12,9 +12,17 @@ export interface Env {
   LEETCODE_USER?: string;
 }
 
+/** Where the layout placed this panel: its index and whether it gets a seam node. */
+export interface Slot {
+  n: number;
+  node: boolean;
+}
+
 export interface Panel {
   key: string;
   title: string;
-  /** Render the full `.panel` card. Receives runtime env (secrets/vars). */
-  render(env: Env): Promise<string>;
+  /** Full-width card. The layout uses this to place seam nodes. */
+  span?: 2;
+  /** Render the full card (see ui.ts `card`). Receives runtime env + placement. */
+  render(env: Env, slot: Slot): Promise<string>;
 }

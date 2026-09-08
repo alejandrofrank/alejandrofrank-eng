@@ -3,17 +3,21 @@
 // ----------------------------------------------------------------------------
 
 import type { Panel } from "./types";
-import { panelHead } from "./helpers";
+import { card } from "../ui";
 
-export function placeholder(key: string, title: string, note: string, icon = "·"): Panel {
+export function placeholder(key: string, title: string, note: string): Panel {
   return {
     key,
     title,
-    async render() {
-      return `<div class="panel" id="${key}">
-        ${panelHead(icon, title, '<span class="badge">coming soon</span>')}
-        <div class="note">${note}</div>
-      </div>`;
+    async render(_env, slot) {
+      return card({
+        key,
+        title,
+        n: slot.n,
+        node: slot.node,
+        body: `<div class="note">${note}</div>`,
+        foot: `<span class="badge">coming soon</span>`,
+      });
     },
   };
 }

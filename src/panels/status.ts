@@ -1,17 +1,17 @@
 // ----------------------------------------------------------------------------
 // Service status panel — pings the deployed services listed in content.ts
-// (SERVICES) and shows an up/down dot per service. Pings are edge-cached for
+// (SERVICES) and shows an up/down mark per service. Pings are edge-cached for
 // ~60s so a page-view storm can't hammer the services themselves.
 //
 // The site itself is listed without a url: a worker can't fetch its own route
 // (Cloudflare blocks self-requests), and if this page rendered, it's up.
 // ----------------------------------------------------------------------------
 
-import type { Env, Panel } from "./types";
+import type { Env, Panel, Slot } from "./types";
 import { SERVICES, type ServiceEntry } from "../content";
-import { esc, cachedFetch, panelHead } from "./helpers";
+import { esc, cachedFetch } from "./helpers";
+import { card } from "../ui";
 
-const ICON = "◉";
 const PING_TIMEOUT_MS = 5000;
 
 async function ping(url: string): Promise<boolean> {
@@ -40,14 +40,14 @@ function row(e: ServiceEntry, up: boolean, self: boolean): string {
     : up
       ? `<b class="svc-state up">up</b>`
       : `<b class="svc-state down">down</b>`;
-  return `<div class="svc-row"><span class="svc-dot ${up ? "up" : "down"}"></span>${name}${state}</div>`;
+  return `<div class="svc-row"><span class="diamond svc-dot ${up ? "up" : "down"}"></span>${name}${state}</div>`;
 }
 
 export const status: Panel = {
   key: "status",
   title: "Service status",
 
-  async render(_env: Env): Promise<string> {
+  async render(_env: Env, slot: Slot): Promise<string> {
     const results = await Promise.all(
       SERVICES.map(async (e) => {
         const self = !e.url;
@@ -58,13 +58,16 @@ export const status: Panel = {
 
     const allUp = results.every((r) => r.up);
     const badge = allUp
-      ? '<span class="badge svc-all up">all systems up</span>'
-      : '<span class="badge svc-all down">degraded</span>';
+      ? '<span class="badge up">all systems up</span>'
+      : '<span class="badge down">degraded</span>';
 
-    return `<div class="panel" id="status">
-      ${panelHead(ICON, "Service status", badge)}
-      <div class="svc">${results.map((r) => row(r.e, r.up, r.self)).join("")}</div>
-      <div class="svc-note">checked from the edge · cached ~60s</div>
-    </div>`;
+    return card({
+      key: "status",
+      title: "Service status",
+      n: slot.n,
+      node: slot.node,
+      body: `<div class="svc">${results.map((r) => row(r.e, r.up, r.self)).join("")}</div>`,
+      foot: `${badge}<span class="sep">·</span><span class="badge">edge · cached ~60s</span>`,
+    });
   },
 };
