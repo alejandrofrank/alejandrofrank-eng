@@ -6,7 +6,6 @@ import { Hono } from "hono";
 import { renderPage } from "./layout";
 import { renderResumePage } from "./resume/page";
 import { renderTimelinePage } from "./timeline/page";
-import { renderLogPage } from "./log";
 import { styles } from "./styles";
 import { FAVICON } from "./favicon";
 import { FONTS_LINK, DIAMOND } from "./ui";
@@ -24,7 +23,6 @@ app.use("*", async (c, next) => {
 app.get("/", async (c) => c.html(await renderPage(c.env, new URL(c.req.url).origin)));
 app.get("/resume", (c) => c.html(renderResumePage()));
 app.get("/timeline", (c) => c.html(renderTimelinePage()));
-app.get("/log", (c) => c.html(renderLogPage()));
 app.get("/health", (c) => c.json({ ok: true }));
 
 app.notFound((c) =>

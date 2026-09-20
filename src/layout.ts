@@ -138,7 +138,7 @@ ${FONTS_LINK}
     </main>
 
     <footer class="site">
-      <span>Made by a human (Not really, made by AI)</span><a href="/log">Build log ↗</a>
+      <span>Made by a human (Not really, made by AI)</span>
     </footer>
   </div>
 
