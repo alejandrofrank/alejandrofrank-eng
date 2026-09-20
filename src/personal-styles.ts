@@ -109,7 +109,14 @@ body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
  mask-size:100% 100%; mask-repeat:no-repeat;
 }
 .color-grain { position:absolute; inset:0; opacity:.52; mix-blend-mode:overlay; z-index:1; }
-@keyframes band-drift { from { transform:translate(-2%,2%) rotate(-2deg) scale(1.02); } to { transform:translate(2%,-2%) rotate(2deg) scale(1.06); } }
+@keyframes band-drift { from { transform:translate(-3%,2%) rotate(-3deg) scale(1.04); } to { transform:translate(3%,-2%) rotate(3deg) scale(1.08); } }
+.color-band i:nth-child(1) { animation:violet-flow 22s ease-in-out -7s infinite alternate; }
+.color-band i:nth-child(2) { animation:rose-flow 27s ease-in-out -13s infinite alternate; }
+.color-band i:nth-child(3) { animation:gold-flow 30s ease-in-out -5s infinite alternate; }
+@keyframes violet-flow { from { transform:translate(-2%,3%) scaleY(.95); } to { transform:translate(3%,-5%) scaleY(1.07); } }
+@keyframes rose-flow { from { transform:translate(3%,-3%) rotate(6deg); } to { transform:translate(-3%,4%) rotate(10deg); } }
+@keyframes gold-flow { from { transform:translate(-3%,4%) rotate(-5deg); } to { transform:translate(3%,-5%) rotate(-1deg); } }
+@media(prefers-reduced-motion:reduce) { .color-band i:nth-child(n) { animation:none; } }
 .human-hero { padding:clamp(90px,16vh,160px) 0 20px; text-align:center; }
 .human-location { margin:0 0 20px; font-size:16px; font-weight:500; letter-spacing:-.015em; }
 .human-hero h1 { font-size:clamp(100px,17vw,210px); line-height:.95; font-weight:600; letter-spacing:-.085em; margin:0 0 30px; color:#211b31; }
