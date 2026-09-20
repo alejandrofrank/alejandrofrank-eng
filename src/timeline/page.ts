@@ -240,7 +240,7 @@ ${FONTS_LINK}
 <body class="personal experience-page">
   ${gradientMarkup}
   <div class="wrap tlp-wrap">
-    <nav class="subnav"><a href="/">← home</a><a href="/resume">list view →</a></nav>
+    <nav class="subnav"><a href="/">Home</a><a href="/resume">List view</a></nav>
     ${sectionLabel("Timeline", `${SCENES.length} roles`)}
     <div class="tlp-head">
       <div>
@@ -259,7 +259,7 @@ ${FONTS_LINK}
     <div class="tlp-foot">
       <span class="tlp-hint-desktop">click a company</span>
       <span class="tlp-hint-mobile">swipe ↔ · tap a company</span>
-      <a href="/resume">switch to list view →</a>
+      <a href="/resume">List view</a>
     </div>
   </div>
 

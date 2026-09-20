@@ -187,6 +187,21 @@ body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
 .personal.experience-page .wrap { max-width:1240px; min-width:0; padding-bottom:30px; }
 .personal.experience-page .subnav { margin:28px 0 34px; gap:12px; flex-wrap:wrap; }
 .personal.experience-page .subnav a,.personal.experience-page .tlp-foot a { color:#111; background:#f2eadc; border:1px solid #d6c9b6; padding:12px 18px; border-radius:999px; font:700 13px var(--sans); text-transform:none; letter-spacing:0; }
+.personal.experience-page .subnav a,.personal.experience-page .tlp-foot a {
+ display:inline-flex; align-items:center; justify-content:center; min-width:115px; text-align:center;
+ font:650 14px ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; letter-spacing:-.025em;
+ background:linear-gradient(110deg,#f2eadc 20%,#f2eadc 45%,#f5d9d5 62%,#e9d6f2 78%,#f2eadc 100%);
+ background-size:300% 100%; background-position:0% 50%;
+ transition:background-position .7s cubic-bezier(.22,1,.36,1),box-shadow .4s,border-color .4s,transform .4s;
+}
+.personal.experience-page .subnav a:is(:hover,:focus-visible),.personal.experience-page .tlp-foot a:is(:hover,:focus-visible) {
+ color:#111; background-position:100% 50%; border-color:#c9a9ca;
+ box-shadow:-8px 5px 22px #ef779533,8px 5px 22px #9a70df33; transform:translateY(-2px);
+}
+@media(prefers-reduced-motion:reduce) {
+ .personal.experience-page .subnav a,.personal.experience-page .tlp-foot a { transition:none; }
+ .personal.experience-page .subnav a:is(:hover,:focus-visible),.personal.experience-page .tlp-foot a:is(:hover,:focus-visible) { transform:none; }
+}
 .personal.experience-page .page-h1 { font-size:clamp(34px,4.8vw,62px); letter-spacing:-.045em; }
 .personal.experience-page .page-lede { color:#514459; }
 .personal.experience-page .tlp-scroll { background:#f2eadcf5; border:1px solid #ead6df; border-radius:22px; margin-top:24px; box-shadow:0 16px 60px #3b193514; }

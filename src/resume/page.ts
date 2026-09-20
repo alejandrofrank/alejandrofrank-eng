@@ -35,7 +35,7 @@ ${FONTS_LINK}
   ${gradientMarkup}
   <div class="wrap resumewrap">
     <div class="resume">
-      <nav class="subnav"><a href="/">← home</a><a href="/timeline">timeline view →</a></nav>
+      <nav class="subnav"><a href="/">Home</a><a href="/timeline">Timeline view</a></nav>
       <div class="print-head">
         <b>${SITE.name}</b>
         ${[`<span>${SITE.location}</span>`]
