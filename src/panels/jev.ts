@@ -2,9 +2,9 @@ import type { Panel } from './types';
 import { card } from '../ui';
 
 export const jev: Panel = {
-  key: 'jev', title: 'Vesti', span: 2,
+  key: 'jev', title: 'Vesti · with Jev & SAM 3.1', span: 2,
   async render(_env, slot) {
-    return card({key: 'jev', title: 'Vesti', n: slot.n, span2: true,
+    return card({key: 'jev', title: 'Vesti · with Jev &amp; SAM 3.1', n: slot.n, span2: true,
       body: `<div class="project-eyebrow">Building with Jev · Side project</div>
         <p class="v-headline">Find the outfit. Make it yours.</p>
         <p class="project-copy">AI-powered outfit search. Discover a look, find similar pieces, and swap individual items for alternatives that fit together.</p>

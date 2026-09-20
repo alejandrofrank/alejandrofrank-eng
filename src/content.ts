@@ -34,7 +34,7 @@ export interface ShipEntry {
 export const SHIPLOG: ShipEntry[] = [
   {
     date: "2026",
-    title: "Vesti · with Jev",
+    title: "Vesti · with Jev & SAM 3.1",
     status: "building",
     blurb: "AI-powered outfit search: find looks, compare pieces, and match alternatives.",
   },
