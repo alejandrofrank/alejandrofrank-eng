@@ -113,7 +113,10 @@ body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
 .text-link { color:#5d35a5; }
 .contact-links { display:flex; flex-wrap:wrap; align-items:center; gap:24px; }
 .contact-links > a { color:#482677; }
-.personal .contact-links .btn.primary,.personal .contact-links .btn.secondary { background:#efe2ff; color:#482677; }
+.personal .contact-links .btn.primary,.personal .contact-links .btn.secondary { background:#dcc7f4; color:#392052; font-weight:650; justify-content:center; }
+.personal .contact-links .btn:hover { background:#cdb0ed; color:#301747; }
+.personal .email-copy { background:#251d32; color:#f2eadc; font-weight:700; }
+.personal .email-copy:hover,.personal .email-copy:focus-visible { background:#482d63; color:#fff7ed; }
 .personal .contact-links .email-box { right:auto; left:0; background:#f2eadc; border:1px solid #ddd; }
 .personal footer.site { margin-top:auto; padding:32px 0; justify-content:space-between; color:#251d32; font:500 11px var(--sans); text-transform:none; letter-spacing:0; }
 .personal footer.site a { color:#251d32; }

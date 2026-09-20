@@ -38,11 +38,8 @@ function navLink(l: (typeof LINKS)[number]): string {
   const ext = l.href.startsWith("http");
   const attrs = ext ? ' target="_blank" rel="noopener noreferrer"' : "";
   if (l.cta) {
-    // Same chamfered button for both; the arrow turns diagonal on the
-    // secondary because it leaves the site.
     const cls = l.cta === "primary" ? "btn primary chamfer" : "btn secondary chamfer";
-    const arrow = l.cta === "primary" ? "→" : "↗";
-    return `<a class="${cls}" href="${l.href}"${attrs}>${l.label} <span class="cta-arrow" aria-hidden="true">${arrow}</span></a>`;
+    return `<a class="${cls}" href="${l.href}"${attrs}>${l.label}</a>`;
   }
   if (l.href.startsWith("mailto:")) {
     const email = l.href.slice("mailto:".length);
