@@ -8,8 +8,9 @@ import { SITE, LINKS } from "./content";
 import { styles } from "./styles";
 import { buildOutcomes } from "./header";
 import { FAVICON } from "./favicon";
-import { FONTS_LINK, DIAMOND, sectionLabel, media, card } from "./ui";
-import { mobiusArt, MOBIUS_SCRIPT } from "./art";
+import { FONTS_LINK, DIAMOND, sectionLabel, card } from "./ui";
+import { waveMarkup, waveScript } from "./waves";
+import { personalStyles } from "./personal-styles";
 import { PANELS, type Env, type Slot } from "./panels";
 
 /**
@@ -80,23 +81,12 @@ export async function renderPage(env: Env, origin: string): Promise<string> {
     ),
   ]);
 
-  // No title row: the strip is the whole card. It turns via MOBIUS_SCRIPT.
-  const heroArt = card({
-    key: "hero-art",
-    title: "",
-    noHead: true,
-    n: 0,
-    extraClass: "hero-art",
-    body: media(mobiusArt(), true),
-    foot: `<span class="badge">one surface · no edges</span>`,
-  });
-
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#2b2b29" />
+<meta name="theme-color" content="#f5f6fa" />
 ${FAVICON}
 ${FONTS_LINK}
 <title>${SITE.name} · builder dashboard</title>
@@ -109,9 +99,9 @@ ${FONTS_LINK}
 <meta property="og:image" content="${origin}/og.png" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:image" content="${origin}/og.png" />
-<style>${styles}</style>
+<style>${styles}${personalStyles}</style>
 </head>
-<body>
+<body class="personal">
   <div class="wrap">
     <nav class="topnav">
       <a class="topnav-brand" href="/">${SITE.name}</a>
@@ -123,10 +113,11 @@ ${FONTS_LINK}
     <header class="hero">
       <div class="hero-copy">
         <div class="hero-eyebrow label">${DIAMOND}<span>${SITE.name} — ${SITE.location}</span></div>
-        <h1>${SITE.thesis}</h1>
+        <h1>Complex problems.<br /><em>Working systems.</em></h1>
         <p class="sub">${SITE.subtitle}</p>
+        <div class="hero-actions"><a href="#bakiano">What I’m building ↗</a><a href="/timeline">Explore my experience →</a></div>
       </div>
-      ${heroArt}
+      ${waveMarkup}
     </header>
 
     <div class="outcomes">
@@ -149,7 +140,7 @@ ${FONTS_LINK}
       <span>${SITE.name}</span><span class="sep">·</span><span>v0.2</span><span class="sep">·</span><a href="/log">build log</a><span class="sep">·</span><span>deployed on Cloudflare Workers</span>
     </footer>
   </div>
-  ${MOBIUS_SCRIPT}
+  ${waveScript}
   <script>
   document.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('.email-copy') : null;

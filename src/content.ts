@@ -33,6 +33,12 @@ export interface ShipEntry {
 
 export const SHIPLOG: ShipEntry[] = [
   {
+    date: "2026",
+    title: "Vesti · with Jev",
+    status: "building",
+    blurb: "AI-powered outfit search: find looks, compare pieces, and match alternatives.",
+  },
+  {
     date: "Jun 2026",
     title: "me.alejandrofranks.workers.dev",
     status: "shipped",
@@ -138,6 +144,11 @@ export interface LogEntry {
 }
 
 export const CHANGELOG: LogEntry[] = [
+  {
+    date: "Sep 20, 2026",
+    title: "Particle waves and Vesti",
+    blurb: "A new personal homepage with blue-violet particle waves, soft gradients, and a lighter engineering-focused layout. Vesti, the outfit-search side project with Jev, now sits directly below Bakiano.",
+  },
   {
     date: "Sep 8, 2026",
     title: "Redesign: ink, cream, orange and chamfers",
