@@ -91,9 +91,9 @@ body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
 .color-world { position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0; background:linear-gradient(160deg,#fff4ed,#f3dce8 65%,#f4dfd8); }
 .color-band {
  position:absolute; inset:-5%; width:110%; height:110%; filter:blur(18px); opacity:1;
- animation:band-drift 24s ease-in-out infinite alternate;
+ animation:band-drift 32s ease-in-out infinite alternate;
 }
-.color-grain { position:absolute; inset:0; opacity:.38; mix-blend-mode:overlay; z-index:1; }
+.color-grain { position:absolute; inset:0; opacity:.52; mix-blend-mode:overlay; z-index:1; }
 @keyframes band-drift { from { transform:translate(-2%,2%) rotate(-2deg) scale(1.02); } to { transform:translate(2%,-2%) rotate(2deg) scale(1.06); } }
 .human-hero { padding:clamp(90px,16vh,160px) 0 20px; text-align:center; }
 .human-location { margin:0 0 20px; font-size:16px; font-weight:500; letter-spacing:-.015em; }

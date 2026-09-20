@@ -16,5 +16,5 @@ export const gradientMarkup = `<div class="color-world" aria-hidden="true">
     <path fill="url(#ridge-rose)" d="M-120 640 C150 420 300 490 520 645 S900 760 1100 585 S1430 520 1560 610 L1560 1050 H-120Z"/>
     <path fill="url(#ridge-gold)" d="M-120 860 C160 770 370 940 630 790 S970 660 1200 785 S1450 860 1560 730 L1560 1050 H-120Z"/>
   </svg>
-  <svg class="color-grain" width="100%" height="100%"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="2.5" intercept="-.75"/><feFuncG type="linear" slope="2.5" intercept="-.75"/><feFuncB type="linear" slope="2.5" intercept="-.75"/></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(#grain)"/></svg>
+  <svg class="color-grain" width="100%" height="100%"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".6" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="2.5" intercept="-.75"/><feFuncG type="linear" slope="2.5" intercept="-.75"/><feFuncB type="linear" slope="2.5" intercept="-.75"/></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(#grain)"/></svg>
 </div>`;
