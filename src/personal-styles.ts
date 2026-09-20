@@ -170,5 +170,37 @@ body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
  .ambient-calendar .hm,.ambient-calendar .hm-col { gap:2px; }
 }
 @media(hover:none) { .ambient-calendar { opacity:.72; } }
+.reveal > summary,.explore-link { background:#ffe68a; border-color:#e5c55e; color:#111; font-weight:700; }
+.reveal > summary:hover,.explore-link:hover { background:#ffdb56; color:#111; }
+.reveal[open] > summary { background:#ffd54a; border-color:#9d7516; color:#111; box-shadow:inset 0 0 0 1px #9d7516; }
+/* Shared secondary pages: color around the content, opaque reading surfaces. */
+.personal.experience-page .wrap { max-width:1240px; min-width:0; padding-bottom:30px; }
+.personal.experience-page .subnav { margin:28px 0 34px; gap:12px; flex-wrap:wrap; }
+.personal.experience-page .subnav a,.personal.experience-page .tlp-foot a { color:#111; background:#ffe68a; border:1px solid #e5c55e; padding:12px 18px; border-radius:999px; font:700 13px var(--sans); text-transform:none; letter-spacing:0; }
+.personal.experience-page .page-h1 { font-size:clamp(34px,4.8vw,62px); letter-spacing:-.045em; }
+.personal.experience-page .page-lede { color:#514459; }
+.personal.experience-page .tlp-scroll { background:#fffaf7f5; border:1px solid #ead6df; border-radius:22px; margin-top:24px; box-shadow:0 16px 60px #3b193514; }
+.personal.experience-page .tlp { height:58vh; min-height:480px; --dim:#99889e; --muted:#68566f; }
+.personal.experience-page .tlp-bar { border-radius:6px; }
+.personal.experience-page .tlp-bar.job,.personal.experience-page .lg.job i { background:#a448d5; }
+.personal.experience-page .tlp-bar.contract,.personal.experience-page .lg.contract i { background:#e16a3d; }
+.personal.experience-page .tlp-bar.project,.personal.experience-page .lg.project i { background:#e3b52f; box-shadow:inset 0 0 0 1px #9a7616; }
+.personal.experience-page .tlp-bar:hover { filter:brightness(.85); }
+.personal.experience-page .tlp-legend { background:#fffaf7; padding:14px 18px; border-radius:14px; border:1px solid #ead6df; }
+.personal.experience-page .tlp-foot { gap:12px; flex-wrap:wrap; margin-top:20px; }
+.personal.experience-page .tlp-foot span { color:#201c32; background:#fffaf7; padding:9px 12px; border-radius:8px; }
+.personal.experience-page .tlp-dialog { background:#fffaf7; border:1px solid #ead6df; border-radius:22px; box-shadow:0 25px 90px #20122a55; }
+.personal.experience-page .tlp-backdrop { background:#23132d80; backdrop-filter:blur(10px); }
+.personal.experience-page .media { background:#f3eaf8; }
+.personal.experience-page .pp,.personal.experience-page .tab { background:#ffe68a; color:#111; font-weight:700; border-radius:999px; }
+.personal.experience-page .tab.on { background:#ffd54a; box-shadow:inset 0 0 0 2px #9d7516; }
+.personal.experience-page .resume { width:100%; background:#fffaf7f5; padding:0 30px 24px; border-radius:0 0 22px 22px; }
+.personal.experience-page .log-item { background:#fffaf7f5; border:1px solid #ead6df; border-radius:16px; padding:24px; }
+.personal.experience-page .wrap.narrow { max-width:850px; }
+@media(max-width:700px) { .personal.experience-page .resume { padding:0 14px 18px; } .personal.experience-page .tlp { min-height:430px; } }
+@media(hover:hover) and (pointer:fine) {
+ body.personal,body.personal * { cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Ccircle cx='9' cy='9' r='7' fill='%23e24938'/%3E%3C/svg%3E") 9 9,auto; }
+}
+@media print { .color-world { display:none; } .personal.experience-page { background:white; } .personal.experience-page .resume { background:white; padding:0; } }
 @media(prefers-reduced-motion:reduce) { .color-band { animation:none; } .reveal > summary,.explore-link,.ambient-calendar { transition:none; } }
 `;

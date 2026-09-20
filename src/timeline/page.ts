@@ -1,3 +1,5 @@
+import { personalStyles } from "../personal-styles";
+import { gradientMarkup } from "../gradient";
 // ----------------------------------------------------------------------------
 // /timeline — the career timeline as the centerpiece. A big horizontal
 // blueprint axis (years across, companies placed by date). Click a company and
@@ -228,16 +230,17 @@ export function renderTimelinePage(): string {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#2b2b29" />
+<meta name="theme-color" content="#fff4ed" />
 ${FAVICON}
 ${FONTS_LINK}
 <title>${SITE.name} · timeline</title>
 <meta name="description" content="A career timeline you can walk through, role by role." />
-<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${TIMELINE_STYLES}${PRINT_STYLES}</style>
+<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${TIMELINE_STYLES}${personalStyles}${PRINT_STYLES}</style>
 </head>
-<body>
+<body class="personal experience-page">
+  ${gradientMarkup}
   <div class="wrap tlp-wrap">
-    <nav class="subnav"><a href="/">← dashboard</a><a href="/resume">list view →</a></nav>
+    <nav class="subnav"><a href="/">← home</a><a href="/resume">list view →</a></nav>
     ${sectionLabel("Timeline", `${SCENES.length} roles`)}
     <div class="tlp-head">
       <div>

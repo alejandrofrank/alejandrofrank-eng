@@ -1,3 +1,5 @@
+import { personalStyles } from "../personal-styles";
+import { gradientMarkup } from "../gradient";
 // ----------------------------------------------------------------------------
 // /resume page — job-selector tabs + a job header + the SVG scene player.
 // Reuses the site's theme tokens (styles) and card language for consistency.
@@ -22,17 +24,18 @@ export function renderResumePage(): string {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#2b2b29" />
+<meta name="theme-color" content="#fff4ed" />
 ${FAVICON}
 ${FONTS_LINK}
 <title>${SITE.name} · experience</title>
 <meta name="description" content="Each role as a keynote of what I actually built." />
-<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${PLAYER_STYLES}${PRINT_STYLES}</style>
+<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${PLAYER_STYLES}${personalStyles}${PRINT_STYLES}</style>
 </head>
-<body>
+<body class="personal experience-page">
+  ${gradientMarkup}
   <div class="wrap resumewrap">
     <div class="resume">
-      <nav class="subnav"><a href="/">← dashboard</a><a href="/timeline">timeline view →</a></nav>
+      <nav class="subnav"><a href="/">← home</a><a href="/timeline">timeline view →</a></nav>
       <div class="print-head">
         <b>${SITE.name}</b>
         ${[`<span>${SITE.location}</span>`]

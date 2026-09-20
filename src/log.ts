@@ -1,3 +1,5 @@
+import { personalStyles } from "./personal-styles";
+import { gradientMarkup } from "./gradient";
 // ----------------------------------------------------------------------------
 // /log — the site's own changelog. The build-in-public journal: every entry is
 // a shipped change to this site. Data lives in content.ts (CHANGELOG).
@@ -25,16 +27,17 @@ export function renderLogPage(): string {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#2b2b29" />
+<meta name="theme-color" content="#fff4ed" />
 ${FAVICON}
 ${FONTS_LINK}
 <title>${SITE.name} · build log</title>
 <meta name="description" content="Changelog of this site — building in public, one shipped change at a time." />
-<style>${styles}${LOG_STYLES}</style>
+<style>${styles}${LOG_STYLES}${personalStyles}</style>
 </head>
-<body>
+<body class="personal experience-page">
+  ${gradientMarkup}
   <div class="wrap narrow">
-    <nav class="subnav"><a href="/">← dashboard</a></nav>
+    <nav class="subnav"><a href="/">← home</a></nav>
     ${sectionLabel("Build log", `${total} entries`)}
     <h1 class="page-h1">Build log</h1>
     <p class="page-lede">The site, building itself in public. Every entry is a shipped change.</p>
