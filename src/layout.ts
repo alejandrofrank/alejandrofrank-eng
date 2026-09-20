@@ -12,6 +12,7 @@ import { FONTS_LINK, card } from "./ui";
 import { gradientMarkup } from "./gradient";
 import { personalStyles } from "./personal-styles";
 import { PANELS, type Env, type Slot } from "./panels";
+import { renderAmbientCalendar } from "./panels/github";
 
 /**
  * Where each panel lands in the two-column grid decides whether it gets the
@@ -60,7 +61,7 @@ export async function renderPage(env: Env, origin: string): Promise<string> {
   const placed = slots();
 
   // Outcomes + all panels fetch concurrently; one failure can't take down the page.
-  const [outcomes, cards] = await Promise.all([
+  const [outcomes, cards, calendar] = await Promise.all([
     buildOutcomes(env),
     Promise.all(
       PANELS.map(async (p, i) => {
@@ -79,6 +80,7 @@ export async function renderPage(env: Env, origin: string): Promise<string> {
         }
       })
     ),
+    renderAmbientCalendar(env),
   ]);
 
   return `<!doctype html>
@@ -131,11 +133,12 @@ ${FONTS_LINK}
         <summary>Say hello <span>↗</span></summary>
         <section class="reveal-body"><h2>Let’s talk.</h2><div class="contact-links">${LINKS.filter(l=>!l.href.startsWith('/')).map(navLink).join('')}</div></section>
       </details>
+      ${calendar}
     </div>
     </main>
 
     <footer class="site">
-      <span>Made by a human.</span><a href="/log">Build log ↗</a>
+      <span>Made by a human (Not really, made by AI)</span><a href="/log">Build log ↗</a>
     </footer>
   </div>
 

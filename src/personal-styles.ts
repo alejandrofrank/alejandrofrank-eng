@@ -142,5 +142,33 @@ body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
  .personal .reveal-body .vsets { grid-template-columns:1fr 1fr; }
  .personal .reveal-body .vprods { grid-template-columns:1fr; }
 }
-@media(prefers-reduced-motion:reduce) { .color-band { animation:none; } .reveal > summary,.explore-link { transition:none; } }
+/* Two controls at either edge, with breathing room through the middle. */
+@media(min-width:761px) {
+ .explore,.explore:has(.reveal[open]) { grid-template-columns:max-content max-content minmax(40px,1fr) max-content max-content; }
+ #about > summary { grid-column:1; }
+ #projects > summary { grid-column:2; }
+ .explore-link { grid-column:4; }
+ #contact > summary { grid-column:5; }
+ .reveal-body { grid-row:3; width:100%; }
+}
+.ambient-calendar { grid-column:1/-1; grid-row:2; display:block; width:min(100%,720px); justify-self:center; margin:40px 0 0; padding:12px; border-radius:12px; text-decoration:none; color:#241c35; opacity:.42; transition:opacity .3s,background .3s,box-shadow .3s;
+ --hm0:#fff7ed40; --hm1:#f6d7ec; --hm2:#d1a0e9; --hm3:#8f50b8; --hm4:#472468;
+}
+.calendar-caption { display:flex; justify-content:space-between; gap:12px; margin-bottom:10px; font:500 10px/1.5 var(--mono); }
+.ambient-calendar .hm-d { border-radius:2px; }
+.ambient-calendar:hover,.ambient-calendar:focus-visible { opacity:1; background:#fff7eff0; box-shadow:0 8px 35px #52225212; --hm0:#e8dce8; }
+.calendar-unavailable { font-size:12px; }
+@media(max-width:760px) {
+ #about > summary { grid-column:1; grid-row:1; }
+ #projects > summary { grid-column:1; grid-row:2; }
+ .explore-link { grid-column:2; grid-row:1; }
+ #contact > summary { grid-column:2; grid-row:2; }
+ .ambient-calendar { grid-row:3; margin-top:26px; padding:8px 0; }
+ .reveal-body { grid-row:4; }
+ .calendar-caption { font-size:9px; flex-wrap:wrap; gap:3px 10px; }
+ .ambient-calendar .hm-col:nth-child(n) { display:flex; }
+ .ambient-calendar .hm,.ambient-calendar .hm-col { gap:2px; }
+}
+@media(hover:none) { .ambient-calendar { opacity:.72; } }
+@media(prefers-reduced-motion:reduce) { .color-band { animation:none; } .reveal > summary,.explore-link,.ambient-calendar { transition:none; } }
 `;

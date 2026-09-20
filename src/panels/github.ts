@@ -158,6 +158,18 @@ function renderHeatmap(cal: Calendar): string {
   return `<div class="hm">${cols}</div>`;
 }
 
+/** Quiet homepage calendar; uses the same real, cached contribution data. */
+export async function renderAmbientCalendar(env: Env): Promise<string> {
+  const user = env.GITHUB_USER || DEFAULT_USER;
+  let cal: Calendar | null = null;
+  try { cal = await fetchCalendar(user, env); } catch { /* Keep the profile link available. */ }
+  const label = cal ? `${cal.total.toLocaleString()} contributions in the last year` : "Contribution calendar temporarily unavailable";
+  return `<a class="ambient-calendar" href="https://github.com/${encodeURIComponent(user)}" target="_blank" rel="noopener noreferrer" aria-label="GitHub: ${label}. Open ${esc(user)} on GitHub.">
+    <span class="calendar-caption"><span>GitHub · ${esc(user)}</span><span>${label} ↗</span></span>
+    ${cal ? renderHeatmap(cal) : '<span class="calendar-unavailable">View activity on GitHub ↗</span>'}
+  </a>`;
+}
+
 export const github: Panel = {
   key: "github",
   title: "GitHub activity",
