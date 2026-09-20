@@ -8,8 +8,8 @@ import { SITE, LINKS } from "./content";
 import { styles } from "./styles";
 import { buildOutcomes } from "./header";
 import { FAVICON } from "./favicon";
-import { FONTS_LINK, DIAMOND, sectionLabel, card } from "./ui";
-import { waveMarkup, waveScript } from "./waves";
+import { FONTS_LINK, card } from "./ui";
+import { gradientMarkup } from "./gradient";
 import { personalStyles } from "./personal-styles";
 import { PANELS, type Env, type Slot } from "./panels";
 
@@ -86,10 +86,10 @@ export async function renderPage(env: Env, origin: string): Promise<string> {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#f5f6fa" />
+<meta name="theme-color" content="#fff4ed" />
 ${FAVICON}
 ${FONTS_LINK}
-<title>${SITE.name} · builder dashboard</title>
+<title>${SITE.name} · Human</title>
 <meta name="description" content="${SITE.subtitle}" />
 <link rel="canonical" href="${origin}/" />
 <meta property="og:type" content="website" />
@@ -102,45 +102,43 @@ ${FONTS_LINK}
 <style>${styles}${personalStyles}</style>
 </head>
 <body class="personal">
+  ${gradientMarkup}
   <div class="wrap">
-    <nav class="topnav">
-      <a class="topnav-brand" href="/">${SITE.name}</a>
-      <div class="topnav-links">
-        ${LINKS.map(navLink).join("")}
-      </div>
-    </nav>
-
-    <header class="hero">
-      <div class="hero-copy">
-        <div class="hero-eyebrow label">${DIAMOND}<span>${SITE.name} — ${SITE.location}</span></div>
-        <h1>Complex problems.<br /><em>Working systems.</em></h1>
-        <p class="sub">${SITE.subtitle}</p>
-        <div class="hero-actions"><a href="#bakiano">What I’m building ↗</a><a href="/timeline">Explore my experience →</a></div>
-      </div>
-      ${waveMarkup}
+    <main>
+    <header class="human-hero">
+      <p class="human-location">${SITE.name} — ${SITE.location}</p>
+      <h1>Human<span>.</span></h1>
     </header>
-
-    <div class="outcomes">
-      ${outcomes
-        .map(
-          (o, i) =>
-            `<div class="outcome on-cream chamfer rise" style="--i:${i}"><span class="outcome-idx">${String(i + 1).padStart(2, "0")}</span><b>${o.value}</b><span class="lab">${o.label}</span></div>`
-        )
-        .join("")}
+    <div class="explore" aria-label="Explore more">
+      <details class="reveal" name="explore" id="about">
+        <summary>About me <span>↗</span></summary>
+        <section class="reveal-body">
+          <h2>A little more about me.</h2>
+          <p class="about-copy">${SITE.subtitle}</p>
+          <div class="outcomes">${outcomes.map(o => '<div class="outcome on-cream"><b>' + o.value + '</b><span class="lab">' + o.label + '</span></div>').join('')}</div>
+          <a class="text-link" href="/timeline">Explore my experience →</a>
+        </section>
+      </details>
+      <details class="reveal" name="explore" id="projects">
+        <summary>Projects <span>↗</span></summary>
+        <section class="reveal-body projects-body">
+          <h2>Things I’m building.</h2>
+          <div class="grid">${[...cards.filter((_,i) => ['bakiano','jev'].includes(PANELS[i].key)), ...cards.filter((_,i) => !['bakiano','jev'].includes(PANELS[i].key))].join('')}</div>
+        </section>
+      </details>
+      <a class="explore-link" href="/timeline">Experience <span>↗</span></a>
+      <details class="reveal" name="explore" id="contact">
+        <summary>Say hello <span>↗</span></summary>
+        <section class="reveal-body"><h2>Let’s talk.</h2><div class="contact-links">${LINKS.filter(l=>!l.href.startsWith('/')).map(navLink).join('')}</div></section>
+      </details>
     </div>
-
-    <section class="dash">
-      ${sectionLabel("Live dashboard", "building in public")}
-      <div class="grid">
-        ${cards.join("")}
-      </div>
-    </section>
+    </main>
 
     <footer class="site">
-      <span>${SITE.name}</span><span class="sep">·</span><span>v0.2</span><span class="sep">·</span><a href="/log">build log</a><span class="sep">·</span><span>deployed on Cloudflare Workers</span>
+      <span>Made by a human.</span><a href="/log">Build log ↗</a>
     </footer>
   </div>
-  ${waveScript}
+
   <script>
   document.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('.email-copy') : null;
