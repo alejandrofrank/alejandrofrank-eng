@@ -82,7 +82,7 @@ export const BAKIANO = {
   eyebrow: "Market intelligence platform · Venezuela",
   headline: "The price of everything in Venezuela.",
   blurb:
-    "An AI engine tracking tens of thousands of prices every day across supermarkets, retail, real estate and telecom — every price normalized to USD at the official BCV rate, every movement recorded.",
+    "Live market data across supermarkets, retail, real estate and telecom — connected by an AI analyst that brings all sources together to build a clearer picture of Venezuela’s economy. Tens of thousands of prices tracked daily, normalized to USD at the official BCV rate, with every movement recorded.",
   stats: [
     { value: "4", label: "data domains" },
     { value: "60K+", label: "rows / snapshot" },
@@ -91,12 +91,13 @@ export const BAKIANO = {
   datasets: [
     { name: "Supermarket", blurb: "8 chains · 60K+ rows daily", live: true },
     { name: "Retail", blurb: "9 retailers · 40K+ rows daily", live: true },
-    { name: "Real estate", blurb: "5 platforms, sale + rental", soon: true },
+    { name: "Real estate", blurb: "5 platforms, sale + rental", live: true },
     { name: "Telecom", blurb: "mobile plans, monthly", live: true },
   ] as VentureDataset[],
   // Shipped surfaces, not a roadmap — everything here is live in the product.
   workspaceNote: "None of this is a roadmap: it's all live in the product right now, running on this morning's prices.",
   features: [
+    { name: "AI analyst", kind: "A connected view of the economy", blurb: "Cross-references data from all sources and sectors to connect market signals and help explain what is happening across Venezuela’s economy." },
     { name: "Chat", kind: "AI analyst over live data", blurb: "Ask in plain language and get real prices, never invented ones. Quotes your whole shopping list in one pass and shows its work while it searches." },
     { name: "Shopping list", kind: "The basket, optimized", blurb: "Every item priced at every chain, stores ranked by coverage and total, and a two-stop split suggested only when it genuinely saves money." },
     { name: "Alerts", kind: "What changed today", blurb: "Real price moves, net of currency noise. Follow products, filter by chain and magnitude, compare against yesterday or the fortnight." },
