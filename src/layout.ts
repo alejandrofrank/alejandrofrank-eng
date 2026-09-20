@@ -113,7 +113,7 @@ ${FONTS_LINK}
     </header>
     <div class="explore" aria-label="Explore more">
       <details class="reveal" name="explore" id="about">
-        <summary>About me <span>↗</span></summary>
+        <summary>About me</summary>
         <section class="reveal-body">
           <h2>A little more about me.</h2>
           <p class="about-copy">${SITE.subtitle}</p>
@@ -122,15 +122,15 @@ ${FONTS_LINK}
         </section>
       </details>
       <details class="reveal" name="explore" id="projects">
-        <summary>Projects <span>↗</span></summary>
+        <summary>Projects</summary>
         <section class="reveal-body projects-body">
           <h2>Things I’m building.</h2>
           <div class="grid">${[...cards.filter((_,i) => ['bakiano','jev'].includes(PANELS[i].key)), ...cards.filter((_,i) => !['bakiano','jev'].includes(PANELS[i].key))].join('')}</div>
         </section>
       </details>
-      <a class="explore-link" href="/timeline">Experience <span>↗</span></a>
+      <a class="explore-link" href="/timeline">Experience</a>
       <details class="reveal" name="explore" id="contact">
-        <summary>Say hello <span>↗</span></summary>
+        <summary>Say hello</summary>
         <section class="reveal-body"><h2>Let’s talk.</h2><div class="contact-links">${LINKS.filter(l=>!l.href.startsWith('/')).map(navLink).join('')}</div></section>
       </details>
       ${calendar}
