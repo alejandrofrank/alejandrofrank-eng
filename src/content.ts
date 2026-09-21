@@ -82,14 +82,14 @@ export const BAKIANO = {
   eyebrow: "Market intelligence platform · Venezuela",
   headline: "The price of everything in Venezuela.",
   blurb:
-    "Live market data across supermarkets, retail, real estate and telecom — connected by an AI analyst that brings all sources together to build a clearer picture of Venezuela’s economy. Tens of thousands of prices tracked daily, normalized to USD at the official BCV rate, with every movement recorded.",
+    "Live market data across supermarkets, retail, real estate and telecom — connected by an AI analyst that brings all sources together to build a clearer picture of Venezuela’s economy. Over 200,000 rows tracked daily, normalized to USD at the official BCV rate, with every movement recorded.",
   stats: [
     { value: "4", label: "data domains" },
-    { value: "60K+", label: "rows / snapshot" },
+    { value: "200K+", label: "rows daily" },
     { value: "Daily", label: "refresh" },
   ] as { value: string; label: string }[],
   datasets: [
-    { name: "Supermarket", blurb: "8 chains · 60K+ rows daily", live: true },
+    { name: "Supermarket", blurb: "8 chains · 200K+ rows daily", live: true },
     { name: "Retail", blurb: "9 retailers · 40K+ rows daily", live: true },
     { name: "Real estate", blurb: "5 platforms, sale + rental", live: true },
     { name: "Telecom", blurb: "mobile plans, monthly", live: true },
