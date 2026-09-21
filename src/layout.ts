@@ -9,7 +9,7 @@ import { styles } from "./styles";
 import { buildOutcomes } from "./header";
 import { FAVICON } from "./favicon";
 import { FONTS_LINK, card } from "./ui";
-import { gradientMarkup } from "./gradient";
+import { playgroundMarkup, gradientPlaygroundScript } from "./gradient-playground";
 import { personalStyles } from "./personal-styles";
 import { PANELS, type Env, type Slot } from "./panels";
 import { renderAmbientCalendar } from "./panels/github";
@@ -85,14 +85,14 @@ export async function renderPage(env: Env, origin: string): Promise<string> {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#fff4ed" />
+<meta name="theme-color" content="#101721" />
 ${FAVICON}
 ${FONTS_LINK}
-<title>${SITE.name} · Human</title>
+<title>${SITE.name} · Engineer in Madrid</title>
 <meta name="description" content="${SITE.subtitle}" />
 <link rel="canonical" href="${origin}/" />
 <meta property="og:type" content="website" />
-<meta property="og:title" content="${SITE.name} · builder dashboard" />
+<meta property="og:title" content="${SITE.name} · Engineer in Madrid" />
 <meta property="og:description" content="${SITE.subtitle}" />
 <meta property="og:url" content="${origin}/" />
 <meta property="og:image" content="${origin}/og.png" />
@@ -100,13 +100,14 @@ ${FONTS_LINK}
 <meta name="twitter:image" content="${origin}/og.png" />
 <style>${styles}${personalStyles}</style>
 </head>
-<body class="personal">
-  ${gradientMarkup}
+<body class="personal playground-home">
+  ${playgroundMarkup}
   <div class="wrap">
     <main>
     <header class="human-hero">
       <p class="human-location">${SITE.name} — ${SITE.location}</p>
-      <h1>Human<span>.</span></h1>
+      <h1>I’m an engineer in Madrid,<br />turning complicated problems into <em>useful AI products.</em></h1>
+      <p class="playground-hint">A little space to explore. Move your cursor through the color.</p>
     </header>
     <div class="explore" aria-label="Explore more">
       <details class="reveal" name="explore" id="about">
@@ -136,9 +137,11 @@ ${FONTS_LINK}
 
     <footer class="site">
       <span>Made by a human (Not really, made by AI)</span>
+      <div class="playground-controls" aria-label="Gradient playground controls"><button id="gradient-toggle" type="button" aria-pressed="false" hidden>Pause gradient</button><button id="gradient-reset" type="button" hidden>Reset waves</button></div>
     </footer>
   </div>
 
+  ${gradientPlaygroundScript}
   <script>
   document.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('.email-copy') : null;
