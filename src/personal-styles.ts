@@ -286,37 +286,37 @@ body.personal { background:#192822; color:#201c32; --fg:#201c32; }
 /* Dark reading surfaces complement the moving forest palette. */
 @media screen {
  body.personal,.personal .on-cream,.personal .on-orange {
-  color-scheme:dark; --bg:#172820; --panel:#22372d; --fg:#f1ecdf; --muted:#b8c5b8; --dim:#8b9f90; --line:#405548; --accent:#e8b286; --cream:#f1ecdf; --near:#172820; color:var(--fg);
+  color-scheme:dark; --bg:#24372e; --panel:#2f4439; --fg:#f1ecdf; --muted:#b8c5b8; --dim:#8b9f90; --line:#506557; --accent:#e8b286; --cream:#f1ecdf; --near:#24372e; color:var(--fg);
  }
  .personal .reveal-body,.personal .card,.personal .contact-links .email-box,
  .personal.experience-page .tlp-scroll,.personal.experience-page .tlp-dialog,
  .personal.experience-page .resume,.personal.experience-page .tlp-legend,
- .personal.experience-page .log-item { background:#172820f5; color:#f1ecdf; border-color:#405548; box-shadow:0 18px 60px #0b171c40; }
- .personal #bakiano .block.main { background:linear-gradient(125deg,#302a21,#1a2c24); }
- .personal #jev .block.main { background:linear-gradient(125deg,#203a33,#1a2c24); }
+ .personal.experience-page .log-item { background:#24372ef5; color:#f1ecdf; border-color:#506557; box-shadow:0 18px 60px #0b171c40; }
+ .personal #bakiano .block.main { background:linear-gradient(125deg,#3d372e,#283b32); }
+ .personal #jev .block.main { background:linear-gradient(125deg,#2d4840,#283b32); }
  .personal .reveal-body .block.foot,.personal .reveal-body .vset,
- .personal .outcome,.personal.experience-page .media { background:#20342b; border-color:#405548; }
+ .personal .outcome,.personal.experience-page .media { background:#2d4137; border-color:#506557; }
  .personal .project-copy,.personal .project-eyebrow { color:#b8c5b8; }
  .personal .vset-flag.live { background:#345341; color:#d6eac8; }
  .personal .text-link,.personal .contact-links > a,.personal .email-box a { color:#e8b286; }
- .personal .project-dropdown { border-color:#405548; }
- .personal .project-dropdown > summary { background:#263c30; color:#f1ecdf; }
- .personal .project-dropdown > summary:hover { background:#494034; }
+ .personal .project-dropdown { border-color:#506557; }
+ .personal .project-dropdown > summary { background:#344a3e; color:#f1ecdf; }
+ .personal .project-dropdown > summary:hover { background:#574e42; }
  .personal .reveal > summary,.personal .explore-link,
  .personal.experience-page .subnav a,.personal.experience-page .tlp-foot a {
-  background-image:linear-gradient(110deg,#263c30 20%,#263c30 45%,#344739 62%,#534031 78%,#49382d 100%); color:#f1ecdf; border-color:#61735a;
+  background-image:linear-gradient(110deg,#344a3e 20%,#344a3e 45%,#425547 62%,#604d3e 78%,#57463b 100%); color:#f1ecdf; border-color:#61735a;
  }
  .personal .reveal > summary:is(:hover,:focus-visible),.personal .explore-link:is(:hover,:focus-visible),
  .personal .reveal[open] > summary,.personal.experience-page .subnav a:is(:hover,:focus-visible),.personal.experience-page .tlp-foot a:is(:hover,:focus-visible) { color:#fff4df; border-color:#bd9876; }
  .personal .contact-links .btn.primary,.personal .contact-links .btn.secondary,
- .personal.experience-page .pp,.personal.experience-page .tab { background:#304b3a; color:#edf1df; border:1px solid #526949; }
- .personal .contact-links .btn:hover,.personal.experience-page .tab.on { background:#534031; color:#fff0d9; box-shadow:none; }
- .personal .email-copy { background:#354f3c; color:#f1ecdf; }
- .personal .email-copy:hover { background:#534031; }
+ .personal.experience-page .pp,.personal.experience-page .tab { background:#3e5948; color:#edf1df; border:1px solid #526949; }
+ .personal .contact-links .btn:hover,.personal.experience-page .tab.on { background:#604d3e; color:#fff0d9; box-shadow:none; }
+ .personal .email-copy { background:#425d49; color:#f1ecdf; }
+ .personal .email-copy:hover { background:#604d3e; }
  .personal.experience-page .tlp { --dim:#829585; --muted:#bac8b8; }
- .personal.experience-page .tlp-foot span { color:#c8d4c2; background:#20342b; }
+ .personal.experience-page .tlp-foot span { color:#c8d4c2; background:#2d4137; }
  .personal .ambient-calendar { color:#eff0dc; --hm0:#bdd0b026; --hm1:#526a4b; --hm2:#7d9d6f; --hm3:#aec28d; --hm4:#e6be8c; }
- .personal .ambient-calendar:hover,.personal .ambient-calendar:focus-visible { color:#eff0dc; background:#172820ed; --hm0:#2b4233; }
+ .personal .ambient-calendar:hover,.personal .ambient-calendar:focus-visible { color:#eff0dc; background:#24372eed; --hm0:#2b4233; }
  .personal :is(a,button,summary):focus-visible { outline-color:#e8b286; }
 }
 
