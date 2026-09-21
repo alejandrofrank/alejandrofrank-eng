@@ -2,7 +2,6 @@
 export const gradientMarkup = `<div class="color-world" aria-hidden="true">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><filter id="cursor-waves" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feImage id="wave-map" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="waves"/><feDisplacementMap in="SourceGraphic" in2="waves" scale="65" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg>
   <div class="color-motion"><div class="color-band"><i></i><i></i><i></i></div></div>
-  <svg class="color-grain" width="100%" height="100%"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".6" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="2.5" intercept="-.75"/><feFuncG type="linear" slope="2.5" intercept="-.75"/><feFuncB type="linear" slope="2.5" intercept="-.75"/></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(#grain)"/></svg>
 </div>
 <script>
 (() => {
