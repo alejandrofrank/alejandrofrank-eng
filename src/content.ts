@@ -42,7 +42,7 @@ export const SHIPLOG: ShipEntry[] = [
     date: "Jun 2026",
     title: "me.alejandrofranks.workers.dev",
     status: "shipped",
-    blurb: "This dashboard: live GitHub + LeetCode panels, more landing weekly.",
+    blurb: "This dashboard: live GitHub panels, more landing weekly.",
     href: "https://me.alejandrofranks.workers.dev",
   },
   {
@@ -113,6 +113,7 @@ export const BAKIANO = {
 // same pill outlined — louder than plain text, clearly quieter than the fill.
 // At most one of each, both last so the two pills sit together on the right.
 export const LINKS: { label: string; href: string; cta?: "primary" | "secondary" }[] = [
+  { label: "X", href: "https://x.com/alefrankluciani", cta: "secondary" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/alejandrofrank" },
   { label: "Email", href: "mailto:alejandrofranks@gmail.com" },
   { label: "GitHub", href: "https://github.com/alejandrofrank", cta: "secondary" },
@@ -188,7 +189,7 @@ export const CHANGELOG: LogEntry[] = [
   },
   {
     date: "Jun 29, 2026",
-    title: "Live GitHub + LeetCode panels",
+    title: "Live GitHub panels",
     blurb:
       "Contribution heatmap, streak, a daily 'shipped today' nudge, and solved-problem counts — all fetched live at the edge.",
   },

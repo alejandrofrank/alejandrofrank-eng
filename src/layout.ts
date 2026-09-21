@@ -4,6 +4,7 @@
 // label and media markup in ui.ts.
 // ----------------------------------------------------------------------------
 
+import { esc } from "./panels/helpers";
 import { SITE, LINKS } from "./content";
 import { styles } from "./styles";
 import { buildOutcomes } from "./header";
@@ -122,7 +123,7 @@ ${FONTS_LINK}
         <summary>Projects</summary>
         <section class="reveal-body projects-body">
           <h2>Things I’m building.</h2>
-          <div class="grid">${[...cards.filter((_,i) => ['bakiano','jev'].includes(PANELS[i].key)), ...cards.filter((_,i) => !['bakiano','jev'].includes(PANELS[i].key))].join('')}</div>
+          <div class="project-list">${[...PANELS.filter(p => ['bakiano','jev'].includes(p.key)), ...PANELS.filter(p => !['bakiano','jev'].includes(p.key))].map(p => '<details class="project-dropdown" name="project"><summary>' + esc(p.title) + '</summary><div class="project-details">' + cards[PANELS.indexOf(p)] + '</div></details>').join('')}</div>
         </section>
       </details>
       <a class="explore-link" href="/timeline">Experience</a>

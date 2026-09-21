@@ -8,8 +8,6 @@ export interface Env {
   GITHUB_TOKEN?: string;
   /** GitHub username. Defaults to "alejandrofrank" if unset. */
   GITHUB_USER?: string;
-  /** LeetCode username. Defaults to "alexfrank" if unset. */
-  LEETCODE_USER?: string;
 }
 
 /** Where the layout placed this panel: its index and whether it gets a seam node. */

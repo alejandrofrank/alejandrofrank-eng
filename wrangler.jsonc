@@ -8,8 +8,7 @@
   // Static files (og.png). Requests matching a file here skip the Worker.
   "assets": { "directory": "public" },
   "vars": {
-    "GITHUB_USER": "alejandrofrank",
-    "LEETCODE_USER": "alexfrank"
+    "GITHUB_USER": "alejandrofrank"
   },
   "observability": {
     "enabled": true

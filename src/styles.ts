@@ -184,17 +184,7 @@ export const styles = `
   .hm-col { display: flex; flex-direction: column; gap: 3px; flex: 1 1 0; min-width: 0; }
   .hm-d { width: 100%; aspect-ratio: 1; }
 
-  /* LeetCode panel */
-  .lc-total { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
-  .lc-total b { font-size: 40px; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
-  .lc-total span { font: 500 10px/1 var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
-  .lc-breakdown { display: flex; flex-direction: column; gap: 8px; }
-  .lc-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
-  .lc-row b { margin-left: auto; color: var(--fg); font-variant-numeric: tabular-nums; }
   .diamond { width: 7px; height: 7px; flex: none; transform: rotate(45deg); }
-  .lc-dot.easy { background: rgba(22,21,15,.3); }
-  .lc-dot.med { background: rgba(22,21,15,.6); }
-  .lc-dot.hard { background: var(--orange); }
 
   /* Service status panel */
   .svc { display: flex; flex-direction: column; gap: 10px; flex: 1; }
