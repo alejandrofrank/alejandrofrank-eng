@@ -91,7 +91,7 @@ body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
 .color-world { position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0; background:linear-gradient(160deg,#fff4ed,#f3dce8 65%,#f4dfd8); }
 .color-band {
  position:absolute; width:160%; height:72%; left:-30%; top:44%; opacity:1;
- filter:blur(35px); animation:band-drift 32s ease-in-out infinite alternate;
+ filter:blur(35px); animation:band-drift 24s ease-in-out infinite alternate;
 }
 .color-band i { display:block; position:absolute; width:100%; height:78%; border-radius:50%; }
 .color-band i:nth-child(1) { top:0; background:linear-gradient(110deg,#ff882c 5%,#ff396c 25%,#b228ee 48%,#6041f4 70%,#489fff 91%); box-shadow:0 -24px 65px #f791de; }
@@ -110,9 +110,9 @@ body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
 }
 .color-grain { position:absolute; inset:0; opacity:.52; mix-blend-mode:overlay; z-index:1; }
 @keyframes band-drift { from { transform:translate(-3%,2%) rotate(-3deg) scale(1.04); } to { transform:translate(3%,-2%) rotate(3deg) scale(1.08); } }
-.color-band i:nth-child(1) { animation:violet-flow 22s ease-in-out -7s infinite alternate; }
-.color-band i:nth-child(2) { animation:rose-flow 27s ease-in-out -13s infinite alternate; }
-.color-band i:nth-child(3) { animation:gold-flow 30s ease-in-out -5s infinite alternate; }
+.color-band i:nth-child(1) { animation:violet-flow 16s ease-in-out -7s infinite alternate; }
+.color-band i:nth-child(2) { animation:rose-flow 20s ease-in-out -13s infinite alternate; }
+.color-band i:nth-child(3) { animation:gold-flow 22s ease-in-out -5s infinite alternate; }
 @keyframes violet-flow { from { transform:translate(-2%,3%) scaleY(.95); } to { transform:translate(3%,-5%) scaleY(1.07); } }
 @keyframes rose-flow { from { transform:translate(3%,-3%) rotate(6deg); } to { transform:translate(-3%,4%) rotate(10deg); } }
 @keyframes gold-flow { from { transform:translate(-3%,4%) rotate(-5deg); } to { transform:translate(3%,-5%) rotate(-1deg); } }
