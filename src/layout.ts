@@ -123,7 +123,7 @@ ${FONTS_LINK}
         <summary>Projects</summary>
         <section class="reveal-body projects-body">
           <h2>Things I’m building.</h2>
-          <div class="project-list">${[...PANELS.filter(p => ['bakiano','jev'].includes(p.key)), ...PANELS.filter(p => !['bakiano','jev'].includes(p.key))].map(p => '<details class="project-dropdown" name="project"><summary>' + esc(p.title) + '</summary><div class="project-details">' + cards[PANELS.indexOf(p)] + '</div></details>').join('')}</div>
+          <div class="project-list">${PANELS.map(p => '<details class="project-dropdown" name="project"><summary>' + esc(p.title) + '</summary><div class="project-details">' + cards[PANELS.indexOf(p)] + '</div></details>').join('')}</div>
         </section>
       </details>
       <a class="explore-link" href="/timeline">Experience</a>

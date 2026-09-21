@@ -1,27 +1,8 @@
-// ----------------------------------------------------------------------------
-// Panel registry — the ordered list rendered into the dashboard grid.
-// Add a real module here as you build it; swap out its placeholder.
-// ----------------------------------------------------------------------------
-
+// Projects displayed on the personal homepage, in presentation order.
 import type { Panel } from "./types";
-import { github } from "./github";
 import { bakiano } from "./bakiano";
 import { jev } from "./jev";
 
-import { shipping } from "./shipping";
-import { status } from "./status";
-import { placeholder } from "./placeholder";
-
-export const PANELS: Panel[] = [
-  github,
-  // Full-width venture card — sits directly under the GitHub card.
-  bakiano,
-  jev,
-
-  shipping,
-  status,
-  placeholder("x", "X / writing", "latest posts · cadence"),
-  placeholder("hackathons", "Hackathons", "events & builds"),
-];
+export const PANELS: Panel[] = [bakiano, jev];
 
 export type { Panel, Env, Slot } from "./types";
