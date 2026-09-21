@@ -85,7 +85,7 @@ export async function renderPage(env: Env, origin: string): Promise<string> {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#fff4ed" />
+<meta name="theme-color" content="#192822" />
 ${FAVICON}
 ${FONTS_LINK}
 <title>${SITE.name} · Engineer based in Madrid</title>

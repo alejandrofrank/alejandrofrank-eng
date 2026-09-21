@@ -86,17 +86,17 @@ body.personal {
 }
 
 /* Human: a quiet foreground over a saturated moving landscape. */
-body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
+body.personal { background:#192822; color:#201c32; --fg:#201c32; }
 .personal .wrap { position:relative; z-index:1; max-width:1100px; min-height:100svh; display:flex; flex-direction:column; }
-.color-world { position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0; background:linear-gradient(160deg,#fff4ed,#f3dce8 65%,#f4dfd8); }
+.color-world { position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0; background:linear-gradient(145deg,#142b24 0%,#263027 42%,#37291f 100%); }
 .color-band {
  position:absolute; width:160%; height:72%; left:-30%; top:44%; opacity:1;
  filter:blur(35px); animation:band-drift 24s ease-in-out infinite alternate;
 }
 .color-band i { display:block; position:absolute; width:100%; height:78%; border-radius:50%; }
-.color-band i:nth-child(1) { top:0; background:linear-gradient(110deg,#ff882c 5%,#ff396c 25%,#b228ee 48%,#6041f4 70%,#489fff 91%); box-shadow:0 -24px 65px #f791de; }
-.color-band i:nth-child(2) { top:35%; left:-8%; background:linear-gradient(95deg,#ffe357 5%,#ff894b 25%,#f83259 47%,#ff79ba 66%,#9a84ff 90%); transform:rotate(8deg); }
-.color-band i:nth-child(3) { top:58%; left:6%; background:linear-gradient(105deg,#fe743a,#ffc763 30%,#ffec9c 49%,#fd866d 74%,#cb67cf); transform:rotate(-3deg); }
+.color-band i:nth-child(1) { top:0; background:linear-gradient(110deg,#a64323 5%,#e46e36 25%,#d8b68d 48%,#46958a 70%,#087b85 91%); box-shadow:0 -24px 65px #a9b19a; }
+.color-band i:nth-child(2) { top:35%; left:-8%; background:linear-gradient(95deg,#493526 5%,#b95429 25%,#e98142 47%,#d3b99a 66%,#287b76 90%); transform:rotate(8deg); }
+.color-band i:nth-child(3) { top:58%; left:6%; background:linear-gradient(105deg,#183b32,#276b61 30%,#b4bca0 49%,#b87346 74%,#382b22); transform:rotate(-3deg); }
 /* Broad contours follow the marked composition: central dip, right crest. */
 .color-band i:nth-child(1) {
  top:-7%; height:85%; border-radius:0; box-shadow:none;
@@ -125,7 +125,7 @@ body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
 .reveal { display:contents; }
 .reveal::details-content { display:contents; }
 .reveal:not([open]) .reveal-body { display:none; }
-.color-world::after { content:""; position:absolute; inset:0; background:linear-gradient(to bottom,#fff4ed 0%,#fff4edf0 20%,#fff4edb0 34%,#fff4ed20 48%,#fff4ed00 58%); }
+.color-world::after { content:""; position:absolute; inset:0; background:linear-gradient(to bottom,#192822 0%,#192822f0 20%,#192822b0 34%,#19282220 48%,#19282200 58%); }
 .reveal > summary,.explore-link { grid-row:1; list-style:none; display:flex; gap:27px; justify-content:space-between; align-items:center; padding:15px 22px; background:#f2eadc; color:#282138; border:1px solid #d9c8d3; border-radius:999px; text-decoration:none; cursor:pointer; font:500 14px var(--sans); box-shadow:0 3px 10px #41124208; transition:background .2s,transform .2s; }
 .reveal > summary::-webkit-details-marker { display:none; }
 .reveal-body { grid-column:1/-1; grid-row:2; width:min(100%,1000px); padding:34px; background:#f2eadc; border:1px solid #e5d9e4; border-radius:22px; margin-top:24px; box-shadow:0 18px 60px #47275619; }
@@ -196,14 +196,14 @@ body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
  justify-content:center; text-align:center; gap:0; min-width:145px;
  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
  font-size:14px; font-weight:650; letter-spacing:-.025em;
- background:linear-gradient(110deg,#f2eadc 20%,#f2eadc 45%,#f5d9d5 62%,#e9d6f2 78%,#f2eadc 100%);
+ background:linear-gradient(110deg,#f2eadc 20%,#f2eadc 45%,#e8c6a5 62%,#bfd4c6 78%,#f2eadc 100%);
  background-size:300% 100%; background-position:0% 50%;
  border-color:#d6c9b6; color:#111;
  transition:background-position .7s cubic-bezier(.22,1,.36,1),box-shadow .4s,border-color .4s,transform .4s;
 }
 .reveal > summary:hover,.explore-link:hover,.reveal > summary:focus-visible,.explore-link:focus-visible {
  background-position:100% 50%; border-color:#c9a9ca; color:#111;
- box-shadow:-8px 5px 22px #ef779533,8px 5px 22px #9a70df33; transform:translateY(-2px);
+ box-shadow:-8px 5px 22px #d7794333,8px 5px 22px #398b7933; transform:translateY(-2px);
 }
 .reveal[open] > summary { background-position:100% 50%; border-color:#9a759f; color:#111; box-shadow:inset 0 0 0 1px #9a759f; }
 @media(max-width:760px) { .reveal > summary,.explore-link { min-width:0; } }
@@ -220,7 +220,7 @@ body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
 }
 .personal.experience-page .subnav a:is(:hover,:focus-visible),.personal.experience-page .tlp-foot a:is(:hover,:focus-visible) {
  color:#111; background-position:100% 50%; border-color:#c9a9ca;
- box-shadow:-8px 5px 22px #ef779533,8px 5px 22px #9a70df33; transform:translateY(-2px);
+ box-shadow:-8px 5px 22px #d7794333,8px 5px 22px #398b7933; transform:translateY(-2px);
 }
 @media(prefers-reduced-motion:reduce) {
  .personal.experience-page .subnav a,.personal.experience-page .tlp-foot a { transition:none; }
@@ -252,4 +252,10 @@ body.personal { background:#fff4ed; color:#201c32; --fg:#201c32; }
 }
 @media print { .color-world { display:none; } .personal.experience-page { background:white; } .personal.experience-page .resume { background:white; padding:0; } }
 @media(prefers-reduced-motion:reduce) { .color-band { animation:none; } .reveal > summary,.explore-link,.ambient-calendar { transition:none; } .reveal > summary:hover,.explore-link:hover,.reveal > summary:focus-visible,.explore-link:focus-visible { transform:none; } }
+/* Light lettering over the deep forest and umber background. */
+.human-location,.human-hero h1 { color:#f2eadc; }
+.personal footer.site,.personal footer.site a { color:#f2eadc; text-shadow:0 1px 5px #192822; }
+.ambient-calendar { color:#24372c; --hm0:#24372c24; --hm1:#9cc9ae; --hm2:#71ad94; --hm3:#418f79; --hm4:#155b4c; }
+.ambient-calendar:hover,.ambient-calendar:focus-visible { color:#24372c; --hm0:#dcdacb; }
+.personal.experience-page .page-h1,.personal.experience-page .page-lede { color:#f2eadc; }
 `;
