@@ -10,6 +10,7 @@ import type { Env, Panel, Slot } from "./types";
 import { BAKIANO, type VentureDataset, type VentureFeature } from "../content";
 import { esc } from "./helpers";
 import { card, DIAMOND } from "../ui";
+import { bakianoTechnical } from "./technical";
 
 function stat(s: { value: string; label: string }): string {
   return `<div class="stat"><b>${esc(s.value)}</b><span>${esc(s.label)}</span></div>`;
@@ -54,7 +55,8 @@ export const bakiano: Panel = {
       <div class="v-label">${DIAMOND}<span>Inside the workspace</span><span class="leader"></span>
         <span class="v-note">${esc(BAKIANO.workspaceNote)}</span>
       </div>
-      <ul class="vprods">${BAKIANO.features.map(feature).join("")}</ul>`;
+      <ul class="vprods">${BAKIANO.features.map(feature).join("")}</ul>
+      ${bakianoTechnical()}`;
 
     const foot = `<a class="badge strong" href="${esc(BAKIANO.href)}" target="_blank" rel="noopener noreferrer">${esc(BAKIANO.cta)} ↗</a><span class="sep">·</span><span class="badge">${esc(host)}</span><span class="sep">·</span><span class="badge"><span class="dot-live">●</span> shipped</span>`;
 

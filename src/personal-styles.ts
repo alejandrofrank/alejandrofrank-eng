@@ -339,4 +339,21 @@ body.personal { background:#192822; color:#201c32; --fg:#201c32; }
 @media(max-width:560px) { .personal .contact-links { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .personal .contact-links .contact-button { padding:14px 10px; } .personal .contact-links:has(.email-pop[open]) { margin-bottom:105px; } }
 @media(prefers-reduced-motion:reduce) { .personal .contact-links .contact-button { transition:none; } .personal .contact-links .contact-button:hover { transform:none; } }
 
+.technical-details { margin-top:28px; border:1px solid #506557; border-radius:14px; background:#24372e; overflow:hidden; }
+.technical-details > summary { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:18px 20px; color:#f1ecdf; font-size:15px; font-weight:600; list-style:none; cursor:pointer; }
+.technical-details > summary::-webkit-details-marker { display:none; }
+.technical-details > summary:hover { background:#344a3e; }
+.technical-toggle { font-size:22px; font-weight:400; transition:transform .2s; }
+.technical-details[open] .technical-toggle { transform:rotate(45deg); }
+.technical-body { padding:0 20px 24px; }
+.technical-intro { color:#b8c5b8; margin:0 0 18px; font-size:14px; }
+.technical-flow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); list-style:none; counter-reset:stage; padding:0; margin:0 0 26px; gap:8px; }
+.technical-flow li { counter-increment:stage; padding:13px 12px; border:1px solid #506557; border-radius:9px; color:#f1ecdf; font-size:13px; background:#2d4137; }
+.technical-flow li::before { content:counter(stage,decimal-leading-zero); display:block; color:#e8b286; font:11px var(--mono); margin-bottom:8px; }
+.technical-topics { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+.technical-topics h4 { font-size:15px; color:#f1ecdf; margin:0 0 8px; }
+.technical-topics p { font-size:14px; line-height:1.65; color:#bdcbbb; margin:0; }
+@media(max-width:640px) { .technical-flow { grid-template-columns:1fr 1fr; } .technical-topics { grid-template-columns:1fr; } .technical-body { padding:0 16px 20px; } }
+@media(prefers-reduced-motion:reduce) { .technical-toggle { transition:none; } }
+
 `;
