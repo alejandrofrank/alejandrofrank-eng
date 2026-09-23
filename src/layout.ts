@@ -35,24 +35,20 @@ function slots(): Slot[] {
   });
 }
 
+const CONTACT_ICONS: Record<string, string> = {
+  X: '<path d="M4 3h4.5L20 21h-4.5L4 3Z"/><path d="m20 3-7 8M4 21l7-8"/>',
+  LinkedIn: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 10v7m0-10v.01M11 17v-7m0 3a3 3 0 0 1 6 0v4"/>',
+  Email: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/>',
+  GitHub: '<path d="M9 19c-4.3 1.3-4.3-2.2-6-2.7M15 22v-3.4c0-1 .1-1.5-.5-2.1 3.1-.3 6.4-1.5 6.4-7A5.5 5.5 0 0 0 19.4 6c.2-.9.2-2.1-.2-3.2 0 0-1.2-.4-3.8 1.4a13 13 0 0 0-6.8 0C6 2.4 4.8 2.8 4.8 2.8A5.5 5.5 0 0 0 4.6 6 5.5 5.5 0 0 0 3 9.5c0 5.5 3.3 6.7 6.4 7-.5.5-.6 1.2-.5 2.1V22"/>',
+};
 function navLink(l: (typeof LINKS)[number]): string {
-  const ext = l.href.startsWith("http");
-  const attrs = ext ? ' target="_blank" rel="noopener noreferrer"' : "";
-  if (l.cta) {
-    const cls = l.cta === "primary" ? "btn primary chamfer" : "btn secondary chamfer";
-    return `<a class="${cls}" href="${l.href}"${attrs}>${l.label}</a>`;
-  }
+  const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (CONTACT_ICONS[l.label] || '') + '</svg>';
+  const label = icon + '<span>' + esc(l.label) + '</span>';
   if (l.href.startsWith("mailto:")) {
     const email = l.href.slice("mailto:".length);
-    return `<details class="email-pop">
-          <summary>${l.label}</summary>
-          <div class="email-box on-cream chamfer">
-            <a href="${l.href}">${email}</a>
-            <button type="button" class="email-copy chamfer" data-email="${email}">copy</button>
-          </div>
-        </details>`;
+    return '<details class="email-pop"><summary class="contact-button">' + label + '</summary><div class="email-box on-cream chamfer"><a href="' + l.href + '">' + esc(email) + '</a><button type="button" class="email-copy chamfer" data-email="' + esc(email) + '">Copy</button></div></details>';
   }
-  return `<a href="${l.href}"${attrs}>${l.label}</a>`;
+  return '<a class="contact-button" href="' + l.href + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
 }
 
 export async function renderPage(env: Env, origin: string): Promise<string> {
