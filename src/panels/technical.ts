@@ -1,34 +1,25 @@
 import { esc } from './helpers';
 
-type TechnicalTopic = { title: string; body: string };
+type TechnicalStage = { title: string; tools: string; body: string };
 
-export function technicalDetails(flow: string[], topics: TechnicalTopic[], planned = false): string {
-  return `<details class="technical-details">
-    <summary><span>Technical details</span><span class="technical-toggle" aria-hidden="true">+</span></summary>
-    <div class="technical-body">
-      <p class="technical-intro">${planned ? 'The pipeline we’re building.' : 'How the data becomes a product.'}</p>
-      <ol class="technical-flow" aria-label="Processing stages">${flow.map(step => `<li>${esc(step)}</li>`).join('')}</ol>
-      <div class="technical-topics">${topics.map(topic => `<section><h4>${esc(topic.title)}</h4><p>${esc(topic.body)}</p></section>`).join('')}</div>
-    </div>
-  </details>`;
+export function technicalDetails(stages: TechnicalStage[], planned = false): string {
+  return '<details class="technical-details"><summary><span>Technical pipeline</span><span class="technical-toggle" aria-hidden="true">+</span></summary><div class="technical-body"><p class="technical-intro">' + (planned ? 'The pipeline we’re building. Open a stage to go deeper.' : 'From infrastructure to the product. Open a stage to go deeper.') + '</p><ol class="pipeline-stages" aria-label="Technical pipeline">' + stages.map((stage, i) => '<li><span class="pipeline-number" aria-hidden="true">' + String(i + 1).padStart(2, '0') + '</span><details class="pipeline-stage"><summary><span><strong>' + esc(stage.title) + '</strong><span class="pipeline-tools">' + esc(stage.tools) + '</span></span><span class="pipeline-toggle" aria-hidden="true">+</span></summary><p>' + esc(stage.body) + '</p></details></li>').join('') + '</ol></div></details>';
 }
 
-export const bakianoTechnical = () => technicalDetails(
-  ['Source data', 'USD normalization', 'Historical comparisons', 'Analysis & search'],
-  [
-    { title: 'Collection & refresh cadence', body: 'The data covers supermarkets, retail, property listings, and telecom plans. Supermarket and retail prices refresh daily; telecom plans are tracked monthly. Real estate brings sale and rental listings from five platforms into one searchable view.' },
-    { title: 'Currency normalization', body: 'Prices are normalized to USD using the official BCV exchange rate. This provides a common basis for comparisons across sources. The alerts distinguish price movements from currency noise, rather than treating every nominal price change as a market signal.' },
-    { title: 'History & traceability', body: 'Recorded price movements support comparisons with yesterday and the previous fortnight. Product charts expose medians, daily minimums, ranges, and distributions, with each point traceable to the underlying products. Property search includes more than a million historical records.' },
-    { title: 'Cross-source analysis', body: 'The AI analyst connects signals across the four data domains to help explain Venezuela’s economy. The chat experience works with live prices, while basket comparisons evaluate both product coverage and total cost across stores.' },
-  ],
-);
+export const bakianoTechnical = () => technicalDetails([
+  { title: 'Infrastructure', tools: 'GCP · Terraform · Docker · GitHub Actions', body: 'Terraform defines the jobs, schedules, storage, warehouse, IAM, and networking. Changes ship through pull requests; the deployment workflow builds the changed Docker images and applies infrastructure changes after merge. Cloud Run hosts the collection jobs and the product.' },
+  { title: 'Network access', tools: 'Tailscale · gateway VMs', body: 'Tailscale gateways support the collectors that need Venezuelan network access. The gateway VMs start and stop on a schedule around the collection window. This is supporting infrastructure for scraping, not a stage that transforms the data.' },
+  { title: 'Scraping & orchestration', tools: 'Cloud Scheduler · Cloud Run Jobs · Scrapy / nodriver', body: 'Collectors are organized by vendor and domain. Cloud Scheduler triggers the Cloud Run jobs, and each run produces a CSV snapshot. Scrapy or browser automation handles collection depending on the source; refresh cadence varies by domain.' },
+  { title: 'Archive & ingestion', tools: 'Google Cloud Storage · Cloud Functions', body: 'CSV snapshots land in GCS, organized by domain, vendor, and date. An object-finalize event triggers the loader, which appends records to BigQuery and records the run’s health. The archive retains the source snapshots for reprocessing and backfills.' },
+  { title: 'Data warehouse', tools: 'BigQuery · raw / staging / product layers', body: 'Raw tables preserve the collected values and history. Staging holds cleaned, deduplicated data; product tables and serving views support analysis and the application. Operational tables track vendors, collection runs, and exchange rates. Supermarket and retail raw data is partitioned by ingestion date.' },
+  { title: 'Transformations & currency', tools: 'Scheduled SQL · idempotent MERGE · BCV rates', body: 'Scheduled queries process a rolling three-day window, allowing recent missed runs to recover on the next execution. They clean the data and produce daily summaries. Raw prices stay unchanged: serving views derive USD values from vendor currency rules and the BCV rate associated with the ingestion date.' },
+  { title: 'AI enrichment', tools: 'Gemini batch · Vertex AI · BigQuery', body: 'A separate branch from raw data classifies new supermarket products: product type, brand, units, weight, and other catalog attributes. Classification is stored separately from prices. Current prices are joined from the latest raw partition, so enrichment does not freeze yesterday’s price into the catalog.' },
+  { title: 'Serving & analyst', tools: 'Next.js · Cloud Run · Gemini on Vertex AI', body: 'The product combines warehouse views and catalog enrichment for chat, dashboards, and a scoped data API. The AI analyst uses a defined set of tools rather than unrestricted SQL. Metered, byte-capped queries and a shared result cache control warehouse usage; run-health monitoring closes the operational loop.' },
+]);
 
-export const vestiTechnical = () => technicalDetails(
-  ['Outfit image', 'Garment segmentation', 'Visual comparison', 'Candidate matching'],
-  [
-    { title: 'Segmentation · SAM 3.1', body: 'The planned first stage separates clothing items within an outfit image. Working with an individual garment makes it possible to search for a replacement piece while keeping the rest of the outfit as context.' },
-    { title: 'Visual comparison · Marqo FashionSigLIP', body: 'The comparison stage uses Marqo FashionSigLIP to find clothing that looks similar to the selected piece. This stage answers which items resemble the reference; the matching stage then considers which available options could work in the outfit.' },
-    { title: 'Matching · building with Jev', body: 'We’re building the final stage with Jev to connect a selected garment to available alternatives. The intended experience lets someone keep a look they like and swap individual pieces, instead of starting the entire search again.' },
-    { title: 'End-to-end interaction', body: 'The intended flow is to choose an outfit, isolate a piece, compare it with clothing options, and explore replacements. Segmentation, visual comparison, and matching remain distinct stages so each part of the experience can be developed and improved separately.' },
-  ], true,
-);
+export const vestiTechnical = () => technicalDetails([
+  { title: 'Outfit input', tools: 'Reference image · piece selection', body: 'The planned experience starts with an outfit image. A person chooses the piece they want to replace while keeping the rest of the outfit as context.' },
+  { title: 'Garment segmentation', tools: 'SAM 3.1', body: 'The first model stage separates the clothing items in the image. Isolating a garment gives the comparison stage a focused reference instead of asking it to compare the entire outfit.' },
+  { title: 'Visual comparison', tools: 'Marqo FashionSigLIP', body: 'Marqo FashionSigLIP compares clothing visually to find similar pieces. This stage identifies resemblance to the selected garment; it is separate from deciding which available alternative works for the look.' },
+  { title: 'Candidate matching', tools: 'Building with Jev', body: 'We’re building the matching stage with Jev to connect the reference piece to available options. The intended result is a set of replacements someone can explore without restarting the outfit search.' },
+], true);
