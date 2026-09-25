@@ -136,9 +136,6 @@ ${FONTS_LINK}
     </div>
     </main>
 
-    <footer class="site">
-      <span>Made by a human (Not really, made by AI)</span>
-    </footer>
   </div>
 
   <script>
