@@ -23,7 +23,7 @@ scene = Scene(
     summary=(
         "Accenture had gone all-in as a Google Cloud partner and needed its "
         "on-prem apps rebuilt on GCP. Recreated four applications — three "
-        "Hadoop / Spark-Scala / Hive pipelines scheduled by Oozie, plus one with "
+        "Hadoop / Spark-Scala / Hive pipelines scheduled by Oozie or talend depending on the pipeline, plus one with "
         "an ML layer — as an event-driven GCP architecture: files land in Cloud "
         "Storage, Pub/Sub fires, and a Cloud Composer (Airflow) DAG runs the "
         "PySpark job on Dataproc while monitoring it, writing out to BigQuery."
