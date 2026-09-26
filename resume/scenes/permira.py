@@ -20,7 +20,7 @@ scene = Scene(
         "stakeholders self-serve financial metrics in plain English, querying "
         "real production tables. Collapsed a 6-role, multi-week request pipeline "
         "into one real-time query, grounded in the finance team's real source "
-        "files for full auditability."
+        "files for full auditability. It disclosed the full lineage of the files and where it came from"
     ),
     nodes=[
         Node("user", "Stakeholder", "source", 0.07, 0.5, "plain-English question"),
