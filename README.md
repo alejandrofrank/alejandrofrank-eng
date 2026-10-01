@@ -1,45 +1,56 @@
-# alejandrofrank-eng
+# Alejandro Frank — engineering portfolio
 
-Personal builder dashboard for **Alejandro Frank** — a live, build-in-public
-peek into what I'm shipping (GitHub activity, LeetCode, X, hackathons, service
-status), framed by what I've already built.
+An interactive portfolio of the products I build and the systems behind them: Bakiano, visual experiments, and a career timeline with technical walkthroughs.
 
-Built with [Hono](https://hono.dev) on **Cloudflare Workers**.
+**[Explore the live site](https://me.alejandrofranks.workers.dev)** · **[Career timeline](https://me.alejandrofranks.workers.dev/timeline)** · **[Bakiano case study](https://github.com/alejandrofrank/bakiano-showcase)**
 
-## Structure
+[![Live portfolio homepage with an interactive gradient and GitHub contribution calendar](docs/images/home.png)](https://me.alejandrofranks.workers.dev)
 
-```
-src/
-  index.ts      routes only (the Hono app)
-  content.ts    editable content — copy, numbers, services, changelog, links (edit this most)
-  styles.ts     all CSS — the design tokens and every component
-  ui.ts         shared markup: the numbered card, section label, media panel
-  art.ts        the hero Möbius line art (geometry -> SVG)
-  layout.ts     HTML page template (home)
-  log.ts        /log — the site's own build-in-public changelog
-  panels/       dashboard panel modules (github, leetcode, shipping, status, …)
-  resume/       /resume — roles as animated SVG keynotes
-  timeline/     /timeline — the career Gantt view
-public/         static assets (og.png social card)
-wrangler.jsonc  Cloudflare Worker config (URL slug = "name" field)
-_personal/      job-application materials — gitignored, never pushed
-```
+## What you can explore
 
-Adding a live panel later: write its module under `src/panels/` (return `card()`
-from `ui.ts`) and add it to `PANELS` in `panels/index.ts`.
+- **Projects:** Bakiano's market-data platform and its technical pipeline, plus Vesti, an outfit-search project in development.
+- **Experience:** a career timeline with role-by-role system diagrams and written explanations.
+- **Live activity:** a GitHub contribution calendar fetched at the edge, with a profile link available if the API is unavailable.
+- **Visual interface:** an interactive gradient, expandable sections, and a layout that adapts to smaller screens.
 
-## Develop
+## How it works
+
+Hono renders HTML on Cloudflare Workers. Content, page layouts, visual effects, and data panels are separate modules. Public GitHub data uses the REST API; an optional token enables the contribution calendar through GraphQL. Responses are cached to limit repeated upstream requests.
+
+The experience walkthroughs use a Python scene builder that produces JSON for an SVG player. The same roles are available as readable text and a print layout.
+
+## Run locally
 
 ```bash
-npm install
-npm run dev        # local dev server
-npm run deploy     # deploy to Cloudflare Workers
+git clone https://github.com/alejandrofrank/alejandrofrank-eng.git
+cd alejandrofrank-eng
+npm ci
+npm run dev
 ```
 
-Live at `me.alejandrofranks.workers.dev` (custom domain `alejandrofrank.dev`
-coming). Rename the URL slug via the `name` field in `wrangler.jsonc`.
+The basic site runs without a GitHub token. To enable the contribution calendar locally, add your token as `GITHUB_TOKEN` in a gitignored `.dev.vars` file. `GITHUB_USER` is configured in `wrangler.jsonc`.
+
+```bash
+npm run typecheck
+npm run deploy
+```
+
+Deployment requires your own Cloudflare account and Worker configuration. Set the `GITHUB_TOKEN` Worker secret separately if you want the calendar in production.
+
+## Project map
+
+| Path | Purpose |
+| --- | --- |
+| `src/content.ts` | Project descriptions, links, and career context |
+| `src/index.ts` | Routes: homepage, `/timeline`, `/resume`, and `/health` |
+| `src/layout.ts` | Homepage composition |
+| `src/panels/` | Project panels, technical explanations, and GitHub data |
+| `src/timeline/` | Interactive career timeline |
+| `src/resume/` | Role walkthroughs, SVG player, and readable text |
+| `resume/` | Python scene builder and role definitions |
+| `src/styles.ts`, `src/personal-styles.ts` | Shared and homepage styling |
+| `public/` | Static assets |
 
 ## Status
 
-v0.1 — skeleton: hero, outcomes header, dashboard panel shells. Live data panels
-land incrementally (see roadmap). Each new panel = one build-in-public post.
+Live and maintained. The homepage, project sections, career timeline, and role walkthroughs are available on the deployed site. Projects described inside the portfolio have their own status; Vesti is in development.
