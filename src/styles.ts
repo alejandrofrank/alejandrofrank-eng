@@ -209,6 +209,11 @@ export const styles = `
   .ship-blurb { color: var(--muted); font-size: 12.5px; margin: 3px 0 0 17px; line-height: 1.5; }
 
   /* Bakiano — the venture card. Same skeleton, orange ground, its own scale. */
+  .v-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:24px 0; }
+  .v-action { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:12px 18px; border:1px solid var(--fg); border-radius:8px; color:var(--fg); background:transparent; font:600 14px/1.4 var(--sans); text-decoration:none; }
+  .v-action:hover { text-decoration:underline; text-underline-offset:3px; }
+  .v-action.primary { background:var(--fg); color:var(--bg); }
+  .v-action:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
   .v-eyebrow { color: var(--muted); }
   .v-headline { margin: 12px 0 0; font-size: 26px; line-height: 1.08; letter-spacing: -0.025em; font-weight: 600; max-width: 30ch; }
   .v-blurb { margin: 10px 0 0; color: var(--muted); font-size: 13.5px; max-width: 66ch; line-height: 1.55; }

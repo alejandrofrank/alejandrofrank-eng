@@ -47,6 +47,11 @@ export const bakiano: Panel = {
       <p class="v-headline">${esc(BAKIANO.headline)}</p>
       <p class="v-blurb">${esc(BAKIANO.blurb)}</p>
 
+      <div class="v-actions">
+        <a class="v-action primary" href="${esc(BAKIANO.access.href)}" target="_blank" rel="noopener noreferrer">${esc(BAKIANO.access.label)} <span aria-hidden="true">↗</span></a>
+        <a class="v-action" href="${esc(BAKIANO.href)}" target="_blank" rel="noopener noreferrer">${esc(BAKIANO.cta)} <span aria-hidden="true">↗</span></a>
+      </div>
+
       <div class="stats v-stats">${BAKIANO.stats.map(stat).join("")}</div>
 
       <div class="v-label">${DIAMOND}<span>Datasets</span><span class="leader"></span></div>

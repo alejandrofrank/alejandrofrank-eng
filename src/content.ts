@@ -79,6 +79,7 @@ export interface VentureFeature {
 export const BAKIANO = {
   name: "Bakiano",
   href: "https://bakiano.com",
+  access: { label: "Request free access", href: "https://bakiano.com/login" },
   eyebrow: "Market intelligence platform · Venezuela",
   headline: "The price of everything in Venezuela.",
   blurb:
@@ -105,7 +106,7 @@ export const BAKIANO = {
     { name: "Menu", kind: "The week, costed", blurb: "Plan the week's meals and price them against one chain's real catalog. What the cooking consumes and what you pay at the register are two numbers — you see both." },
     { name: "Real estate", kind: "Search with history", blurb: "Search listings by zone, price and surface across more than a million historical records from the major networks." },
   ] as VentureFeature[],
-  cta: "Open bakiano.com",
+  cta: "Visit bakiano.com",
 };
 
 // Nav links. `cta` promotes a link out of the quiet text row: "primary" is the
