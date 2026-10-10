@@ -4,6 +4,8 @@
 
 import { Hono } from "hono";
 import { renderPage } from "./layout";
+import { renderProjectPage } from "./projects/page";
+import { renderPlayPage } from "./play/page";
 import { renderResumePage } from "./resume/page";
 import { renderTimelinePage } from "./timeline/page";
 import { styles } from "./styles";
@@ -21,7 +23,12 @@ app.use("*", async (c, next) => {
 });
 
 app.get("/", async (c) => c.html(await renderPage(c.env, new URL(c.req.url).origin)));
+app.get("/projects/:slug", (c) => {
+  const page = renderProjectPage(c.req.param('slug'), new URL(c.req.url).origin);
+  return page ? c.html(page) : c.notFound();
+});
 app.get("/resume", (c) => c.html(renderResumePage()));
+app.get("/play", (c) => c.html(renderPlayPage(new URL(c.req.url).origin)));
 app.get("/timeline", (c) => c.html(renderTimelinePage()));
 app.get("/health", (c) => c.json({ ok: true }));
 

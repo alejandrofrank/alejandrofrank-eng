@@ -1,17 +1,23 @@
 # Alejandro Frank — engineering portfolio
 
-An interactive portfolio of the products I build and the systems behind them: Bakiano, visual experiments, and a career timeline with technical walkthroughs.
+An engineering portfolio with a suggested reading path: Bakiano, the ingestion, catalog-matching and query boundaries behind data products, visual experiments, and work in progress.
 
 **[Explore the live site](https://me.alejandrofranks.workers.dev)** · **[Career timeline](https://me.alejandrofranks.workers.dev/timeline)** · **[Bakiano case study](https://github.com/alejandrofrank/bakiano-showcase)**
 
-[![Live portfolio homepage with an interactive gradient and GitHub contribution calendar](docs/images/home.png)](https://me.alejandrofranks.workers.dev)
-
 ## What you can explore
 
-- **Projects:** Bakiano's market-data platform and its technical pipeline, plus Vesti, an outfit-search project in development.
+- **Project index:** six visible project summaries with status, a concrete engineering question, and a suggested reading order.
+- **Project pages:** `/projects/:slug` explains the problem, approach, inspectable evidence and limitations. Three runnable labs include local setup instructions. Bakiano and Vesti retain their technical walkthroughs.
 - **Experience:** a career timeline with role-by-role system diagrams and written explanations.
 - **Live activity:** a GitHub contribution calendar fetched at the edge, with a profile link available if the API is unavailable.
-- **Visual interface:** an interactive gradient, expandable sections, and a layout that adapts to smaller screens.
+- **Reading interface:** compact titles, direct project links, keyboard navigation, responsive layouts and print styles. Reading the projects requires no JavaScript.
+- **Optional fun mode:** the portfolio opens in work mode. “Turn fun mode on” enters `/play`, with a placeholder pixel avatar, six project stations, and one playable three-pair identity challenge. “Turn fun mode off” returns to the project index. Five other games are labeled concepts. [Direction and next steps](docs/project-arcade.md).
+
+### Branch previews
+
+![Readable project index in the local preview](docs/images/reading-mode.jpg)
+
+![Arcade prototype with project stations and a playable catalog challenge](docs/images/arcade-prototype.jpg)
 
 ## How it works
 
@@ -32,6 +38,7 @@ The basic site runs without a GitHub token. To enable the contribution calendar 
 
 ```bash
 npm run typecheck
+npm test
 npm run deploy
 ```
 
@@ -41,8 +48,11 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 
 | Path | Purpose |
 | --- | --- |
-| `src/content.ts` | Project descriptions, links, and career context |
-| `src/index.ts` | Routes: homepage, `/timeline`, `/resume`, and `/health` |
+| `src/content.ts` | Shared product links and career context |
+| `src/projects/catalog.ts` | Project descriptions, evidence, status and reading order |
+| `src/projects/page.ts`, `src/projects/styles.ts` | Project index and individual reading pages |
+| `src/play/page.ts`, `public/play/` | Optional arcade prototype and local game state |
+| `src/index.ts` | Routes: homepage, `/projects/:slug`, `/timeline`, `/resume`, and `/health` |
 | `src/layout.ts` | Homepage composition |
 | `src/panels/` | Project panels, technical explanations, and GitHub data |
 | `src/timeline/` | Interactive career timeline |
@@ -53,4 +63,4 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 
 ## Status
 
-Live and maintained. The homepage, project sections, career timeline, and role walkthroughs are available on the deployed site. Projects described inside the portfolio have their own status; Vesti is in development.
+Projects described inside the portfolio have their own status. Bakiano is live, the three engineering labs run locally, Image to ASCII is experimental, and Vesti is in development. Branch changes can be reviewed locally before deployment.
