@@ -4,6 +4,8 @@
 
 The homepage is a visible index. Each project has a stable `/projects/:slug` page with the problem, approach, evidence, limitations and a next-project link. Readers can inspect the work without playing anything or enabling JavaScript.
 
+Work mode is the default. A separate “Turn fun mode on” control enters the arcade; “Turn fun mode off” returns to the selected project in the reading index. From a project page, switching on selects that project's station. The mode control is a normal navigation link styled as an on/off switch, so it also works without JavaScript. There is no saved preference or automatic redirect that changes the homepage into an arcade on a later visit.
+
 The reading order follows a system: Bakiano → ingestion → product identity → query controls. Image to ASCII adds a creative experiment; Vesti closes with work in progress. Status and evidence distinguish a live product from a runnable lab or an idea.
 
 ## What the reference suggests

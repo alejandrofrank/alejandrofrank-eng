@@ -11,7 +11,7 @@ An engineering portfolio with a suggested reading path: Bakiano, the ingestion, 
 - **Experience:** a career timeline with role-by-role system diagrams and written explanations.
 - **Live activity:** a GitHub contribution calendar fetched at the edge, with a profile link available if the API is unavailable.
 - **Reading interface:** compact titles, direct project links, keyboard navigation, responsive layouts and print styles. Reading the projects requires no JavaScript.
-- **Arcade prototype:** `/play` has a placeholder pixel avatar, six project stations, and one playable three-pair identity challenge. Five other games are labeled concepts. [Direction and next steps](docs/project-arcade.md).
+- **Optional fun mode:** the portfolio opens in work mode. “Turn fun mode on” enters `/play`, with a placeholder pixel avatar, six project stations, and one playable three-pair identity challenge. “Turn fun mode off” returns to the project index. Five other games are labeled concepts. [Direction and next steps](docs/project-arcade.md).
 
 ### Branch previews
 
