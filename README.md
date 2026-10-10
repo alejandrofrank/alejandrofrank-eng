@@ -13,9 +13,9 @@ An engineering portfolio with a suggested reading path: Bakiano, the ingestion, 
 - **Reading interface:** compact titles, direct project links, keyboard navigation, responsive layouts and print styles. Reading the projects requires no JavaScript.
 - **Optional fun mode:** the portfolio opens in work mode. “Turn fun mode on” enters `/play`, with a placeholder pixel avatar, six project stations, and one playable three-pair identity challenge. “Turn fun mode off” returns to the project index. Five other games are labeled concepts. [Direction and next steps](docs/project-arcade.md).
 
-### Branch previews
+### Interface previews
 
-![Readable project index in the local preview](docs/images/reading-mode.jpg)
+![Live work-mode project index with the optional fun-mode switch](docs/images/reading-mode.jpg)
 
 ![Arcade prototype with project stations and a playable catalog challenge](docs/images/arcade-prototype.jpg)
 
