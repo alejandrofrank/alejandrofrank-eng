@@ -11,6 +11,13 @@ An engineering portfolio with a suggested reading path: Bakiano, the ingestion, 
 - **Experience:** a career timeline with role-by-role system diagrams and written explanations.
 - **Live activity:** a GitHub contribution calendar fetched at the edge, with a profile link available if the API is unavailable.
 - **Reading interface:** compact titles, direct project links, keyboard navigation, responsive layouts and print styles. Reading the projects requires no JavaScript.
+- **Arcade prototype:** `/play` has a placeholder pixel avatar, six project stations, and one playable three-pair identity challenge. Five other games are labeled concepts. [Direction and next steps](docs/project-arcade.md).
+
+### Branch previews
+
+![Readable project index in the local preview](docs/images/reading-mode.jpg)
+
+![Arcade prototype with project stations and a playable catalog challenge](docs/images/arcade-prototype.jpg)
 
 ## How it works
 
@@ -31,6 +38,7 @@ The basic site runs without a GitHub token. To enable the contribution calendar 
 
 ```bash
 npm run typecheck
+npm test
 npm run deploy
 ```
 
@@ -43,6 +51,7 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 | `src/content.ts` | Shared product links and career context |
 | `src/projects/catalog.ts` | Project descriptions, evidence, status and reading order |
 | `src/projects/page.ts`, `src/projects/styles.ts` | Project index and individual reading pages |
+| `src/play/page.ts`, `public/play/` | Optional arcade prototype and local game state |
 | `src/index.ts` | Routes: homepage, `/projects/:slug`, `/timeline`, `/resume`, and `/health` |
 | `src/layout.ts` | Homepage composition |
 | `src/panels/` | Project panels, technical explanations, and GitHub data |
