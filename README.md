@@ -1,17 +1,16 @@
 # Alejandro Frank — engineering portfolio
 
-An interactive portfolio of the products I build and the systems behind them: Bakiano, visual experiments, and a career timeline with technical walkthroughs.
+An engineering portfolio with a suggested reading path: Bakiano, the ingestion, catalog-matching and query boundaries behind data products, visual experiments, and work in progress.
 
 **[Explore the live site](https://me.alejandrofranks.workers.dev)** · **[Career timeline](https://me.alejandrofranks.workers.dev/timeline)** · **[Bakiano case study](https://github.com/alejandrofrank/bakiano-showcase)**
 
-[![Live portfolio homepage with an interactive gradient and GitHub contribution calendar](docs/images/home.png)](https://me.alejandrofranks.workers.dev)
-
 ## What you can explore
 
-- **Projects:** Bakiano's market-data platform and its technical pipeline, plus Vesti, an outfit-search project in development.
+- **Project index:** six visible project summaries with status, a concrete engineering question, and a suggested reading order.
+- **Project pages:** `/projects/:slug` explains the problem, approach, inspectable evidence and limitations. Three runnable labs include local setup instructions. Bakiano and Vesti retain their technical walkthroughs.
 - **Experience:** a career timeline with role-by-role system diagrams and written explanations.
 - **Live activity:** a GitHub contribution calendar fetched at the edge, with a profile link available if the API is unavailable.
-- **Visual interface:** an interactive gradient, expandable sections, and a layout that adapts to smaller screens.
+- **Reading interface:** compact titles, direct project links, keyboard navigation, responsive layouts and print styles. Reading the projects requires no JavaScript.
 
 ## How it works
 
@@ -41,8 +40,10 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 
 | Path | Purpose |
 | --- | --- |
-| `src/content.ts` | Project descriptions, links, and career context |
-| `src/index.ts` | Routes: homepage, `/timeline`, `/resume`, and `/health` |
+| `src/content.ts` | Shared product links and career context |
+| `src/projects/catalog.ts` | Project descriptions, evidence, status and reading order |
+| `src/projects/page.ts`, `src/projects/styles.ts` | Project index and individual reading pages |
+| `src/index.ts` | Routes: homepage, `/projects/:slug`, `/timeline`, `/resume`, and `/health` |
 | `src/layout.ts` | Homepage composition |
 | `src/panels/` | Project panels, technical explanations, and GitHub data |
 | `src/timeline/` | Interactive career timeline |
@@ -53,4 +54,4 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 
 ## Status
 
-Live and maintained. The homepage, project sections, career timeline, and role walkthroughs are available on the deployed site. Projects described inside the portfolio have their own status; Vesti is in development.
+Projects described inside the portfolio have their own status. Bakiano is live, the three engineering labs run locally, Image to ASCII is experimental, and Vesti is in development. Branch changes can be reviewed locally before deployment.
