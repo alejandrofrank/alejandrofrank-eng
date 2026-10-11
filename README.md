@@ -1,23 +1,20 @@
 # Alejandro Frank — engineering portfolio
 
-An engineering portfolio with a suggested reading path: Bakiano, the ingestion, catalog-matching and query boundaries behind data products, visual experiments, and work in progress.
+An engineering portfolio with two appearances. The original green gradients and expandable sections open by default. Choose **Appearance → Tech** for a compact project index, engineering case studies, and the optional project arcade.
 
 **[Explore the live site](https://me.alejandrofranks.workers.dev)** · **[Career timeline](https://me.alejandrofranks.workers.dev/timeline)** · **[Bakiano case study](https://github.com/alejandrofrank/bakiano-showcase)**
 
 ## What you can explore
 
-- **Project index:** six visible project summaries with status, a concrete engineering question, and a suggested reading order.
+- **Original homepage:** green gradients, expandable About me and Projects sections, experience and contact links. All six projects remain accessible here.
+- **Tech project index:** `/tech` presents six visible project summaries with status, a concrete engineering question, and a suggested reading order.
 - **Project pages:** `/projects/:slug` explains the problem, approach, inspectable evidence and limitations. Three runnable labs include local setup instructions. Bakiano and Vesti retain their technical walkthroughs.
 - **Experience:** a career timeline with role-by-role system diagrams and written explanations.
 - **Live activity:** a GitHub contribution calendar fetched at the edge, with a profile link available if the API is unavailable.
 - **Reading interface:** compact titles, direct project links, keyboard navigation, responsive layouts and print styles. Reading the projects requires no JavaScript.
-- **Optional fun mode:** the portfolio opens in work mode. “Turn fun mode on” enters `/play`, with a placeholder pixel avatar, six project stations, and one playable three-pair identity challenge. “Turn fun mode off” returns to the project index. Five other games are labeled concepts. [Direction and next steps](docs/project-arcade.md).
+- **Optional fun mode inside Tech:** “Turn fun mode on” enters `/play`, with a placeholder pixel avatar, six project stations, and one playable three-pair identity challenge. “Turn fun mode off” returns to the selected project in `/tech`. Five other games are labeled concepts. The appearance control returns to Original at any time. [Direction and next steps](docs/project-arcade.md).
 
-### Interface previews
-
-![Live work-mode project index with the optional fun-mode switch](docs/images/reading-mode.jpg)
-
-![Arcade prototype with project stations and a playable catalog challenge](docs/images/arcade-prototype.jpg)
+The appearance choices are ordinary links, so they work without JavaScript. `/` always opens the original homepage; `/tech` opens the reading view. Neither visiting a project nor playing a game changes the default for later visits.
 
 ## How it works
 
@@ -50,10 +47,11 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 | --- | --- |
 | `src/content.ts` | Shared product links and career context |
 | `src/projects/catalog.ts` | Project descriptions, evidence, status and reading order |
+| `src/appearance.ts` | Original / Tech appearance navigation |
 | `src/projects/page.ts`, `src/projects/styles.ts` | Project index and individual reading pages |
 | `src/play/page.ts`, `public/play/` | Optional arcade prototype and local game state |
-| `src/index.ts` | Routes: homepage, `/projects/:slug`, `/timeline`, `/resume`, and `/health` |
-| `src/layout.ts` | Homepage composition |
+| `src/index.ts` | Routes: homepage, `/tech`, `/projects/:slug`, `/play`, `/timeline`, `/resume`, and `/health` |
+| `src/layout.ts` | Original green homepage and expandable project panels |
 | `src/panels/` | Project panels, technical explanations, and GitHub data |
 | `src/timeline/` | Interactive career timeline |
 | `src/resume/` | Role walkthroughs, SVG player, and readable text |

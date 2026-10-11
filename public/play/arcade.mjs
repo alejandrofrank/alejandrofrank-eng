@@ -9,7 +9,7 @@ export function initArcade() {
     const selected = radios.find(radio => radio.value === slug) || radios.find(radio => radio.value === defaultStation);
     selected.checked = true;
     panels.forEach(panel => { panel.hidden = panel.dataset.stationPanel !== selected.value; });
-    document.getElementById('mode-toggle').href = '/#' + selected.value;
+    document.getElementById('mode-toggle').href = '/tech#' + selected.value;
     const strip = controls.querySelector('.stations');
     if (strip.scrollWidth > strip.clientWidth) {
       const tile = selected.closest('.station');

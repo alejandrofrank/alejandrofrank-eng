@@ -2,8 +2,8 @@
 export const readingStyles = `
 :root {
   color-scheme:dark;
-  --bg:#1c2a24; --surface:#24372e; --line:#465b4e;
-  --fg:#f1ecdf; --muted:#bdc9bc; --accent:#e8b286;
+  --bg:#10151c; --surface:#171f29; --line:#354352;
+  --fg:#e6edf3; --muted:#b4c1d0; --accent:#8cbcff;
   --mono:'JetBrains Mono',monospace; --sans:'Inter Tight',system-ui,sans-serif;
 }
 * { box-sizing:border-box; }
@@ -19,8 +19,8 @@ h1 { font-size:30px; } h2 { font-size:23px; } h3 { font-size:18px; }
 p+p { margin-top:14px; }
 [hidden] { display:none!important; }
 .site-wrap { max-width:1160px; margin:auto; padding:0 36px; }
-.site-nav { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:22px 0; border-bottom:1px solid var(--line); }
-.site-name { font-weight:600; text-decoration:none; }
+.site-nav { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px; padding:22px 0; border-bottom:1px solid var(--line); }
+.site-name { font:500 14px var(--mono); text-decoration:none; }
 .nav-links { display:flex; flex-wrap:wrap; gap:8px 24px; font-size:14px; margin-left:auto; }
 .nav-links a { padding:8px 0; text-decoration:none; }
 .nav-links a:hover,.nav-links [aria-current=page] { text-decoration:underline; }
@@ -68,7 +68,7 @@ p+p { margin-top:14px; }
 .about-strip h2 { font-size:18px; }
 .about-strip p { max-width:66ch; color:var(--muted); }
 .about-strip a { display:inline-block; margin-top:12px; font-size:14px; }
-.about-strip .ambient-calendar { display:block; color:var(--muted); text-decoration:none; margin:32px 0 0; max-width:720px; --hm0:#2d4035; --hm1:#486345; --hm2:#739569; --hm3:#afc99a; --hm4:#e6be8c; }
+.about-strip .ambient-calendar { display:block; color:var(--muted); text-decoration:none; margin:32px 0 0; max-width:720px; --hm0:#202c3b; --hm1:#334f73; --hm2:#4c75a8; --hm3:#86b0e5; --hm4:#bad5ff; }
 .calendar-caption { display:flex; justify-content:space-between; gap:16px; font:10px/1.6 var(--mono); margin-bottom:10px; }
 .hm { display:flex; gap:3px; }
 .hm-col { display:flex; flex-direction:column; gap:3px; flex:1; min-width:0; }

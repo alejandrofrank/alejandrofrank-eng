@@ -4,7 +4,8 @@
 
 import { Hono } from "hono";
 import { renderPage } from "./layout";
-import { renderProjectPage } from "./projects/page";
+import { renderProjectIndex, renderProjectPage } from "./projects/page";
+import { renderAmbientCalendar } from "./panels/github";
 import { renderPlayPage } from "./play/page";
 import { renderResumePage } from "./resume/page";
 import { renderTimelinePage } from "./timeline/page";
@@ -23,6 +24,7 @@ app.use("*", async (c, next) => {
 });
 
 app.get("/", async (c) => c.html(await renderPage(c.env, new URL(c.req.url).origin)));
+app.get("/tech", async (c) => c.html(renderProjectIndex(new URL(c.req.url).origin, await renderAmbientCalendar(c.env))));
 app.get("/projects/:slug", (c) => {
   const page = renderProjectPage(c.req.param('slug'), new URL(c.req.url).origin);
   return page ? c.html(page) : c.notFound();

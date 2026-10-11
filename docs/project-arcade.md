@@ -2,9 +2,9 @@
 
 ## Reading comes first
 
-The homepage is a visible index. Each project has a stable `/projects/:slug` page with the problem, approach, evidence, limitations and a next-project link. Readers can inspect the work without playing anything or enabling JavaScript.
+The original green homepage remains the default at `/`, with its gradients and expandable sections. **Appearance → Tech** opens the visible project index at `/tech`. Each project has a stable `/projects/:slug` page with the problem, approach, evidence, limitations and a next-project link. Readers can inspect the work without playing anything or enabling JavaScript.
 
-Work mode is the default. A separate “Turn fun mode on” control enters the arcade; “Turn fun mode off” returns to the selected project in the reading index. From a project page, switching on selects that project's station. The mode control is a normal navigation link styled as an on/off switch, so it also works without JavaScript. There is no saved preference or automatic redirect that changes the homepage into an arcade on a later visit.
+The fun-mode control lives inside Tech. “Turn fun mode on” enters the arcade; “Turn fun mode off” returns to the selected project in `/tech`. From a project page, switching on selects that project's station. The appearance control offers a direct return to Original. Both controls use normal navigation links, so navigation works without JavaScript. There is no saved preference or automatic redirect that changes the homepage on a later visit.
 
 The reading order follows a system: Bakiano → ingestion → product identity → query controls. Image to ASCII adds a creative experiment; Vesti closes with work in progress. Status and evidence distinguish a live product from a runnable lab or an idea.
 
