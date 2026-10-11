@@ -153,6 +153,7 @@ ${FONTS_LINK}
 
   </div>
 
+  <script type="module" src="/appearance.mjs"></script>
   <script>
   function openLinkedSection() {
     var anchor = location.hash.slice(1);
