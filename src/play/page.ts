@@ -34,6 +34,15 @@ const playStyles = `
 .avatar { width:24px; height:33px; image-rendering:pixelated; }
 .station .avatar { display:none; position:absolute; bottom:3px; }
 .station input:checked+label .avatar { display:block; }
+.station label { transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .25s,box-shadow .25s; }
+.station label:hover { transform:translateY(-4px); box-shadow:0 8px 20px #0003; }
+.station input:checked+label { transform:translateY(-4px); box-shadow:0 6px 22px #8cbcff18; }
+.station input:checked+label .avatar { animation:avatar-arrive .45s cubic-bezier(.16,1,.3,1) both; }
+.station-panel:not([hidden]) { animation:station-arrive .45s cubic-bezier(.16,1,.3,1) both; }
+.game-feedback:not([hidden]) { animation:station-arrive .3s cubic-bezier(.16,1,.3,1) both; }
+@keyframes avatar-arrive { from { opacity:0; transform:translateY(-14px) scale(.8); } to { opacity:1; transform:none; } }
+@keyframes station-arrive { from { opacity:0; transform:translateY(12px) scale(.985); } to { opacity:1; transform:none; } }
+@media(prefers-reduced-motion:reduce) { .arcade-layout * { animation:none!important; transition:none!important; } }
 .map-help { font-size:12px; color:var(--muted); margin-top:14px; }
 .phone-tip { display:none; }
 .station-panel { padding:24px; border:1px solid var(--line); border-radius:8px; background:var(--surface); margin-bottom:20px; }

@@ -2,7 +2,7 @@
 
 ## Reading comes first
 
-The original green homepage remains the default at `/`, with its gradients and expandable sections. **Appearance → Tech** opens the visible project index at `/tech`. Each project has a stable `/projects/:slug` page with the problem, approach, evidence, limitations and a next-project link. Readers can inspect the work without playing anything or enabling JavaScript.
+The original green homepage remains the default at `/`, with its gradients and expandable sections. The **Appearance** picker previews both views. **Tech** opens the animated project explorer at `/tech`: a project rail drives a system sketch and its story in the same selection. “Read as a list” reveals the complete reading index, which is also the no-JavaScript and print fallback. Each project has a stable `/projects/:slug` page with the problem, approach, evidence, limitations and a next-project link.
 
 The fun-mode control lives inside Tech. “Turn fun mode on” enters the arcade; “Turn fun mode off” returns to the selected project in `/tech`. From a project page, switching on selects that project's station. The appearance control offers a direct return to Original. Both controls use normal navigation links, so navigation works without JavaScript. There is no saved preference or automatic redirect that changes the homepage on a later visit.
 
@@ -42,7 +42,7 @@ The arcade is the most flexible starting point because every project can have a 
 - Scores are local, in-memory state. There is no account, tracking, API call, timer or leaderboard.
 - No project is locked behind a score. Every station links directly to its reading page.
 - Missing JavaScript leaves every game concept and project link readable. The station controls and game only appear after their script initializes.
-- Native controls, visible focus, textual feedback and evidence tables carry the interaction. The avatar and color are supplementary. The prototype has no animation or sound.
+- Native controls, visible focus, textual feedback and evidence tables carry the interaction. The avatar and color are supplementary. Station selection has a short avatar entrance and panel transition; system reduced-motion preferences disable these. There is no sound or idle animation.
 
 ## Next implementation sequence
 

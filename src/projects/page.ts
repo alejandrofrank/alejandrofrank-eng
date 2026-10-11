@@ -6,6 +6,8 @@ import { bakianoTechnical, vestiTechnical } from '../panels/technical';
 import { PROJECTS, projectPath, type Project } from './catalog';
 import { readingStyles } from './styles';
 import { appearanceSwitch, appearanceStyles } from '../appearance';
+import { renderProjectExplorer } from './explorer';
+import { explorerStyles } from './explorer-styles';
 
 export function projectState(project: Project): string {
   const state = project.category === 'Product' ? ' live' : project.category === 'In development' ? ' building' : '';
@@ -35,11 +37,11 @@ export function readingShell(title: string, description: string, path: string, o
 
 export function renderProjectIndex(origin: string, calendar: string): string {
   return readingShell('Projects', 'Engineering projects by Alejandro Frank: Bakiano, runnable data labs, visual experiments and work in progress.', '/tech', origin, `
-<header class="intro"><p class="eyebrow">Tech view · Engineer · Madrid</p><h1>Projects & engineering notes</h1><p>I build data products and the systems behind them. Start with Bakiano, then explore a few of the problems that make a product like it work.</p></header>
-<section id="projects" aria-labelledby="projects-title"><div class="section-top"><h2 id="projects-title">Selected work</h2><p>One product. Three engineering labs. Two explorations.</p></div>
-<div class="work-layout"><aside class="reading-guide"><nav aria-label="Project reading order"><h2>A suggested reading order</h2><ol>${PROJECTS.map((p, i) => `<li><a href="#${p.slug}"><span>${String(i + 1).padStart(2, '0')}</span>${esc(p.title)}</a></li>`).join('')}</ol></nav><p>Each story covers the problem, the approach, and what you can inspect.</p></aside>
+<header class="intro explorer-intro"><div><p class="eyebrow">Tech view · Engineer · Madrid</p><h1>Project explorer</h1></div><p>Products, systems and experiments. Pick one to look inside.</p></header>
+<section id="projects" aria-labelledby="projects-title"><h2 id="projects-title" class="explorer-section-title">Selected work</h2>${renderProjectExplorer()}
+<div class="work-layout" data-project-list><aside class="reading-guide"><nav aria-label="Project reading order"><h2>A suggested reading order</h2><ol>${PROJECTS.map((p, i) => `<li><a href="#${p.slug}"><span>${String(i + 1).padStart(2, '0')}</span>${esc(p.title)}</a></li>`).join('')}</ol></nav><p>Each story covers the problem, the approach, and what you can inspect.</p></aside>
 <ol class="project-index">${PROJECTS.map((p, i) => `<li class="project-entry" id="${p.slug}"><article aria-labelledby="title-${p.slug}"><div class="entry-meta"><span class="number">${String(i + 1).padStart(2, '0')} / ${esc(p.category)}</span>${projectState(p)}</div><h3 id="title-${p.slug}"><a href="${projectPath(p)}">${esc(p.title)} <span aria-hidden="true">→</span></a></h3><p class="entry-question">${esc(p.question)}</p><p>${esc(p.summary)}</p><div class="entry-bottom"><span class="stack">${p.stack.map(esc).join(' · ')}</span><a class="read-link" href="${projectPath(p)}" aria-label="Read ${esc(p.title)}">Read project →</a></div></article></li>`).join('')}</ol></div></section>
-<section class="about-strip" id="about" aria-labelledby="about-title"><h2 id="about-title">About me</h2><div><p>${esc(SITE.subtitle)} Based in Madrid, with experience across data platforms, automation and product development.</p><a href="/timeline">Explore my experience →</a>${calendar}</div></section>`);
+<section class="about-strip" id="about" aria-labelledby="about-title"><h2 id="about-title">About me</h2><div><p>${esc(SITE.subtitle)} Based in Madrid, with experience across data platforms, automation and product development.</p><a href="/timeline">Explore my experience →</a>${calendar}</div></section>`, explorerStyles, `import '/projects/explorer.mjs';`);
 }
 
 export function renderProjectPage(slug: string, origin: string): string | undefined {
