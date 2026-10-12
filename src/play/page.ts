@@ -7,7 +7,7 @@ const CONCEPTS: Record<string, { name: string; task: string; lesson: string }> =
   'gcp-ingestion-lab': { name: 'Delivery room', task: 'Receive a file twice, then receive an older observation. Choose the receipt and merge rules that preserve the right rows.', lesson: 'Event delivery and correct warehouse state are different things.' },
   'catalog-match-lab': { name: 'Same or different?', task: 'Judge three pairs of fictional listings. Match the presentation, reject a conflict, or ask for more evidence.', lesson: 'Similar words do not establish product identity.' },
   'bigquery-query-guard': { name: 'Query budget', task: 'Choose between two recorded queries. Keep the required answer while reducing unnecessary reads, then inspect the recorded evidence.', lesson: 'Output size, scan size, billed bytes and runtime answer different questions.' },
-  'ascii-art': { name: 'Pixel workshop', task: 'Rebuild an image with a limited character palette. Compare how detail, brightness and character choice affect the result.', lesson: 'Representation is a tradeoff: choose which detail to preserve.' },
+  'ascii-art': { name: 'Pixel workshop', task: 'Rebuild an image with a limited palette. Compare pixels, dithering and characters in Raster Lab; a scored arcade challenge remains a concept.', lesson: 'Representation is a tradeoff: choose which detail to preserve.' },
   vesti: { name: 'Outfit puzzle', task: 'Select a garment, keep the outfit context, and compare possible replacements. This station stays a concept while Vesti develops.', lesson: 'Visual resemblance and a useful replacement are separate decisions.' },
 };
 

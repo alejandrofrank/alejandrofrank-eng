@@ -25,7 +25,7 @@ const sketches: Record<string, { caption: string; body: string }> = {
     wire('M206 114H253M390 69H431V115H476M390 163H431V115') +
     '<g class="sketch-node"><rect x="20" y="57" width="186" height="114" rx="8"/><text x="38" y="87" class="sketch-label">SELECT …</text><text x="38" y="113" class="sketch-small">WHERE scope = …</text><text x="38" y="139" class="sketch-small">AND date = …</text></g>' +
     box(253, 37, 137, '01 / Authorize', 'scope + cache') + box(253, 131, 137, '02 / Estimate', 'enforce byte cap') + box(476, 83, 144, 'Execute', 'bounded request') },
-  'ascii-art': { caption: 'Trade pixels for characters. Keep the shape.', body:
+  'ascii-art': { caption: 'Pixels, dithering or characters. Compare what survives.', body:
     wire('M232 115H288M354 115H410') +
     '<g class="sketch-node"><rect x="45" y="30" width="188" height="170" rx="8"/><circle cx="184" cy="72" r="17" class="sketch-fill"/><path class="sketch-land" d="m58 184 55-89 30 42 22-25 56 72Z"/><text x="107" y="220" class="sketch-small">IMAGE</text></g>' +
     '<g class="sketch-node"><text x="320" y="128" text-anchor="middle" class="sketch-symbol">@</text></g>' +

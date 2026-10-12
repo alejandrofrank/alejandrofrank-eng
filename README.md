@@ -63,4 +63,4 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 
 ## Status
 
-Projects described inside the portfolio have their own status. Bakiano is live, the three engineering labs run locally, Image to ASCII is experimental, and Vesti is in development. Branch changes can be reviewed locally before deployment.
+Projects described inside the portfolio have their own status. Bakiano is live, the three engineering labs run locally, Raster Lab is a live browser workbench for pixels, dithering and ASCII, and Vesti is in development. Branch changes can be reviewed locally before deployment.
