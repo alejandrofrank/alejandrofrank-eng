@@ -4,7 +4,7 @@
 
 The original green homepage remains the default at `/`, with its gradients and expandable sections. The **Appearance** picker previews both views. **Tech** opens the animated project explorer at `/tech`: a project rail drives a system sketch and its story in the same selection. “Read as a list” reveals the complete reading index, which is also the no-JavaScript and print fallback. Each project has a stable `/projects/:slug` page with the problem, approach, evidence, limitations and a next-project link.
 
-The fun-mode control lives inside Tech. “Turn fun mode on” enters the arcade; “Turn fun mode off” returns to the selected project in `/tech`. From a project page, switching on selects that project's station. The appearance control offers a direct return to Original. Both controls use normal navigation links, so navigation works without JavaScript. There is no saved preference or automatic redirect that changes the homepage on a later visit.
+The shared view picker exposes Original, Tech and Arcade as three direct links, with the current view highlighted. Arcade enters `/play`; Tech returns to the selected project in `/tech`; Original opens the corresponding green project panel. From a project page, Arcade selects that project's station. Normal links keep navigation available without JavaScript; scripts carry live project selections between views. There is no saved preference or automatic redirect that changes the homepage on a later visit.
 
 The reading order follows a system: Bakiano → ingestion → product identity → query controls. Image to ASCII adds a creative experiment; Vesti closes with work in progress. Status and evidence distinguish a live product from a runnable lab or an idea.
 

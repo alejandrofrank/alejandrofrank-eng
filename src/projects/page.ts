@@ -17,7 +17,6 @@ export function projectState(project: Project): string {
 export function readingShell(title: string, description: string, path: string, origin: string, body: string, extraStyles = '', script = ''): string {
   const funMode = path === '/play';
   const currentProject = PROJECTS.find(project => projectPath(project) === path);
-  const modeHref = funMode ? '/tech' : '/play' + (currentProject ? '#' + currentProject.slug : '');
   return `<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#10151c">${FAVICON}${FONTS_LINK}
@@ -30,7 +29,7 @@ export function readingShell(title: string, description: string, path: string, o
 <a class="skip-link" href="#main">Skip to content</a><div class="site-wrap">
 <header class="site-nav"><a class="site-name" href="/tech">${SITE.name}</a><nav class="nav-links" aria-label="Main navigation">
 <a href="/tech#projects"${path === '/tech' || path.startsWith('/projects/') ? ' aria-current="page"' : ''}>Projects</a><a href="/timeline">Experience</a><a href="/tech#contact">Contact</a>
-</nav><div class="view-controls">${appearanceSwitch('tech')}<a class="mode-toggle" id="mode-toggle" data-mode="${funMode ? 'fun' : 'work'}" href="${modeHref}"><span class="toggle-track" aria-hidden="true"><span></span></span><span>Turn fun mode ${funMode ? 'off' : 'on'}</span></a></div></header><main id="main">${body}</main>
+</nav><div class="view-controls">${appearanceSwitch(funMode ? 'arcade' : 'tech', currentProject?.slug)}</div></header><main id="main">${body}</main>
 <footer class="site-footer" id="contact"><p>Have a problem worth working on? Get in touch.</p><nav class="footer-links" aria-label="Contact">${LINKS.filter(l => ['Email', 'GitHub', 'LinkedIn'].includes(l.label)).map(l => `<a href="${esc(l.href)}"${l.href.startsWith('https:') ? ' target="_blank" rel="noopener noreferrer"' : ''}>${esc(l.label)}${l.href.startsWith('https:') ? ' ↗' : ''}</a>`).join('')}</nav></footer>
 </div><script type="module" src="/appearance.mjs"></script>${script ? `<script type="module">${script}</script>` : ''}</body></html>`;
 }

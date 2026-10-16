@@ -1,13 +1,24 @@
-// Native details/links remain usable if this enhancement does not load.
-document.querySelectorAll('.appearance-picker').forEach(picker => {
-  const trigger = picker.querySelector('summary');
-  document.addEventListener('click', event => {
-    if (picker.open && !picker.contains(event.target)) picker.open = false;
+// Links work without JavaScript. Enhancement carries the selected project across views.
+export function setAppearanceProject(slug) {
+  const hash = slug ? '#' + encodeURIComponent(slug) : '';
+  const paths = { original: '/', tech: '/tech', arcade: '/play' };
+  document.querySelectorAll('.view-choice[data-view]').forEach(link => {
+    const path = paths[link.dataset.view];
+    if (path) link.setAttribute('href', path + hash);
   });
-  picker.addEventListener('keydown', event => {
-    if (event.key !== 'Escape' || !picker.open) return;
-    picker.open = false;
-    trigger.focus();
-    event.preventDefault();
-  });
-});
+}
+
+const projects = [...document.querySelectorAll('.project-dropdown[id]')];
+if (projects.length) {
+  const fromHash = () => {
+    const hash = location.hash.slice(1);
+    const project = projects.find(item => item.id === hash || item.id === 'project-' + hash);
+    setAppearanceProject(project ? project.id.slice('project-'.length) : '');
+  };
+  fromHash();
+  window.addEventListener('hashchange', fromHash);
+  projects.forEach(project => project.addEventListener('toggle', () => {
+    const open = projects.find(item => item.open);
+    setAppearanceProject(open ? open.id.slice('project-'.length) : '');
+  }));
+}

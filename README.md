@@ -1,6 +1,6 @@
 # Alejandro Frank — engineering portfolio
 
-An engineering portfolio with two appearances. The original green gradients and expandable sections open by default. Open the **Appearance** picker and choose **Tech** for an animated project explorer, engineering case studies, and the optional project arcade.
+An engineering portfolio with a direct **Original / Tech / Arcade** view picker. The original green gradients and expandable sections open by default. Choose **Tech** for an animated project explorer and engineering case studies, or **Arcade** for the optional game view.
 
 **[Explore the live site](https://me.alejandrofranks.workers.dev)** · **[Career timeline](https://me.alejandrofranks.workers.dev/timeline)** · **[Bakiano case study](https://github.com/alejandrofrank/bakiano-showcase)**
 
@@ -8,12 +8,12 @@ An engineering portfolio with two appearances. The original green gradients and 
 
 - **Original homepage:** green gradients, expandable About me and Projects sections, experience and contact links. All six projects remain accessible here.
 - **Tech project explorer:** `/tech` has six selectable projects, each with its own system sketch, color and animated entrance. Use the project rail, arrow keys or previous/next controls; the selected project stays in the URL and carries into the arcade. “Read as a list” restores the complete reading index.
-- **Appearance picker:** thumbnail previews of Original and Tech, with native keyboard navigation, Escape dismissal and a visible current selection.
+- **View picker:** three visible links with distinct icons and a highlighted current view. One click switches between Original, Tech and Arcade; the selected project carries across all three. The control expands to the available width on phones.
 - **Project pages:** `/projects/:slug` explains the problem, approach, inspectable evidence and limitations. Three runnable labs include local setup instructions. Bakiano and Vesti retain their technical walkthroughs.
 - **Experience:** a career timeline with role-by-role system diagrams and written explanations.
 - **Live activity:** a GitHub contribution calendar fetched at the edge, with a profile link available if the API is unavailable.
 - **Reading interface:** compact titles, direct project links, keyboard navigation, responsive layouts and print styles. Reading the projects requires no JavaScript.
-- **Optional fun mode inside Tech:** “Turn fun mode on” enters `/play`, with a placeholder pixel avatar, six project stations, and one playable three-pair identity challenge. “Turn fun mode off” returns to the selected project in `/tech`. Five other games are labeled concepts. The appearance control returns to Original at any time. [Direction and next steps](docs/project-arcade.md).
+- **Optional Arcade view:** `/play` has a placeholder pixel avatar, six project stations, and one playable three-pair identity challenge. Choose Tech to return to the selected project in `/tech`, or Original to open its green project panel. Five other games are labeled concepts. [Direction and next steps](docs/project-arcade.md).
 
 The appearance choices are ordinary links, so they work without JavaScript. The full project list is the fallback when scripts are unavailable and is used for printing. Motion follows the system's reduced-motion preference; animations are finite and run on selection. `/` always opens the original homepage. Neither visiting a project nor playing a game changes the default for later visits.
 
@@ -48,7 +48,7 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 | --- | --- |
 | `src/content.ts` | Shared product links and career context |
 | `src/projects/catalog.ts` | Project descriptions, evidence, status and reading order |
-| `src/appearance.ts` | Original / Tech appearance navigation |
+| `src/appearance.ts`, `public/appearance.mjs` | Original / Tech / Arcade navigation and selected-project links |
 | `src/projects/page.ts`, `src/projects/styles.ts` | Project index and individual reading pages |
 | `src/projects/explorer.ts`, `src/projects/explorer-styles.ts`, `public/projects/` | Project picker, system sketches and interruptible native browser animations |
 | `src/play/page.ts`, `public/play/` | Optional arcade prototype and local game state |

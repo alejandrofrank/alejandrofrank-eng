@@ -1,3 +1,5 @@
+import { setAppearanceProject } from '../appearance.mjs';
+
 const explorer = document.getElementById('project-explorer');
 if (explorer) {
   const choices = [...explorer.querySelectorAll('input[name="project-choice"]')];
@@ -31,7 +33,7 @@ if (explorer) {
     const panel = panels[index];
     position.textContent = String(index + 1).padStart(2, '0');
     announcement.textContent = `${panel.querySelector('h3').firstChild.textContent}. Project ${index + 1} of ${choices.length}.`;
-    document.getElementById('mode-toggle').href = '/play#' + choice.value;
+    setAppearanceProject(choice.value);
     if (updateHash) history.replaceState(null, '', '#' + choice.value);
     const rail = explorer.querySelector('.project-choices');
     const tile = choice.closest('.project-choice');

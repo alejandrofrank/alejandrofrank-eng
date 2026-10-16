@@ -24,12 +24,6 @@ p+p { margin-top:14px; }
 .nav-links { display:flex; flex-wrap:wrap; gap:8px 24px; font-size:14px; margin-left:auto; }
 .nav-links a { padding:8px 0; text-decoration:none; }
 .nav-links a:hover,.nav-links [aria-current=page] { text-decoration:underline; }
-.mode-toggle { display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:8px 12px; min-height:44px; margin-left:12px; border:1px solid var(--line); border-radius:6px; font-size:13px; white-space:nowrap; text-decoration:none; }
-.mode-toggle:hover { background:var(--surface); }
-.toggle-track { display:inline-flex; align-items:center; width:30px; height:18px; padding:3px; border:1px solid var(--muted); border-radius:12px; }
-.toggle-track span { width:10px; height:10px; border-radius:50%; background:var(--muted); }
-.mode-toggle[data-mode=fun] .toggle-track { justify-content:flex-end; background:var(--accent); border-color:var(--accent); }
-.mode-toggle[data-mode=fun] .toggle-track span { background:var(--bg); }
 .skip-link { position:absolute; top:-80px; left:20px; background:var(--fg); color:var(--bg); padding:10px; z-index:10; }
 .skip-link:focus { top:8px; }
 .intro { padding:38px 0 32px; max-width:730px; }
@@ -119,7 +113,6 @@ p+p { margin-top:14px; }
 @media(max-width:780px) {
   .site-wrap { padding:0 22px; }
   .site-nav { flex-wrap:wrap; }
-  .mode-toggle { margin-left:0; }
   .work-layout { grid-template-columns:1fr; gap:22px; }
   .reading-guide { position:static; border-bottom:1px solid var(--line); padding-bottom:18px; }
   .reading-guide ol { display:flex; flex-wrap:wrap; gap:0 20px; }
