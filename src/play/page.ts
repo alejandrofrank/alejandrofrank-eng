@@ -1,95 +1,60 @@
 import { PROJECTS, projectPath } from '../projects/catalog';
 import { readingShell } from '../projects/page';
 import { esc } from '../panels/helpers';
+import { cabinetArt, PLAYER, STATION_ART } from './art';
+import { playStyles } from './styles';
 
-const CONCEPTS: Record<string, { name: string; task: string; lesson: string }> = {
-  bakiano: { name: 'Market run', task: 'Build a comparable shopping basket across stores. Spot the stale price or mismatched pack before choosing the cheapest basket.', lesson: 'A useful price needs identity, currency and time context.' },
-  'gcp-ingestion-lab': { name: 'Delivery room', task: 'Receive a file twice, then receive an older observation. Choose the receipt and merge rules that preserve the right rows.', lesson: 'Event delivery and correct warehouse state are different things.' },
-  'catalog-match-lab': { name: 'Same or different?', task: 'Judge three pairs of fictional listings. Match the presentation, reject a conflict, or ask for more evidence.', lesson: 'Similar words do not establish product identity.' },
-  'bigquery-query-guard': { name: 'Query budget', task: 'Choose between two recorded queries. Keep the required answer while reducing unnecessary reads, then inspect the recorded evidence.', lesson: 'Output size, scan size, billed bytes and runtime answer different questions.' },
-  'ascii-art': { name: 'Pixel workshop', task: 'Rebuild an image with a limited palette. Compare pixels, dithering and characters in Raster Lab; a scored arcade challenge remains a concept.', lesson: 'Representation is a tradeoff: choose which detail to preserve.' },
-  vesti: { name: 'Outfit puzzle', task: 'Select a garment, keep the outfit context, and compare possible replacements. This station stays a concept while Vesti develops.', lesson: 'Visual resemblance and a useful replacement are separate decisions.' },
+const CONCEPTS: Record<string, { name: string; task: string; lesson: string; steps: string[] }> = {
+  bakiano: { name: 'Market run', task: 'Build a comparable shopping basket. Catch the stale price or mismatched pack before choosing the cheapest store.', lesson: 'A useful price needs identity, currency and time context.', steps: ['Basket', 'Compare', 'Decide'] },
+  'gcp-ingestion-lab': { name: 'Delivery room', task: 'A file arrives twice. Then an older observation turns up. Which rows should make it into the warehouse?', lesson: 'Event delivery and correct warehouse state are different things.', steps: ['Receive', 'Deduplicate', 'Merge'] },
+  'catalog-match-lab': { name: 'Same or different?', task: 'Three pairs. One rule: don’t let a similar name fool you. Match, reject, or ask for more evidence.', lesson: 'Similar words do not establish product identity.', steps: [] },
+  'bigquery-query-guard': { name: 'Query budget', task: 'Keep the answer. Lose the unnecessary reads. A game about the work hidden behind a small result.', lesson: 'Output size, scan size, billed bytes and runtime are different measures.', steps: ['Query', 'Estimate', 'Guard'] },
+  'ascii-art': { name: 'Pixel workshop', task: 'A tiny canvas, four colors, one good constraint. Draw a sprite, try another palette, then take it home.', lesson: 'With fewer pixels, every decision shows.', steps: [] },
+  vesti: { name: 'Outfit puzzle', task: 'Swap one garment without losing the outfit. A puzzle about context, resemblance and useful alternatives.', lesson: 'Visual resemblance and a useful replacement are separate decisions.', steps: ['Look', 'Swap', 'Compare'] },
 };
 
-// Original, intentionally generic marker. This is not a portrait of Alejandro.
-const AVATAR = `<svg class="avatar" viewBox="0 0 16 22" aria-hidden="true" shape-rendering="crispEdges"><path fill="#e8b286" d="M5 2h6v7H5z"/><path fill="#101b16" d="M4 1h8v4H4zM4 4h2v2H4zM7 5h1v1H7zM10 5h1v1h-1z"/><path fill="#a9c9b5" d="M4 10h8v7H4zM2 11h2v5H2zM12 11h2v5h-2z"/><path fill="#e8b286" d="M2 16h2v2H2zM12 16h2v2h-2z"/><path fill="#718dba" d="M4 17h3v4H4zM9 17h3v4H9z"/><path fill="#f1ecdf" d="M3 21h4v1H3zM9 21h4v1H9z"/></svg>`;
-
-const playStyles = `
-.arcade-intro { max-width:850px; padding-bottom:24px; }
-.arcade-intro p { max-width:72ch; }
-.arcade-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:28px; align-items:start; }
-.arcade-map { min-width:0; }
-.arcade-map fieldset { border:0; margin:0; padding:0; min-width:0; }
-.arcade-map legend { font-size:14px; font-weight:600; padding:0 0 12px; }
-.stations { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
-.station { position:relative; min-width:0; }
-.station input { position:absolute; width:1px; height:1px; opacity:0; }
-.station label { display:flex; flex-direction:column; align-items:center; justify-content:flex-start; min-height:170px; padding:14px 8px 38px; border:1px solid var(--line); border-radius:8px; background:var(--surface); text-align:center; cursor:pointer; position:relative; }
-.station input:checked+label { border:2px solid var(--accent); padding:13px 7px 37px; }
-.station input:focus-visible+label { outline:2px solid var(--accent); outline-offset:4px; }
-.station-number { font:11px var(--mono); color:var(--muted); }
-.station-screen { display:grid; place-items:center; width:64px; height:40px; margin:10px 0; border:1px solid var(--line); border-bottom:4px solid var(--line); background:var(--bg); font:16px var(--mono); }
-.station label strong { font-size:13px; line-height:1.3; }
-.station label small { color:var(--muted); font:10px/1.5 var(--mono); margin-top:5px; }
-.avatar { width:24px; height:33px; image-rendering:pixelated; }
-.station .avatar { display:none; position:absolute; bottom:3px; }
-.station input:checked+label .avatar { display:block; }
-.station label { transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .25s,box-shadow .25s; }
-.station label:hover { transform:translateY(-4px); box-shadow:0 8px 20px #0003; }
-.station input:checked+label { transform:translateY(-4px); box-shadow:0 6px 22px #8cbcff18; }
-.station input:checked+label .avatar { animation:avatar-arrive .45s cubic-bezier(.16,1,.3,1) both; }
-.station-panel:not([hidden]) { animation:station-arrive .45s cubic-bezier(.16,1,.3,1) both; }
-.game-feedback:not([hidden]) { animation:station-arrive .3s cubic-bezier(.16,1,.3,1) both; }
-@keyframes avatar-arrive { from { opacity:0; transform:translateY(-14px) scale(.8); } to { opacity:1; transform:none; } }
-@keyframes station-arrive { from { opacity:0; transform:translateY(12px) scale(.985); } to { opacity:1; transform:none; } }
-@media(prefers-reduced-motion:reduce) { .arcade-layout * { animation:none!important; transition:none!important; } }
-.map-help { font-size:12px; color:var(--muted); margin-top:14px; }
-.phone-tip { display:none; }
-.station-panel { padding:24px; border:1px solid var(--line); border-radius:8px; background:var(--surface); margin-bottom:20px; }
-.station-panel h2 { margin:8px 0 12px; font-size:23px; }
-.station-panel p { color:var(--muted); font-size:14px; }
-.station-panel .lesson { margin-top:18px; border-top:1px solid var(--line); padding-top:14px; color:var(--fg); }
-.station-panel .read-link { display:inline-block; margin-top:18px; }
-.game { margin-top:24px; padding-top:22px; border-top:1px solid var(--line); }
-.game h3 { font-size:17px; margin:12px 0; }
-.game-progress { display:flex; justify-content:space-between; gap:12px; color:var(--muted); font:11px/1.6 var(--mono); }
-.listings { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
-.listing { background:var(--bg); border:1px solid var(--line); padding:12px; border-radius:5px; }
-.listing span { display:block; color:var(--muted); font:10px var(--mono); margin-bottom:8px; }
-.listing strong { font-size:15px; line-height:1.5; display:block; }
-.game-choices { display:flex; flex-wrap:wrap; gap:8px; }
-.game button { cursor:pointer; background:var(--bg); color:var(--fg); }
-.game button:hover:not(:disabled) { border-color:var(--accent); }
-.game button:disabled { cursor:default; opacity:.55; }
-.game-feedback { margin-top:18px; border-left:2px solid var(--accent); padding-left:14px; }
-.game-feedback[data-correct=true] { border-color:#b6ddb5; }
-.game-feedback strong { display:block; margin-bottom:6px; }
-.evidence-table { border-collapse:collapse; width:100%; margin-top:16px; font-size:12px; }
-.evidence-table caption { text-align:left; margin-bottom:8px; font-weight:600; }
-.evidence-table :is(th,td) { text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
-.game-next { margin-top:16px; }
-.arcade-note { color:var(--muted); font-size:13px; margin-top:18px; }
-@media(max-width:900px) { .arcade-layout { grid-template-columns:1fr; }.stations { grid-template-columns:repeat(3,minmax(0,1fr)); }.station label { min-height:160px; } }
-@media(max-width:480px) { .stations { grid-template-columns:repeat(6,135px); overflow-x:auto; padding:5px; }.phone-tip { display:inline; }.station-panel { padding:18px; }.game-choices { flex-direction:column; }.listing { padding:10px; } }
-`;
+const isPlayable = (slug: string) => slug === 'catalog-match-lab' || slug === 'ascii-art';
 
 export function renderPlayPage(origin: string): string {
-  const symbols = ['$', '⇣', '≍', 'SQL', '@', '▧'];
-  return readingShell('Project arcade · prototype', 'An optional arcade concept: one project per station, with a playable catalog identity challenge.', '/play', origin, `
-<header class="intro arcade-intro"><p class="eyebrow">Fun mode · early prototype</p><h1>Project arcade</h1><p>Each station turns a project’s central question into a small game. Start with Catalog Match: it’s playable. The other five stations describe the games we could build next.</p></header>
-<div class="arcade-layout"><div class="arcade-map"><fieldset id="station-controls" hidden><legend>Choose a project station</legend><div class="stations">${PROJECTS.map((p,i) => `<div class="station"><input type="radio" name="station" id="station-${p.slug}" value="${p.slug}"${p.slug === 'catalog-match-lab' ? ' checked' : ''} aria-controls="concept-${p.slug}"><label for="station-${p.slug}"><span class="station-number">${String(i+1).padStart(2,'0')}</span><span class="station-screen" aria-hidden="true">${symbols[i]}</span><strong>${esc(p.title)}</strong><small>${p.slug === 'catalog-match-lab' ? 'Playable' : 'Game concept'}</small>${AVATAR}</label></div>`).join('')}</div></fieldset>
-<p class="map-help"><span class="phone-tip">Swipe for more stations. </span>Choose a station by touch, mouse or keyboard. Tab into the station choices and use the arrow keys. The avatar marks your selection.</p><p class="arcade-note">Placeholder avatar · no sound, timer or account. All project stories are also available in <a href="/tech#projects">reading mode</a>.</p><noscript><p>JavaScript is needed for the station selector and matching challenge. All project concepts and reading links are available below.</p></noscript></div>
-<div class="station-panels">${PROJECTS.map(p => { const concept = CONCEPTS[p.slug]; return `<section class="station-panel" id="concept-${p.slug}" data-station-panel="${p.slug}" aria-labelledby="concept-title-${p.slug}"><p class="eyebrow">${esc(p.title)} · ${p.slug === 'catalog-match-lab' ? 'Playable sample' : 'Game concept'}</p><h2 id="concept-title-${p.slug}">${esc(concept.name)}</h2><p>${esc(concept.task)}</p><p class="lesson">${esc(concept.lesson)}</p>${p.slug === 'catalog-match-lab' ? gameMarkup() : ''}<a class="read-link" href="${projectPath(p)}">Read ${esc(p.title)} →</a></section>`; }).join('')}</div></div>`, playStyles, `import { initArcade } from '/play/arcade.mjs'; initArcade();`);
+  return readingShell('Project arcade', 'An illustrated arcade for Alejandro Frank’s projects. Play a catalog matching challenge, draw pixel art, and explore the work behind each cabinet.', '/play', origin, `
+<header class="arcade-intro"><div><p class="eyebrow">A different way into the work</p><h1>Project arcade</h1></div><p>Pick a cabinet. Try an idea.<br>Follow it back to the real project.</p></header>
+<section class="arcade-room" aria-label="Project arcade floor" id="arcade-room" hidden>
+  <div class="room-topline"><div class="room-sign"><b aria-hidden="true">AF</b> AFTER HOURS</div><div class="room-status"><span>2 PLAYABLE</span><b class="status-divider" aria-hidden="true"> / </b> 4 CONCEPTS</div></div>
+  <fieldset id="station-controls"><legend class="sr-only">Choose a project station</legend><div class="room-scroll"><div class="arcade-floor">
+    <div class="stations">${PROJECTS.map((p, i) => `<div class="station" style="--station:${STATION_ART[p.slug].color}"><input type="radio" name="station" id="station-${p.slug}" value="${p.slug}"${p.slug === 'catalog-match-lab' ? ' checked' : ''} aria-controls="concept-${p.slug}" aria-label="${esc(p.title)} — ${isPlayable(p.slug) ? 'playable' : 'game concept'}"><label for="station-${p.slug}">${cabinetArt(p.slug, String(i + 1).padStart(2, '0'))}<strong>${esc(p.title)}</strong><small${isPlayable(p.slug) ? ' data-playable' : ''}>${isPlayable(p.slug) ? '● PLAYABLE' : '◇ CONCEPT'}</small></label></div>`).join('')}</div>
+    <div class="room-player" id="room-player" aria-hidden="true"><span class="player-tag">YOU</span>${PLAYER}</div>
+  </div></div></fieldset>
+  <div class="room-bottomline"><span><span class="desktop-tip"><kbd>←</kbd> <kbd>→</kbd> Switch cabinets · </span><span class="phone-tip">Swipe the room · </span><span class="room-position" id="room-position">03 / 06</span></span><a class="room-enter" id="room-enter" href="#concept-catalog-match-lab">Play this cabinet ↓</a></div>
+</section>
+<noscript><p class="arcade-note">The arcade needs JavaScript to play. All project stories and concepts are available below.</p></noscript>
+<div class="station-panels">${PROJECTS.map((p, i) => {
+    const concept = CONCEPTS[p.slug];
+    return `<section class="station-panel" id="concept-${p.slug}" data-station-panel="${p.slug}" style="--station:${STATION_ART[p.slug].color}" aria-labelledby="concept-title-${p.slug}">
+      <div class="console-header"><span class="console-slot">CABINET ${String(i + 1).padStart(2, '0')} / ${esc(p.title.toUpperCase())}</span><span class="console-lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
+      <div class="console-body"><div class="station-brief"><p class="eyebrow">${isPlayable(p.slug) ? 'Ready to play' : 'On the drawing board'}</p><h2 id="concept-title-${p.slug}">${esc(concept.name)}</h2><p>${esc(concept.task)}</p><p class="lesson"><span>The idea underneath</span>${esc(concept.lesson)}</p><a class="read-link" href="${projectPath(p)}">Inside ${esc(p.title)} →</a></div>
+      ${p.slug === 'catalog-match-lab' ? gameMarkup() : p.slug === 'ascii-art' ? pixelMarkup() : `<div class="concept-preview"><div class="concept-diagram" aria-label="Proposed game flow">${concept.steps.map((step, index) => `${index ? '<b aria-hidden="true">→</b>' : ''}<span>${esc(step)}</span>`).join('')}</div><h3>The project is real. This game is a concept.</h3><p>For now, explore the ${p.slug === 'vesti' ? 'product in development' : 'system'} behind the cabinet. The game above describes a future interaction.</p><a class="action" href="${projectPath(p)}">Explore the project →</a></div>`}</div>
+    </section>`;
+  }).join('')}</div>
+<div class="arcade-colophon"><span>FREE PLAY · NO ACCOUNT · NO TIMER</span><span>Here for the engineering? <a href="/tech#projects">Read the projects →</a></span></div>`, playStyles, `import { initArcade } from '/play/arcade.mjs'; initArcade();`);
 }
 
 function gameMarkup(): string {
   return `<section class="game" id="catalog-game" aria-label="Catalog identity challenge" hidden>
-<div class="game-progress"><span id="round-label"></span><span id="score-label"></span></div>
-<h3 id="round-question" tabindex="-1">Same product presentation?</h3>
-<div class="listings"><div class="listing"><span>LISTING A</span><strong id="listing-a"></strong></div><div class="listing"><span>LISTING B</span><strong id="listing-b"></strong></div></div>
-<div class="game-choices" role="group" aria-label="Your identity decision"><button class="action" type="button" data-answer="same">Same presentation</button><button class="action" type="button" data-answer="different">Different</button><button class="action" type="button" data-answer="uncertain">Not enough evidence</button></div>
-<div class="game-feedback" id="game-feedback" role="status" aria-live="polite" aria-atomic="true" hidden><strong id="feedback-title"></strong><p id="feedback-reason"></p></div>
-<table class="evidence-table" id="game-evidence" hidden><caption>Normalized evidence for this pair</caption><thead><tr><th scope="col">Check</th><th scope="col">A</th><th scope="col">B</th></tr></thead><tbody id="evidence-rows"></tbody></table>
-<button class="action game-next" type="button" id="next-round" hidden>Next pair →</button>
-<p class="arcade-note">Three hand-authored fictional pairs. This introductory challenge illustrates the project’s question; it does not call the lab’s matcher or a live AI model.</p></section>`;
+  <div class="game-progress"><span id="round-label"></span><span class="round-dots" aria-hidden="true"><i></i><i></i><i></i></span><span id="score-label"></span></div>
+  <h3 id="round-question" tabindex="-1">Same product presentation?</h3>
+  <div class="listings"><div class="listing"><span>LISTING A</span><strong id="listing-a"></strong></div><div class="listing"><span>LISTING B</span><strong id="listing-b"></strong></div></div>
+  <div class="game-choices"><button class="action" type="button" data-answer="same">Same presentation</button><button class="action" type="button" data-answer="different">Different</button><button class="action" type="button" data-answer="uncertain">Not enough evidence</button></div>
+  <div class="game-feedback" id="game-feedback" role="status" aria-live="polite" aria-atomic="true" hidden><strong id="feedback-title"></strong><p id="feedback-reason"></p></div>
+  <table class="evidence-table" id="game-evidence" hidden><caption>THE EVIDENCE / normalized attributes</caption><thead><tr><th scope="col">Check</th><th scope="col">A</th><th scope="col">B</th></tr></thead><tbody id="evidence-rows"></tbody></table>
+  <button class="action game-next" id="next-round" type="button" hidden>Next pair →</button>
+  <p class="arcade-note">Three fictional pairs. A small introduction to identity decisions; no live matcher or AI runs here.</p></section>`;
+}
+
+function pixelMarkup(): string {
+  return `<section class="pixel-workshop" id="pixel-workshop" aria-label="Pixel workshop" hidden>
+  <div class="pixel-toolbar"><span class="eyebrow">8 × 8 / FOUR COLORS</span><label>Palette <select id="pixel-palette"><option value="orchard">Orchard</option><option value="dusk">Dusk</option><option value="pocket">Pocket console</option></select></label></div>
+  <div class="pixel-desk"><div class="pixel-board" id="pixel-board" role="group" aria-label="Pixel canvas. Arrow keys move; Enter or Space paints."></div><div class="pixel-tools"><fieldset id="pixel-swatches"><legend>Ink</legend></fieldset><button type="button" class="action" id="pixel-undo" disabled>Undo</button><button type="button" class="action" id="pixel-clear">Clear</button></div></div>
+  <div class="pixel-bottom"><p id="pixel-status" role="status" aria-live="polite">Your canvas. Make something small.</p><button type="button" class="action" id="pixel-export">Save PNG ↓</button></div>
+  <p class="arcade-note">Click or drag to paint. Keyboard: arrows to move, Enter or Space to paint. Drawing stays here until you leave. <a href="https://raster-lab.alejandrofranks.workers.dev" target="_blank" rel="noopener noreferrer">Open the full Raster Lab ↗</a></p>
+  </section>`;
 }
