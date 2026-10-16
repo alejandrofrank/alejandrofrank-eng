@@ -3,7 +3,7 @@ type PortfolioView = 'original' | 'tech' | 'arcade';
 const views: { id: PortfolioView; label: string; description: string; icon: string }[] = [
   { id: 'original', label: 'Original', description: 'The green portfolio', icon: '<rect x="3" y="3" width="14" height="14" rx="4"/><path d="M3 9h14M9 9v8"/>' },
   { id: 'tech', label: 'Tech', description: 'Explore the projects and systems', icon: '<path d="m4 5 5 5-5 5m8 0h5"/>' },
-  { id: 'arcade', label: 'Arcade', description: 'Play and explore project game concepts', icon: '<path d="M6 6h8c2 0 3 2 3.5 4l1 5c.3 2-1.5 3-3 1l-2-2h-7l-2 2c-1.5 2-3.3 1-3-1l1-5C3 8 4 6 6 6Z"/><path d="M6 8v4m-2-2h4m5 0h.01m2 2h.01"/>' },
+  { id: 'arcade', label: 'Arcade', description: 'Explore interactive engineering examples', icon: '<path d="M6 6h8c2 0 3 2 3.5 4l1 5c.3 2-1.5 3-3 1l-2-2h-7l-2 2c-1.5 2-3.3 1-3-1l1-5C3 8 4 6 6 6Z"/><path d="M6 8v4m-2-2h4m5 0h.01m2 2h.01"/>' },
 ];
 
 /** Explicit navigation, not a saved preference: / remains the green homepage. */

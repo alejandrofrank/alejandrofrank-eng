@@ -1,0 +1,23 @@
+[
+  {
+    "file": "image-engine/core.mjs",
+    "repo": "alejandrofrank/art_exploring",
+    "commit": "ff13495892fdf732da4120fd1bda1a54a37f6c9c",
+    "source": "studio/core.mjs",
+    "sha256LF": "32b298c1229b4efe8fa548bb5df7348419b78091c8d1c4aa28541bda269f23cf"
+  },
+  {
+    "file": "image-engine/samples.mjs",
+    "repo": "alejandrofrank/art_exploring",
+    "commit": "ff13495892fdf732da4120fd1bda1a54a37f6c9c",
+    "source": "studio/samples.mjs",
+    "sha256LF": "3435c408cdd2adc63a91b2148ebe98eaa6fb6ca0c1d248498da6f3c1c848c836"
+  },
+  {
+    "file": "catalog-engine/match.mjs",
+    "repo": "alejandrofrank/catalog-match-lab",
+    "commit": "2a7ce8a3e4330bfb7d284b878ff9833693fa32b8",
+    "source": "src/match.js",
+    "sha256LF": "4f2ad10d86cd99223eafd17723259229d4d3f0fbb6ef5a411640a9290f689405"
+  }
+]
