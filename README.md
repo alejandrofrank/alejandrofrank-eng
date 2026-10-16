@@ -13,7 +13,7 @@ An engineering portfolio with a direct **Original / Tech / Arcade** view picker.
 - **Experience:** a career timeline with role-by-role system diagrams and written explanations.
 - **Live activity:** a GitHub contribution calendar fetched at the edge, with a profile link available if the API is unavailable.
 - **Reading interface:** compact titles, direct project links, keyboard navigation, responsive layouts and print styles. Reading the projects requires no JavaScript.
-- **Optional Arcade view:** `/play` has a placeholder pixel avatar, six project stations, and one playable three-pair identity challenge. Choose Tech to return to the selected project in `/tech`, or Original to open its green project panel. Five other games are labeled concepts. [Direction and next steps](docs/project-arcade.md).
+- **Optional Arcade view:** `/play` is an illustrated arcade room with six distinct cabinets and a pixel character that walks between them. Play the three-pair identity challenge or draw in the 8 × 8 pixel workshop, with three palettes, stroke undo and PNG export. Four other games are labeled concepts. Choose Tech or Original to continue with the same project. Keyboard, touch and reduced-motion support are included. [Direction and next steps](docs/project-arcade.md).
 
 The appearance choices are ordinary links, so they work without JavaScript. The full project list is the fallback when scripts are unavailable and is used for printing. Motion follows the system's reduced-motion preference; animations are finite and run on selection. `/` always opens the original homepage. Neither visiting a project nor playing a game changes the default for later visits.
 
@@ -51,7 +51,7 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 | `src/appearance.ts`, `public/appearance.mjs` | Original / Tech / Arcade navigation and selected-project links |
 | `src/projects/page.ts`, `src/projects/styles.ts` | Project index and individual reading pages |
 | `src/projects/explorer.ts`, `src/projects/explorer-styles.ts`, `public/projects/` | Project picker, system sketches and interruptible native browser animations |
-| `src/play/page.ts`, `public/play/` | Optional arcade prototype and local game state |
+| `src/play/`, `public/play/` | Illustrated arcade, original SVG art, matching challenge and pixel workshop |
 | `src/index.ts` | Routes: homepage, `/tech`, `/projects/:slug`, `/play`, `/timeline`, `/resume`, and `/health` |
 | `src/layout.ts` | Original green homepage and expandable project panels |
 | `src/panels/` | Project panels, technical explanations, and GitHub data |

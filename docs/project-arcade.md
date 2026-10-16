@@ -1,55 +1,49 @@
-# Project arcade: first direction
+# Project arcade: After Hours
 
-## Reading comes first
+The original green homepage remains the default at `/`. The shared view picker links directly to Original, Tech and Arcade. The selected project carries between views, without a saved preference or automatic redirect on a later visit.
 
-The original green homepage remains the default at `/`, with its gradients and expandable sections. The **Appearance** picker previews both views. **Tech** opens the animated project explorer at `/tech`: a project rail drives a system sketch and its story in the same selection. “Read as a list” reveals the complete reading index, which is also the no-JavaScript and print fallback. Each project has a stable `/projects/:slug` page with the problem, approach, evidence, limitations and a next-project link.
+## The room
 
-The shared view picker exposes Original, Tech and Arcade as three direct links, with the current view highlighted. Arcade enters `/play`; Tech returns to the selected project in `/tech`; Original opens the corresponding green project panel. From a project page, Arcade selects that project's station. Normal links keep navigation available without JavaScript; scripts carry live project selections between views. There is no saved preference or automatic redirect that changes the homepage on a later visit.
+`/play` presents six original SVG cabinets on a perspective floor. Each cabinet has a project-specific illustration, marquee, color, joystick and coin slot. Selecting one lights its screen, moves a fictional pixel character to it, and opens the matching console below the floor. Correct catalog decisions and painting trigger a brief character reaction. There is no perpetual animation or sound.
 
-The reading order follows a system: Bakiano → ingestion → product identity → query controls. Image to ASCII adds a creative experiment; Vesti closes with work in progress. Status and evidence distinguish a live product from a runnable lab or an idea.
+The room uses native radio controls: click, tap, or Tab into the group and use arrow keys. On narrow screens the floor scrolls horizontally and centers the selected cabinet. A direct action below the room jumps to its game or concept. The URL records the project; both project fragments and console anchors survive reloads. Reduced-motion preferences remove movement and transitions.
 
-## What the reference suggests
+The character is original artwork, not a likeness of Alejandro. All room artwork is code-native; it has no external image dependencies.
 
-[dataconale.com](https://dataconale.com/) was inspected on 2026-10-10. Its visible navigation, selectable work stories, skill inspector and personal introduction make the portfolio feel authored. Our direction takes the principle of discoverable depth: a project should invite inspection and connect to the person behind it. The typography, content and avatar here are original; this implementation does not reuse the reference's assets or code.
+## What visitors can play
 
-## Recommended avatar direction
-
-A small pixel-art arcade with one station per project. The avatar is a navigation aid: move to a station, try one decision from that project, inspect the evidence, then open the full story. A short game should explain something the underlying system actually does.
-
-The first `/play` prototype uses an original generic pixel marker. It is not a finalized likeness. Selection places it directly at the station; there is no walking animation or physics yet. Touch, pointer and native radio-group arrow keys all work. The URL fragment records the selected project.
-
-Two alternatives worth comparing before investing in art:
-
-- **Illustrated desk:** the avatar sits at a desk and each project is a console. More personal, less navigation, but requires a stronger illustration direction.
-- **Project map:** the avatar follows the path from ingestion to serving. It explains the system well, but makes the independent art and outfit projects feel less naturally connected.
-
-The arcade is the most flexible starting point because every project can have a distinct game while sharing the same controls and reading pages.
-
-## One project, one game loop
-
-| Project | Game | Decision and feedback | Status |
+| Project | Cabinet | Interaction | Status |
 | --- | --- | --- | --- |
-| Bakiano | Market run | Build a comparable basket; explain stale prices, currencies and pack differences before comparing totals. | Concept |
-| GCP Ingestion Lab | Delivery room | Replay duplicate and late events; choose receipt and merge rules, then inspect rows and actual operations. | Concept |
-| Catalog Match Lab | Same or different? | Accept an equivalent presentation, reject a size conflict, or defer when an attribute is missing. Show normalized evidence. | Three-pair playable introduction |
-| BigQuery Query Guard | Query budget | Choose a query that preserves the requested answer; inspect recorded scan estimates, billed bytes and timing separately. | Concept |
-| Image to ASCII | Pixel workshop | Adjust character density and palette; compare the retained visual detail with the source. | Concept |
-| Vesti | Outfit puzzle | Select a garment and compare replacements while retaining outfit context. Label the product's unfinished parts. | Concept |
+| Bakiano | Market run | A proposed comparable-basket challenge involving stale prices and pack differences. | Concept |
+| GCP Ingestion Lab | Delivery room | A proposed duplicate/late-event challenge with receipt and merge decisions. | Concept |
+| Catalog Match Lab | Same or different? | Judge three listing pairs, then inspect normalized evidence. Replay with a fresh score. | Playable introduction |
+| BigQuery Query Guard | Query budget | A proposed challenge about preserving answers while reducing unnecessary reads. | Concept |
+| Raster Lab | Pixel workshop | Paint an 8 × 8 sprite using four indexed colors; swap between three palettes, undo strokes, clear, and save a 512 × 512 PNG. | Playable workshop |
+| Vesti | Outfit puzzle | A proposed garment-replacement puzzle that preserves outfit context. | Concept |
 
-## Prototype boundaries
+## Interaction and evidence
 
-- The playable introduction uses three hand-authored fictional pairs. It illustrates identity decisions; it does not invoke the standalone matcher or simulate a trained model.
-- Scores are local, in-memory state. There is no account, tracking, API call, timer or leaderboard.
-- No project is locked behind a score. Every station links directly to its reading page.
-- Missing JavaScript leaves every game concept and project link readable. The station controls and game only appear after their script initializes.
-- Native controls, visible focus, textual feedback and evidence tables carry the interaction. The avatar and color are supplementary. Station selection has a short avatar entrance and panel transition; system reduced-motion preferences disable these. There is no sound or idle animation.
+- The matching challenge uses three hand-authored fictional pairs. It illustrates identity decisions; it does not invoke the standalone matcher or a trained model.
+- The pixel workshop is a small drawing toy, separate from the full Raster Lab. Its project link opens the actual image-processing tool. Canvas colors are palette indices, so changing palettes preserves the drawing. One drag is one undo step; clear is undoable, and unchanged strokes do not add history.
+- Pixel controls support mouse, touch and keyboard. The canvas has one tab stop; arrows move between pixels, and Enter or Space paints. Swatches have text labels, each pixel exposes its row, column and ink, and status messages describe changes.
+- The PNG export renders the indexed grid directly at 64 pixels per source pixel, with no smoothing or server request. It exports the chosen background as an opaque color.
+- Scores, artwork and undo history live in memory. Leaving or reloading resets them. No accounts, analytics, API calls, timers, leaderboards or score gates are introduced.
+- Each cabinet links to its full project story. Concept panels explicitly distinguish the project from a future game.
+- Without JavaScript, all six project descriptions and reading links remain available; interactive controls stay hidden. Print also exposes every project panel.
 
-## Next implementation sequence
+## Source map
 
-1. Choose the avatar art direction and make a recognizable original character, with a static reduced-motion state.
-2. Replace the introductory catalog quiz with a bounded interaction that invokes a pinned, reviewed version of the public matching core. Keep synthetic fixtures and visible uncertainty.
-3. Build Delivery room from the ingestion lab's real local core, preserving measured operations and labeling the in-memory adapters.
-4. Add Query budget using recorded evidence. Never invent timings or trigger cloud queries from play mode.
-5. Add the creative stations after their interactions and source assets are ready. Keep Vesti labeled as a concept until it has a demonstrable flow.
+- `src/play/art.ts`: cabinet illustrations and the fictional player sprite.
+- `src/play/page.ts`: room and console markup; project/game copy.
+- `src/play/styles.ts`: room, cabinet, console and responsive styles.
+- `public/play/arcade.mjs`: project selection, avatar movement and matching UI.
+- `public/play/catalog-game.mjs`: matching challenge state.
+- `public/play/pixel-canvas.mjs`: indexed canvas and undo state, independent of the DOM.
+- `public/play/pixel-workshop.mjs`: accessible drawing controls and PNG export.
+- `tests/`: scoring/replay and pixel stroke/undo/input-boundary checks.
 
-Evaluate each addition by whether a visitor can explain the project's central tradeoff after playing, and can reach the technical evidence in one action. A game should be a useful entry point into the work.
+## Future cabinets
+
+Build Delivery room from the ingestion lab's real local core, preserving inspectable operations and clearly labeling in-memory adapters. Query budget should use recorded evidence, not invented timings or live cloud queries. Bakiano's challenge needs explicit fictional fixtures. Vesti remains a concept until its flow is demonstrable.
+
+A game earns its place when a visitor can explain the project's central tradeoff after playing and reach the engineering evidence in one action.
