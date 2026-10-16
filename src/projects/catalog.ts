@@ -93,7 +93,7 @@ export const PROJECTS: Project[] = [
     repo: 'bigquery-query-guard', port: 4312,
   },
   {
-    slug: 'ascii-art', title: 'Raster Lab', category: 'Visual experiment', status: 'Live browser lab',
+    slug: 'ascii-art', title: 'Image to Pixels', category: 'Visual experiment', status: 'Live browser tool',
     question: 'What survives when you reduce an image?',
     summary: 'A browser workbench for pixels, dithering and ASCII. Compare treatments, edit palettes and save reproducible recipes.',
     problem: 'Reducing an image to a grid and a few colors changes its shape, brightness and texture. A useful experiment lets you compare those choices and reproduce the result.',
@@ -107,7 +107,7 @@ export const PROJECTS: Project[] = [
     stack: ['JavaScript', 'Canvas', 'Web Workers', 'Python'],
     flow: ['Sample', 'Adjust', 'Represent', 'Export recipe'],
     links: [
-      { label: 'Open Raster Lab', href: 'https://raster-lab.alejandrofranks.workers.dev' },
+      { label: 'Open Image to Pixels', href: 'https://raster-lab.alejandrofranks.workers.dev' },
       { label: 'Inspect the renderer & tests', href: 'https://github.com/alejandrofrank/art_exploring' },
     ],
     repo: 'art_exploring', port: 4314,
