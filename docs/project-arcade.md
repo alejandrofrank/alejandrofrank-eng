@@ -1,49 +1,64 @@
-# Project arcade: After Hours
+# Project demos: input, result, evidence
 
-The original green homepage remains the default at `/`. The shared view picker links directly to Original, Tech and Arcade. The selected project carries between views, without a saved preference or automatic redirect on a later visit.
+The arcade room is an optional project selector. The interaction inside each station should demonstrate an engineering decision in under a minute. A visitor changes one input, sees the result, and can inspect the source. Scores, guessing and unrelated drawing activities do not serve that purpose.
 
-## The room
+The default green homepage remains at `/`. Original, Tech and Arcade carry the selected project between views; `/play` keeps its existing URL. Cabinets, keyboard navigation, mobile scrolling and reduced-motion support remain available.
 
-`/play` presents six original SVG cabinets on a perspective floor. Each cabinet has a project-specific illustration, marquee, color, joystick and coin slot. Selecting one lights its screen, moves a fictional pixel character to it, and opens the matching console below the floor. Correct catalog decisions and painting trigger a brief character reaction. There is no perpetual animation or sound.
+## Implemented examples
 
-The room uses native radio controls: click, tap, or Tab into the group and use arrow keys. On narrow screens the floor scrolls horizontally and centers the selected cabinet. A direct action below the room jumps to its game or concept. The URL records the project; both project fragments and console anchors survive reloads. Reduced-motion preferences remove movement and transitions.
+### Image to Pixels — keep shading with fewer colors
 
-The character is original artwork, not a likeness of Alejandro. All room artwork is code-native; it has no external image dependencies.
+The public tool is now named **Image to Pixels**. Its existing deployment URL and legacy recipe identifiers remain compatible. The 8 × 8 drawing toy has been removed.
 
-## What visitors can play
+The station runs the image repo's renderer against its original procedural fixtures. Nearest palette color and Floyd–Steinberg error diffusion receive the same source, grid, palette and adjustments. Visitors choose a sample, 16/32/64/128 columns and a two- or four-color palette. Actual output dimensions, cell counts and palette usage appear below both results.
 
-| Project | Cabinet | Interaction | Status |
+**Check repeatability** executes both methods again and compares all RGBA bytes and dimensions with the preceding outputs. It does not return a prewritten success result. Processing runs in a browser worker; a new request terminates the preceding worker and stale results are ignored.
+
+This demonstrates controlled representation and reproducibility. It does not claim that dithering always looks better, reduces PNG file size or reconstructs missing detail. The full tool provides image upload, ASCII, additional algorithms, palette editing and recipe export.
+
+### Catalog Match Lab — inspect a product match
+
+The scored quiz has been replaced with the actual public matcher and keyword baseline. Visitors select a size conflict, aliases/units or missing-detail pair, or edit both names. Each run displays both decisions and the matcher's normalized attributes and check statuses.
+
+The default case exposes a keyword false accept: a 200 ml carton shares words with a 1 L request but has a conflicting size. The chicken case exposes a keyword false rejection: Spanish/English aliases and kg/g normalize to the same presentation. Incomplete or unsupported details remain uncertain.
+
+The fixtures are fictional. The small offline vocabulary is neither a trained model nor the private production matcher. The keyword rule is deliberately simple, not a claim about Bakiano's previous implementation. There is no provider request, score or timer.
+
+## Next experiment designs
+
+These are proposals, not shipped compact demos. The source repositories already provide the evidence described where noted.
+
+| Project | Visitor action | Visible evidence | What it demonstrates |
 | --- | --- | --- | --- |
-| Bakiano | Market run | A proposed comparable-basket challenge involving stale prices and pack differences. | Concept |
-| GCP Ingestion Lab | Delivery room | A proposed duplicate/late-event challenge with receipt and merge decisions. | Concept |
-| Catalog Match Lab | Same or different? | Judge three listing pairs, then inspect normalized evidence. Replay with a fresh score. | Playable introduction |
-| BigQuery Query Guard | Query budget | A proposed challenge about preserving answers while reducing unnecessary reads. | Concept |
-| Raster Lab | Pixel workshop | Paint an 8 × 8 sprite using four indexed colors; swap between three palettes, undo strokes, clear, and save a 512 × 512 PNG. | Playable workshop |
-| Vesti | Outfit puzzle | A proposed garment-replacement puzzle that preserves outfit context. | Concept |
+| GCP Ingestion Lab | Deliver a file twice; toggle completed receipts. | Same final rows, archive reads and merge calls counted by the actual in-memory adapters. | Idempotency preserves the result; a receipt also avoids repeated work. |
+| BigQuery Query Guard | Switch between two recorded latest-day SQL variants. | SQL, captured output equality, recorded scan estimates, billed bytes and execution samples. Include the separate date lookup. | An equivalent answer can read much less data; scan, billing and runtime are separate measures. |
+| Bakiano | Select a listing and inspect the observations behind its comparable price. | Source amount/currency, observation date, exchange-rate date, normalized price and identity decision. | A price comparison is a traceable pipeline rather than an isolated number. |
+| Vesti | Select one garment and compare it with a whole-image retrieval. | An actual segmentation mask and saved retrieval outputs, with their provenance. | Whether selecting the intended piece changes the alternatives usefully. |
 
-## Interaction and evidence
+### Priority 1: duplicate delivery
 
-- The matching challenge uses three hand-authored fictional pairs. It illustrates identity decisions; it does not invoke the standalone matcher or a trained model.
-- The pixel workshop is a small drawing toy, separate from the full Raster Lab. Its project link opens the actual image-processing tool. Canvas colors are palette indices, so changing palettes preserves the drawing. One drag is one undo step; clear is undoable, and unchanged strokes do not add history.
-- Pixel controls support mouse, touch and keyboard. The canvas has one tab stop; arrows move between pixels, and Enter or Space paints. Swatches have text labels, each pixel exposes its row, column and ink, and status messages describe changes.
-- The PNG export renders the indexed grid directly at 64 pixels per source pixel, with no smoothing or server request. It exports the chosen background as an opaque color.
-- Scores, artwork and undo history live in memory. Leaving or reloading resets them. No accounts, analytics, API calls, timers, leaderboards or score gates are introduced.
-- Each cabinet links to its full project story. Concept panels explicitly distinguish the project from a future game.
-- Without JavaScript, all six project descriptions and reading links remain available; interactive controls stay hidden. Print also exposes every project panel.
+Use `gcp-ingestion-lab/src/engine.js` with its `src/memory.js` adapters and the bounded comparison controls in `examples/techniques.js`. The existing **Send it twice** scenario returns eight rows on both sides while completed receipts avoid the second archive read and merge call. Show actual counters, not a canned number animation. In-memory merge calls are not cloud job totals, timings or billing.
 
-## Source map
+A second action can replay an older observation after a newer one and expose why observation time matters. Both comparisons must use the same synthetic input and reset their state together.
 
-- `src/play/art.ts`: cabinet illustrations and the fictional player sprite.
-- `src/play/page.ts`: room and console markup; project/game copy.
-- `src/play/styles.ts`: room, cabinet, console and responsive styles.
-- `public/play/arcade.mjs`: project selection, avatar movement and matching UI.
-- `public/play/catalog-game.mjs`: matching challenge state.
-- `public/play/pixel-canvas.mjs`: indexed canvas and undo state, independent of the DOM.
-- `public/play/pixel-workshop.mjs`: accessible drawing controls and PNG export.
-- `tests/`: scoring/replay and pixel stroke/undo/input-boundary checks.
+### Priority 2: equal output, different scan
 
-## Future cabinets
+Use `bigquery-query-guard/data/market-recording.js` and its bundled SQL. The existing latest-day recording compares 826.70 MB and 3.66 MB dry-run estimates for the main queries, with four matching captured listings. The separate lookup has its own cost. Label the source, recording date, sample count and output comparison scope; do not turn these observations into a universal speed claim.
 
-Build Delivery room from the ingestion lab's real local core, preserving inspectable operations and clearly labeling in-memory adapters. Query budget should use recorded evidence, not invented timings or live cloud queries. Bakiano's challenge needs explicit fictional fixtures. Vesti remains a concept until its flow is demonstrable.
+An optional next interaction could exercise the actual query guard with a local adapter: lower the byte cap and verify that a blocked estimate produces zero execute calls. Keep this simulated-adapter experiment separate from recorded warehouse measurements.
 
-A game earns its place when a visitor can explain the project's central tradeoff after playing and reach the engineering evidence in one action.
+### Bakiano and Vesti boundaries
+
+Bakiano's source is private. Its public case study explains the pipeline, but a compact trace needs a reviewed public example or an explicitly synthetic fixture. Do not suggest the portfolio is querying live production data.
+
+Vesti has no public measured outcome yet. Keep the station proposed until real saved outputs exist; invented segmentation masks or rankings would conceal the very engineering this view should show.
+
+## Source provenance and maintenance
+
+`public/play/sources.json` records the repository, exact commit, source path and LF-normalized SHA-256 of each embedded engine file. Copies are unchanged apart from the matcher's `.js` → `.mjs` filename. The matcher MIT notice accompanies its source. Tests detect unreviewed changes to those snapshots.
+
+The UI links to those exact source commits. To update an engine, review upstream changes, copy the source, refresh its recorded revision/hash, and rerun behavioral and browser checks. Do not quietly modify the snapshot to make a demo appear successful.
+
+Tests cover equal comparison constraints, palette bounds, repeatable image output, known matcher false accepts/rejections, uncertainty and snapshot integrity. Browser verification covers input edits, preset changes, rapid image-control changes, worker results, repeatability, direct links, and phone/tablet layouts.
+
+No account, analytics, paid API or cloud query is introduced. Without JavaScript, project explanations and links remain readable. The original larger tools remain available from their project pages.

@@ -13,7 +13,7 @@ An engineering portfolio with a direct **Original / Tech / Arcade** view picker.
 - **Experience:** a career timeline with role-by-role system diagrams and written explanations.
 - **Live activity:** a GitHub contribution calendar fetched at the edge, with a profile link available if the API is unavailable.
 - **Reading interface:** compact titles, direct project links, keyboard navigation, responsive layouts and print styles. Reading the projects requires no JavaScript.
-- **Optional Arcade view:** `/play` is an illustrated arcade room with six distinct cabinets and a pixel character that walks between them. Play the three-pair identity challenge or draw in the 8 × 8 pixel workshop, with three palettes, stroke undo and PNG export. Four other games are labeled concepts. Choose Tech or Original to continue with the same project. Keyboard, touch and reduced-motion support are included. [Direction and next steps](docs/project-arcade.md).
+- **Optional Arcade view:** `/play` uses six illustrated cabinets to navigate short engineering demonstrations. Edit product names and inspect the real identity matcher, or compare nearest-color mapping with dithering using the actual Image to Pixels renderer. Four other experiments are clearly labeled proposals. Choose Tech or Original to continue with the same project. Keyboard, touch and reduced-motion support are included. [Experiment designs and evidence](docs/project-arcade.md).
 
 The appearance choices are ordinary links, so they work without JavaScript. The full project list is the fallback when scripts are unavailable and is used for printing. Motion follows the system's reduced-motion preference; animations are finite and run on selection. `/` always opens the original homepage. Neither visiting a project nor playing a game changes the default for later visits.
 
@@ -51,7 +51,7 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 | `src/appearance.ts`, `public/appearance.mjs` | Original / Tech / Arcade navigation and selected-project links |
 | `src/projects/page.ts`, `src/projects/styles.ts` | Project index and individual reading pages |
 | `src/projects/explorer.ts`, `src/projects/explorer-styles.ts`, `public/projects/` | Project picker, system sketches and interruptible native browser animations |
-| `src/play/`, `public/play/` | Illustrated arcade, original SVG art, matching challenge and pixel workshop |
+| `src/play/`, `public/play/` | Illustrated navigation, real-code matching/image demonstrations and pinned engine sources |
 | `src/index.ts` | Routes: homepage, `/tech`, `/projects/:slug`, `/play`, `/timeline`, `/resume`, and `/health` |
 | `src/layout.ts` | Original green homepage and expandable project panels |
 | `src/panels/` | Project panels, technical explanations, and GitHub data |
@@ -63,4 +63,4 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 
 ## Status
 
-Projects described inside the portfolio have their own status. Bakiano is live, the three engineering labs run locally, Raster Lab is a live browser workbench for pixels, dithering and ASCII, and Vesti is in development. Branch changes can be reviewed locally before deployment.
+Projects described inside the portfolio have their own status. Bakiano is live, the three engineering labs run locally, Image to Pixels is a live browser tool for pixels, dithering and ASCII, and Vesti is in development. Branch changes can be reviewed locally before deployment.
