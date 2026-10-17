@@ -1,6 +1,6 @@
 # Project arcade
 
-Six compact games turn a project's engineering decisions into actions, constraints and visible outcomes. The default green homepage remains at `/`; the optional Arcade view stays at `/play`. Every station links back to its project. The room supports native radio-keyboard navigation, mobile scrolling, direct links and reduced motion.
+Six compact games turn a project's engineering decisions into actions, constraints and visible outcomes. The default green homepage remains at `/`; the optional Arcade view stays at `/play`. Tap a cabinet or use arrow keys and Enter to open its screen. A native modal dialog keeps the working game near the top, contains focus, and makes the floor inert. Back to arcade, Escape and browser Back exit; progress stays in the same live DOM and focus returns to the selected cabinet. Direct `#concept-project-slug` links open a cabinet. The room supports mobile scrolling and reduced motion.
 
 ## Games and references
 
@@ -8,28 +8,28 @@ All interfaces, artwork, fixtures and game code are original. The references bel
 
 | Project / game | Mechanic reference | Play | Engineering connection |
 | --- | --- | --- | --- |
-| Bakiano / Basket Run | [Grocery Game](https://cbs.priceisright.com/game-page/?id=grocery-game) | Choose grocery quantities to fill an exact order under budget; three checks per market. | Normalize pack sizes and currencies; reject stale observations and mismatched rate dates. |
-| GCP Ingestion Lab / Packet Factory | [Human Resource Machine](https://tomorrowcorporation.com/humanresourcemachine) | Reorder and toggle commands; run or step a delivery line under an operation budget. | Completed receipts avoid duplicate work, observation time beats arrival order, and receipts must follow successful commits. |
-| Catalog Match Lab / Catalog Customs | [Papers, Please](https://papersplea.se/presskit/) | Inspect nine documents across three shifts; approve, reject or hold. Three errors close the desk. | Units, variants, pack sizes and missing attributes determine product identity. |
+| Bakiano / Basket Run | [Grocery Game](https://cbs.priceisright.com/game-page/?id=grocery-game) | Drag groceries or use Add to fill four exact orders under budget, stock and basket-space limits. Shared delivery fees complicate store choice. | Normalize pack sizes and currencies; reject stale observations and mismatched rate dates. |
+| GCP Ingestion Lab / Packet Factory | [Infinifactory](https://www.zachtronics.com/infinifactory/) and [Human Resource Machine](https://tomorrowcorporation.com/humanresourcemachine) | Build a spatial conveyor factory across five shifts. Route fresh packets through machines and duplicates into a separate return bin. | Completed receipts avoid duplicate work, observation time beats arrival order, and receipts must follow successful commits. |
+| Catalog Match Lab / Catalog Customs | [Papers, Please](https://papersplea.se/presskit/) | Two stamp tutorials, then six lineups of 3–8 near-identical products. Pick the verified match or none. Three citations close the desk. | Units, variants, pack sizes and missing attributes determine product identity. |
 | BigQuery Query Guard / Partition Sweep | [Opus Magnum](https://www.zachtronics.com/opus-magnum/) | Produce an exact output while shrinking a grid's read footprint to fit a budget. | Projection and partition filters reduce reads; LIMIT alone does not. |
-| Image to Pixels / Palette Lock | [Mastermind](https://instructions.hasbro.com/en-ca/instruction/mastermind) | Recover four palette colors and a rendering method from image feedback in five attempts. | Fixed inputs and deterministic settings reproduce identical pixels under a bounded palette. |
+| Image to Pixels / Pixel Workshop | [Factory Balls](https://www.bontegames.com/2011/09/new-bonte-game-factory-balls-4.html) | Transform a source into the target: turn, mirror, crop, shrink and print, within a move budget. Five jobs require 2–5 operations at best. | Cropping, resampling and quantization are order-sensitive; compare exact pixels and inspect the difference map. |
 | Vesti / Complete the rack | [SET](https://playmonster.com/product/set/) | Complete a three-card rack where each attribute is all the same or all different; two tries per rack. | Multiple independent attributes must be checked, rather than treating overall resemblance as identity. |
 
-Each game has three authored stages, explicit instructions, results, inspection evidence and replay/reset. Stages are intentionally small. The goal is to expose a decision and its consequences in a short visit, not to claim a full game or benchmark.
+The six games contain 28 authored stages in total: Basket 4, Factory 5, Customs 8, Query 3, Pixel Workshop 5 and Garments 3. Each has explicit instructions, results, inspection evidence and replay/reset. Stages are intentionally compact; they expose an engineering decision and its consequences in a short visit.
 
 ## What actually runs
 
-**Catalog Customs** calls the pinned public repository's `compareNames` function for every verdict. The expected answers are not stored. The fixtures are fictional, and the vocabulary is deliberately limited. Unknown qualifiers remain uncertain. This is neither a trained model nor Bakiano's private production matcher.
+**Catalog Customs** calls the pinned public repository's `compareNames` function for every verdict. The expected answers are computed from its output. Its 35 fictional declarations cover six product kinds. Seeded replay shuffles positions; one lineup deliberately has no verified match. Every submitted inspection exposes an audit of every candidate, including conflicts and uncertainty. Unknown qualifiers remain uncertain. This is neither a trained model nor Bakiano's private production matcher.
 
-**Palette Lock** calls the pinned image renderer on an original 48 × 32 procedural source. All attempts use the same source and seed. Feedback reports palette overlap, method equality and the number of identical RGB pixels against the target. Palette order is irrelevant and is sorted before rendering. A win requires the recipe and all 1,536 output pixels to match. Each level has exactly one successful palette/method combination among the provided choices.
+**Pixel Workshop** applies real operations to an original procedural source. Geometry belongs to the puzzle; shrinking and printing execute the unchanged pinned image renderer. Target dimensions and every RGBA pixel must match, so equivalent solutions are accepted regardless of operation names. Undo restores the earlier pixel buffer exactly. Move budgets are 3/3/3/4/6, with verified minimum solutions of 2/2/2/3/5. There is no timer. A difference map and operation slots expose the effect of each decision.
 
 The previous unrestricted product-name inspector and worker-backed image A/B comparison remain in expandable sections under their games. The image comparison still holds source, grid and palette constant, ignores stale worker responses and compares bytes when checking repeatability.
 
-**Packet Factory** is a deterministic teaching model of the public ingestion repository's receipt/read/merge ordering, not an embedded GCP loader. Reads and attempted merges count operations in this model, not cloud jobs, timing or billing. A third level injects a failure before commit. The run pauses when its station or browser tab becomes hidden.
+**Packet Factory** is a deterministic teaching model of the public ingestion repository's receipt/read/merge ordering, not an embedded GCP loader. Packets traverse a 7×5 board; gaps, obstacles, cycles and incorrectly ordered machines fail at the actual tile. A receipt gate routes fresh packets forward and duplicates right. Reads and attempted merges count operations in this model, not cloud jobs, timing or billing. Blackout and Rush hour inject a failure before commit. The run pauses when its cabinet or browser tab becomes hidden. Building is available through buttons and keyboard controls; dragging is not required.
 
 **Partition Sweep** is an executable column-store simulation, not the Query Guard, a SQL interpreter or live BigQuery. Tile costs are fictional units. Product remains a read dependency for ordering even when omitted from the output. Dates are partition metadata. The UI separates this model from the repository's recorded measurements and links their source. Compression, clustering, cache effects and billing minimums are outside the model.
 
-**Basket Run** uses synthetic grocery offers, amounts, dates and exchange rates. Its simulated market day is fixed at 16 October 2026, never presented as today's real market. Conversion uses the rate attached to an observation; an eligible VES observation needs a rate with the same date. The game illustrates the public Bakiano case study without exposing private source or data.
+**Basket Run** uses synthetic grocery offers, amounts, dates and exchange rates. Simulated market dates are fixed at 16 or 17 October 2026, never presented as today's real market. Offers normalize into integer cents and base units; delivery is charged once per store. Each market has exactly one feasible basket across all stock-bounded combinations. Conversion uses the rate attached to an observation; an eligible VES observation needs a rate with the same date. The game illustrates the public Bakiano case study without exposing private source or data. Drag/drop is optional; Add and Remove offer the same mechanics by touch or keyboard.
 
 **Complete the rack** uses explicit shape/color/pattern tags and original SVG garments. It does not run Vesti's segmentation or retrieval pipeline and makes no claim about AI quality. Its connection is attribute reasoning; a real image-based Vesti demo still requires actual saved model outputs and provenance.
 
@@ -39,15 +39,15 @@ The previous unrestricted product-name inspector and worker-backed image A/B com
 
 ## Verification
 
-Run `npm test` and `npm run typecheck`. Tests cover solvability, exact output matching, duplicate and failure behavior, stale/rate-date rejection, palette limits and reproducibility, unknown matcher attributes, finite attempts, replay state and pinned source integrity. DOM interaction tests use the shipped markup and event listeners to play every stage, check failure paths, reset and keyboard focus. Canvas calls are captured in those tests; separate renderer tests verify real pixel buffers. DOM tests do not measure layout or replace visual browser checks.
+Run `npm test` and `npm run typecheck`. Tests cover exhaustive basket feasibility, minimum-move pixel solutions, transformation order, spatial routing, duplicate and failure behavior, dated price rejection, unknown matcher attributes, finite attempts, replay state and pinned source integrity. DOM interaction tests use the shipped markup and event listeners to play every stage, check failure paths, reset and keyboard focus. Dialog tests check opening, closing, focus restoration and progress preservation. Canvas calls are captured in those tests; separate renderer tests verify real pixel buffers. DOM tests do not measure layout or replace visual browser checks.
 
 Browser checks should exercise wrong and correct moves, advancing/resetting, keyboard focus, station switching, narrow layouts and the two free inspectors. No account, paid API, cloud query, persistence or analytics is introduced. Without JavaScript, project descriptions, limitations and reading links remain available.
 
 ### Short walkthroughs
 
-- **Basket:** stage 1 buy B twice and D once ($6.60); stage 2 B twice and D once ($5.80); stage 3 C twice and E once ($5.90). Inspect the receipt to see normalization and dates.
-- **Factory:** stage 1 move Check receipt above Read file; stage 2 keep the newest observation; stage 3 move Save receipt after Merge rows.
-- **Customs:** Approve, Hold, Reject / Reject, Approve, Hold / Reject, Approve, Hold.
+- **Basket:** B×2 + D + E ($8.80); B + D + F ($9.90 including delivery); A + B×2 + C + D + E ($9.30); D×3 + E + G ($10.10 including delivery). Each next market has a distinct title, brief, shelf and constraints.
+- **Factory:** first shift C2 Read→, D2 Latest→, E2 Stamp→. Return lane B3 Gate↑, C3 Belt↓, C4 Belt←, B4 Belt↓. Late truck D2 Latest→. Blackout replace D1/E1 with Latest→/Stamp→. Rush hour uses the upper corridor plus a separate lower return lane; full recipes are in the routing/control tests.
+- **Customs:** Approve, Hold, then declarations ML-1, RC-1, FL-1, CF-1, none, BR-1. Shelf positions change on replay; inspect names and evidence.
 - **Query:** stage 1 deselect Notes and Image; stage 2 also deselect 14/15 October; stage 3 use the same footprint with an output limit of one.
-- **Palette:** Ink/Cream/Moss/Clay with Nearest color; Ink/Cream/Sea/Peach with Error diffusion; Ink/Cream/Plum/Mist with Ordered dots.
+- **Pixel Workshop:** mirror → turn; right half → turn; diffuse → right half; shrink → ordered dots → turn; right half → turn → shrink → diffuse → mirror.
 - **Garments:** choose cards 3, 5, then 1.

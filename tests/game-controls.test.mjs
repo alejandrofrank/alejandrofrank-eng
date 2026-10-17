@@ -33,50 +33,35 @@ beforeEach(() => {
 });
 afterEach(async () => { await win.happyDOM.close(); for (const key of ['document', 'MutationObserver', 'ImageData']) delete globalThis[key]; });
 
-test('basket controls reject an empty order, solve all markets and focus the next task', () => {
+test('basket controls solve four distinct markets, show receipts and focus the next task', () => {
   click('#bk-checkout'); assert.match(el('#bk-status').textContent, /Fill exactly/);
-  for (let level = 0; level < 3; level++) {
-    const milk = level === 2 ? 2 : 1, rice = level === 2 ? 4 : 3;
-    for (let n = 0; n < 2; n++) click(`[data-offer="${milk}"] [data-delta="1"]`);
-    click(`[data-offer="${rice}"] [data-delta="1"]`); click('#bk-checkout');
+  const recipes = [[0,2,0,1,1,0],[0,1,0,1,0,1],[1,2,1,1,1,0],[0,0,0,3,1,0,1,0,0]];
+  for (let level = 0; level < 4; level++) {
+    recipes[level].forEach((count,i)=>{ for(let n=0;n<count;n++) click(`[data-offer="${i}"] [data-delta="1"]`); });
+    click('#bk-checkout');
     assert.equal(el('#bk-status').dataset.outcome, 'won');
     assert.match(el('#bk-ledger').textContent, /per pack/);
-    if (level < 2) { assert.equal(document.activeElement.id, 'bk-next'); click('#bk-next'); assert.equal(document.activeElement.id, 'bk-title'); }
+    if (level < 3) { const previous = el('#bk-title').textContent; assert.equal(document.activeElement.id, 'bk-next'); click('#bk-next'); assert.equal(document.activeElement.id, 'bk-title'); assert.notEqual(el('#bk-title').textContent,previous); assert.equal(el('#bk-total').textContent,'$0.00'); }
   }
+  assert.match(el('#bk-status').textContent,/All four/);
+  click('#bk-replay'); assert.match(el('#bk-progress').textContent,/0 CLEARED/);
   click('#bk-reset'); assert.equal(el('#bk-total').textContent, '$0.00');
   for (let n = 0; n < 3; n++) click('#bk-checkout');
   assert.equal(el('#bk-status').dataset.outcome, 'lost'); assert.equal(document.activeElement.id, 'bk-reset');
 });
 
-test('palette controls enforce four choices, provide feedback, recover recipes and bound attempts', () => {
-  click('#pl-submit'); assert.match(el('#pl-status').textContent, /2\/4 palette colors/);
-  const solutions = [[0, 1, 2, 3], [0, 1, 4, 5], [0, 1, 6, 7]];
-  for (let level = 0; level < 3; level++) {
-    document.querySelectorAll('[data-color]').forEach(button => {
-      if ((button.getAttribute('aria-pressed') === 'true') !== solutions[level].includes(Number(button.dataset.color))) button.click();
-    });
-    if (level === 2) select('#pl-method', 'bayer');
-    click('#pl-submit'); assert.equal(el('#pl-status').dataset.outcome, 'won');
-    assert.equal(el('#pl-output').lastFrame.data.length, 48 * 32 * 4);
-    if (level < 2) { click('#pl-next'); assert.equal(document.activeElement.id, 'pl-title'); }
-  }
-  select('#pl-level', '0');
-  click('[data-color="0"]'); assert.equal(el('#pl-submit').disabled, true);
-  click('[data-color="0"]');
-  for (let n = 0; n < 5; n++) click('#pl-submit');
-  assert.equal(el('#pl-status').dataset.outcome, 'lost'); assert.equal(el('#pl-history').children.length, 5);
-  click('#pl-reset'); assert.equal(el('#pl-history').children.length, 0);
-});
-
-test('factory UI repairs duplicate delivery, time ordering and a failed commit', () => {
-  const finish = () => { for (let n = 0; n < 20 && !el('#pf-step').disabled; n++) click('#pf-step'); };
-  finish(); assert.equal(el('#pf-status').dataset.outcome, 'failed');
-  click('[aria-label="Move Check receipt up"]'); finish(); assert.equal(el('#pf-status').dataset.outcome, 'won');
-  click('#pf-next'); finish(); assert.equal(el('#pf-status').dataset.outcome, 'failed');
-  select('#pf-rule', 'newest'); finish(); assert.equal(el('#pf-status').dataset.outcome, 'won');
-  click('#pf-next'); finish(); assert.equal(el('#pf-status').dataset.outcome, 'failed');
-  click('[aria-label="Move Save receipt down"]'); finish(); assert.equal(el('#pf-status').dataset.outcome, 'won');
-  assert.match(el('#pf-row').textContent, /3.15 USD/); click('#pf-reset'); assert.equal(el('#pf-row').textContent, 'Empty');
+test('basket drag uses only local products, respects stock and supports removing packs', () => {
+  const drop = () => el('#bk-basket').dispatchEvent(new win.Event('drop',{bubbles:true,cancelable:true}));
+  drop(); assert.equal(el('#bk-total').textContent,'$0.00');
+  const drag = () => el('[data-drag-offer="1"]').dispatchEvent(new win.Event('dragstart',{bubbles:true,cancelable:true}));
+  drag(); drop(); assert.equal(el('#bk-total').textContent,'$1.90');
+  drag(); drop(); assert.equal(el('#bk-total').textContent,'$3.80');
+  drag(); drop(); assert.equal(el('#bk-total').textContent,'$3.80');
+  assert.equal(el('[data-offer="1"] button').disabled,true);
+  click('[data-remove="1"]'); assert.equal(el('#bk-total').textContent,'$1.90'); assert.equal(document.activeElement.dataset.remove,'1');
+  click('[data-remove="1"]'); assert.equal(el('#bk-total').textContent,'$0.00'); assert.equal(document.activeElement.closest('[data-offer]').dataset.offer,'1');
+  drag(); select('#bk-level','1'); drop(); assert.equal(el('#bk-total').textContent,'$0.00');
+  select('#bk-level','0'); el('[data-offer="4"] button').focus(); click('[data-offer="4"] button'); assert.equal(document.activeElement.dataset.remove,'4');
 });
 
 test('query controls preserve output while reducing scans and reset on replay', () => {
@@ -92,18 +77,34 @@ test('query controls preserve output while reducing scans and reset on replay', 
   assert.equal(el('#qg-progress').textContent, '01 / 03'); assert.equal(el('#qg-scan').textContent, '54 u');
 });
 
-test('catalog stamps expose actual evidence, complete the manifest and stop after three errors', () => {
-  const decisions = ['yes', 'uncertain', 'no', 'no', 'yes', 'uncertain', 'no', 'yes', 'uncertain'];
+test('pixel workshop transforms real images through five jobs with undo and move limits', () => {
+  const solutions = [['mirror','turn'],['right','turn'],['diffuse','right'],['small','ordered','turn'],['right','turn','small','diffuse','mirror']];
+  click('#pl-submit'); assert.notEqual(el('#pl-status').dataset.outcome,'won');
+  for(let i=0;i<solutions.length;i++) {
+    for(const tool of solutions[i]) click(`[data-workshop-tool="${tool}"]`);
+    click('#pl-submit'); assert.equal(el('#pl-status').dataset.outcome,'won');
+    assert.ok(el('#pl-output').lastFrame.data.length>0);
+    if(i<4){click('#pl-next'); assert.equal(document.activeElement.id,'pl-title');}
+  }
+  select('#pl-level','0'); click('[data-workshop-tool="mirror"]'); click('#pl-undo'); assert.equal(document.querySelectorAll('#pl-history [data-filled="true"]').length,0);
+  click('[data-workshop-tool="turn"]'); click('[data-workshop-tool="turn"]'); click('[data-workshop-tool="turn"]');
+  assert.equal(el('[data-workshop-tool="turn"]').disabled,true); click('#pl-reset'); assert.equal(el('[data-workshop-tool="turn"]').disabled,false);
+});
+
+test('catalog finds verified products across eight checkpoints and stops after three errors', () => {
+  const decisions = ['yes', 'uncertain', 'ML-1', 'RC-1', 'FL-1', 'CF-1', 'none', 'BR-1'];
   decisions.forEach((decision, i) => {
-    click(`[data-customs-decision="${decision}"]`);
-    assert.match(el('[data-customs-feedback]').textContent, /Stamp accepted/);
+    if (i<2) click(`[data-customs-decision="${decision}"]`);
+    else { assert.equal(el('[data-customs-commit]').disabled,true); click(decision==='none' ? '[data-customs-none]' : `[data-customs-product="${decision}"]`); click('[data-customs-commit]'); }
+    assert.equal(el('[data-customs-feedback]').dataset.correct,'true');
     assert.ok(el('[data-customs-checks]').children.length > 0);
-    if (i < 8) click('[data-customs-next]');
+    if (i < 7) click('[data-customs-next]');
   });
-  assert.match(el('[data-customs-summary]').textContent, /9 correct decisions/);
+  assert.match(el('[data-customs-summary]').textContent, /8 \/ 8 inspections correct/);
   click('[data-customs-restart]');
-  ['no', 'yes', 'yes'].forEach((decision, i) => { click(`[data-customs-decision="${decision}"]`); if (i < 2) click('[data-customs-next]'); });
-  assert.match(el('[data-customs-summary]').textContent, /Desk closed/);
+  ['no', 'yes'].forEach(decision => { click(`[data-customs-decision="${decision}"]`); click('[data-customs-next]'); });
+  click('[data-customs-none]'); click('[data-customs-commit]');
+  assert.match(el('[data-customs-summary]').textContent, /Shift closed/);
   assert.equal(el('[data-customs-next]').hidden, true);
 });
 
