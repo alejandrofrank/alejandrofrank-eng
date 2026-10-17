@@ -86,7 +86,7 @@ export function initQueryGame() {
     else game.next();
     render();
     // Advancing hides the triggering button; place keyboard focus in the new task.
-    byId('heading').focus({ preventScroll: true });
+    byId('heading').focus();
   });
   render();
   root.hidden = false;
