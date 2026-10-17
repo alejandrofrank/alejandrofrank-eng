@@ -1,6 +1,11 @@
 import { setAppearanceProject } from '../appearance.mjs';
 import { initImageDemo } from './image-demo.mjs';
 import { initMatchDemo } from './match-demo.mjs';
+import { initIngestionGame } from './games/ingestion.mjs';
+import { initQueryGame } from './games/query.mjs';
+import { initIdentityGames } from './games/identity.mjs';
+import { initPaletteGame } from './games/palette.mjs';
+import { initBasketGame } from './games/basket.mjs';
 
 export function initArcade() {
   const controls = document.getElementById('station-controls');
@@ -10,6 +15,14 @@ export function initArcade() {
   const strip = document.querySelector('.room-scroll');
   const imageDemo = initImageDemo();
   initMatchDemo();
+  initIngestionGame();
+  initQueryGame();
+  initIdentityGames();
+  initPaletteGame();
+  initBasketGame();
+  document.getElementById('image-inspector').addEventListener('toggle', event => {
+    if (event.target.open) imageDemo.activate();
+  });
   let currentStation = null;
   let walkTimer;
   function positionPlayer(animate = true) {
@@ -32,8 +45,7 @@ export function initArcade() {
     document.getElementById('room-position').textContent = `${String(radios.indexOf(selected) + 1).padStart(2, '0')} / ${String(radios.length).padStart(2, '0')}`;
     const enter = document.getElementById('room-enter');
     enter.href = '#concept-' + selected.value;
-    enter.textContent = ['catalog-match-lab', 'ascii-art'].includes(selected.value) ? 'Open the example ↓' : 'Explore the idea ↓';
-    if (selected.value === 'ascii-art') imageDemo.activate();
+    enter.textContent = 'Play this game ↓';
     positionPlayer(currentStation !== null);
     currentStation = selected.value;
     if (strip.scrollWidth > strip.clientWidth) {

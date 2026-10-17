@@ -3,38 +3,42 @@ import { readingShell } from '../projects/page';
 import { esc } from '../panels/helpers';
 import { cabinetArt, PLAYER, STATION_ART } from './art';
 import { playStyles } from './styles';
+import { renderIngestionGame, ingestionStyles } from './games/ingestion';
+import { renderQueryGame, queryStyles } from './games/query';
+import { renderIdentityGame, renderGarmentGame, identityStyles } from './games/identity';
+import { renderPaletteGame, miniStyles } from './games/palette';
+import { renderBasketGame, basketStyles } from './games/basket';
 
-const EXPERIMENTS: Record<string, { name: string; task: string; lesson: string; steps: string[]; inspect?: string }> = {
-  bakiano: { name: 'Trace a comparable price', task: 'Start with a listing. Follow its source price, observation time, currency conversion and product identity into the comparison.', lesson: 'A useful comparison needs a traceable price, not just a number.', steps: ['Source', 'Normalize', 'Compare'], inspect: 'Select an observation and inspect its provenance, dated exchange rate and identity decision. Use explicitly synthetic fixtures unless the production data is cleared for publication.' },
-  'gcp-ingestion-lab': { name: 'Send it twice', task: 'Deliver the same file again. Compare the actual archive reads, merge calls and final rows with the receipt rule on and off.', lesson: 'The same correct rows can require very different amounts of work.', steps: ['Deliver', 'Replay', 'Inspect'], inspect: 'One receipt toggle, two runs on the same input. Show measured in-memory adapter calls beside the resulting rows. Then try a late event and check which observation survives.' },
-  'catalog-match-lab': { name: 'Inspect a product match', task: 'Change a name and compare shared words with product identity checks. See the exact attribute that accepts, rejects or defers the match.', lesson: 'Similar names can hide different sizes, variants and packs.', steps: [] },
-  'bigquery-query-guard': { name: 'Same rows, fewer reads', task: 'Compare two recorded queries that return the same captured rows. Inspect how resolving the date first changes the scan.', lesson: 'Returned rows, scanned bytes, billed bytes and elapsed time measure different things.', steps: ['SQL', 'Recorded run', 'Output'], inspect: 'Keep both SQL variants visible, show their recorded scan and execution evidence, and verify the captured outputs agree. Include the separate date lookup; never label a recording as a live query.' },
-  'ascii-art': { name: 'Keep shading with fewer colors', task: 'Convert the same image two ways. Change the grid or palette and inspect what each method preserves.', lesson: 'Dithering changes where colors go; it does not add more colors.', steps: [] },
-  vesti: { name: 'Select one garment', task: 'Select a garment in a reference image. Inspect the mask and the alternatives returned for that selected region.', lesson: 'A useful result should respond to the selected piece, not the entire photograph.', steps: ['Select', 'Inspect mask', 'Compare'], inspect: 'Show a real saved segmentation and retrieval result with its source and limitations. Keep this as a proposed experiment until those outputs exist.' },
+const GAMES: Record<string, { name: string; task: string; lesson: string; evidence: string; render: () => string }> = {
+  bakiano: { name: 'Basket Run', task: 'Fill an exact grocery order under budget. Pack sizes, currencies and stale prices all change which basket passes.', lesson: 'Comparable prices depend on units, dates and traceable conversion.', evidence: 'Fictional market puzzle', render: renderBasketGame },
+  'gcp-ingestion-lab': { name: 'Packet Factory', task: 'Program a tiny delivery line. Move commands, run the packets and repair duplicate work or a lost update.', lesson: 'Receipt placement and observation time decide whether retries are safe.', evidence: 'Executable pipeline simulation', render: renderIngestionGame },
+  'catalog-match-lab': { name: 'Catalog Customs', task: 'Work the inspection desk. Approve, reject or hold each listing against the requested product. Three mistakes close the desk.', lesson: 'Shared words do not establish product identity. Missing evidence deserves a hold.', evidence: 'Runs the repository’s matcher', render: renderIdentityGame },
+  'bigquery-query-guard': { name: 'Partition Sweep', task: 'Select the data blocks that produce the requested answer. Deliver every required row without exceeding the scan budget.', lesson: 'Projection and partitions reduce reads. A small output alone does not.', evidence: 'Executable scan simulation', render: renderQueryGame },
+  'ascii-art': { name: 'Palette Lock', task: 'Recover an image recipe in five attempts. Choose four colors, test the output and use the feedback to close in.', lesson: 'A small palette and a deterministic method can reproduce the same output exactly.', evidence: 'Runs the repository’s renderer', render: renderPaletteGame },
+  vesti: { name: 'Complete the rack', task: 'Choose a third garment so each attribute is either all the same or all different across the rack.', lesson: 'Separate attributes let you reason about an item instead of its whole scene.', evidence: 'Synthetic attribute puzzle', render: renderGarmentGame },
 };
-const isInteractive = (slug: string) => slug === 'catalog-match-lab' || slug === 'ascii-art';
 
 export function renderPlayPage(origin: string): string {
-  return readingShell('Project demos', 'Short engineering experiments: change an input, inspect the result, and follow the evidence into the repository.', '/play', origin, `
-<header class="arcade-intro"><div><p class="eyebrow">Change an input. Inspect the result.</p><h1>Project demos</h1></div><p>Small interactions that explain<br>the engineering behind each project.</p></header>
+  return readingShell('Project arcade', 'Six compact games about the engineering behind the projects: solve a problem, inspect the result and follow the code.', '/play', origin, `
+<header class="arcade-intro"><div><p class="eyebrow">Play the problem. Inspect the result.</p><h1>Project arcade</h1></div><p>Six small games.<br>Each built around a real engineering decision.</p></header>
 <section class="arcade-room" aria-label="Project demo floor" id="arcade-room" hidden>
-  <div class="room-topline"><div class="room-sign"><b aria-hidden="true">AF</b> INSIDE THE WORK</div><div class="room-status"><span>2 DEMOS</span><b class="status-divider" aria-hidden="true"> / </b> 4 IDEAS</div></div>
+  <div class="room-topline"><div class="room-sign"><b aria-hidden="true">AF</b> INSIDE THE WORK</div><div class="room-status"><span>6 PLAYABLE</span></div></div>
   <fieldset id="station-controls"><legend class="sr-only">Choose a project station</legend><div class="room-scroll"><div class="arcade-floor">
-    <div class="stations">${PROJECTS.map((p, i) => `<div class="station" style="--station:${STATION_ART[p.slug].color}"><input type="radio" name="station" id="station-${p.slug}" value="${p.slug}"${p.slug === 'catalog-match-lab' ? ' checked' : ''} aria-controls="concept-${p.slug}" aria-label="${esc(p.title)} — ${isInteractive(p.slug) ? 'interactive demo' : 'proposed experiment'}"><label for="station-${p.slug}">${cabinetArt(p.slug, String(i + 1).padStart(2, '0'))}<strong>${esc(p.title)}</strong><small${isInteractive(p.slug) ? ' data-playable' : ''}>${isInteractive(p.slug) ? '● INTERACTIVE' : '◇ PROPOSED'}</small></label></div>`).join('')}</div>
+    <div class="stations">${PROJECTS.map((p, i) => `<div class="station" style="--station:${STATION_ART[p.slug].color}"><input type="radio" name="station" id="station-${p.slug}" value="${p.slug}"${p.slug === 'catalog-match-lab' ? ' checked' : ''} aria-controls="concept-${p.slug}" aria-label="${esc(p.title)} — ${esc(GAMES[p.slug].name)}"><label for="station-${p.slug}">${cabinetArt(p.slug, String(i + 1).padStart(2, '0'))}<strong>${esc(p.title)}</strong><small data-playable>● PLAY</small></label></div>`).join('')}</div>
     <div class="room-player" id="room-player" aria-hidden="true"><span class="player-tag">YOU</span>${PLAYER}</div>
   </div></div></fieldset>
-  <div class="room-bottomline"><span><span class="desktop-tip"><kbd>←</kbd> <kbd>→</kbd> Switch projects · </span><span class="phone-tip">Swipe the room · </span><span class="room-position" id="room-position">03 / 06</span></span><a class="room-enter" id="room-enter" href="#concept-catalog-match-lab">Open the example ↓</a></div>
+  <div class="room-bottomline"><span><span class="desktop-tip"><kbd>←</kbd> <kbd>→</kbd> Switch projects · </span><span class="phone-tip">Swipe the room · </span><span class="room-position" id="room-position">03 / 06</span></span><a class="room-enter" id="room-enter" href="#concept-catalog-match-lab">Play this game ↓</a></div>
 </section>
 <noscript><p class="arcade-note">The interactive examples need JavaScript. All project descriptions and reading links are available below.</p></noscript>
 <div class="station-panels">${PROJECTS.map((p, i) => {
-    const experiment = EXPERIMENTS[p.slug];
+    const experiment = GAMES[p.slug];
     return `<section class="station-panel" id="concept-${p.slug}" data-station-panel="${p.slug}" style="--station:${STATION_ART[p.slug].color}" aria-labelledby="concept-title-${p.slug}">
       <div class="console-header"><span class="console-slot">${String(i + 1).padStart(2, '0')} / ${esc(p.title.toUpperCase())}</span><span class="console-lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
-      <div class="console-body"><div class="station-brief"><p class="eyebrow">${isInteractive(p.slug) ? 'Runs the repository’s code' : 'Proposed experiment'}</p><h2 id="concept-title-${p.slug}">${esc(experiment.name)}</h2><p>${esc(experiment.task)}</p><p class="lesson"><span>What it demonstrates</span>${esc(experiment.lesson)}</p><a class="read-link" href="${projectPath(p)}">Inside ${esc(p.title)} →</a></div>
-      ${p.slug === 'catalog-match-lab' ? matchMarkup() : p.slug === 'ascii-art' ? imageMarkup() : `<div class="concept-preview"><div class="concept-diagram" aria-label="Proposed experiment flow">${experiment.steps.map((step, index) => `${index ? '<b aria-hidden="true">→</b>' : ''}<span>${esc(step)}</span>`).join('')}</div><h3>What the experiment would show</h3><p>${esc(experiment.inspect ?? '')}</p><p class="arcade-note">This compact demo is proposed. Read the project for what is available today.</p><a class="action" href="${projectPath(p)}">Explore the project →</a></div>`}</div>
+      <div class="console-body"><div class="station-brief"><p class="eyebrow">${esc(experiment.evidence)}</p><h2 id="concept-title-${p.slug}">${esc(experiment.name)}</h2><p>${esc(experiment.task)}</p><p class="lesson"><span>What it demonstrates</span>${esc(experiment.lesson)}</p><a class="read-link" href="${projectPath(p)}">Inside ${esc(p.title)} →</a></div>
+      <div class="game-content">${experiment.render()}${p.slug === 'catalog-match-lab' ? `<details class="game-inspector"><summary>Free inspection: try your own product names</summary>${matchMarkup()}</details>` : p.slug === 'ascii-art' ? `<details class="game-inspector" id="image-inspector"><summary>Free inspection: compare rendering methods</summary>${imageMarkup()}</details>` : ''}</div></div>
     </section>`;
   }).join('')}</div>
-<div class="arcade-colophon"><span>INPUT → RESULT → EVIDENCE</span><span><a href="/tech#projects">Read all projects →</a></span></div>`, playStyles, `import { initArcade } from '/play/arcade.mjs'; initArcade();`);
+<div class="arcade-colophon"><span>PLAY → INSPECT → READ THE CODE</span><span><a href="/tech#projects">Read all projects →</a></span></div>`, playStyles + miniStyles + basketStyles + ingestionStyles + queryStyles + identityStyles, `import { initArcade } from '/play/arcade.mjs'; initArcade();`);
 }
 
 function matchMarkup(): string {

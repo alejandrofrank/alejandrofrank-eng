@@ -53,6 +53,7 @@ export const playStyles = `
 .console-lights i { width:5px; height:5px; border-radius:50%; background:var(--station); }
 .console-lights i+i { opacity:.25; }
 .console-body { display:grid; grid-template-columns:280px minmax(0,1fr); }
+.game-content{min-width:0}.game-inspector{margin:0 24px 24px;border-top:1px solid #454153;padding-top:16px;font-size:12px}.game-inspector>summary{cursor:pointer;padding:8px 0;color:var(--muted)}.game-inspector .match-demo,.game-inspector .image-demo{padding:20px 0 0}
 .station-brief { padding:25px; border-right:1px solid #393548; }
 .station-brief h2 { font-size:24px; margin:8px 0 13px; }
 .station-brief p { color:var(--muted); font-size:14px; }
