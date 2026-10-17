@@ -1,91 +1,12 @@
-import { createCustomsSession, createGarmentSession, inspectRack, STAMP_LABELS } from './identity-state.mjs';
+import { createGarmentSession, inspectRack } from './identity-state.mjs';
+import { initCustoms } from './identity-customs.mjs';
 
-const valueLabel = value => Array.isArray(value) ? value.join(', ') || 'none' : value == null ? 'not supplied' : String(value);
 const capital = word => word[0].toUpperCase() + word.slice(1);
 function node(tag, text, className) {
   const element = document.createElement(tag);
   if (text != null) element.textContent = text;
   if (className) element.className = className;
   return element;
-}
-
-function initCustoms(root) {
-  const session = createCustomsSession();
-  const find = selector => root.querySelector(selector);
-  const feedback = find('[data-customs-feedback]');
-  const next = find('[data-customs-next]');
-  const stampButtons = [...root.querySelectorAll('[data-customs-decision]')];
-  const resultLabels = { same: 'agrees', conflict: 'CONFLICT', missing: 'MISSING', unsupported: 'UNKNOWN TERM', optional: 'optional', invalid: 'INVALID' };
-
-  function render() {
-    const state = session.getState();
-    const { document: paper, stamped, finished } = state;
-    find('[data-customs-progress]').textContent = `Shift ${paper.shift} / 3 · document ${paper.inShift} / 3`;
-    find('[data-customs-errors]').textContent = `${state.errors} / ${state.limit} mistakes`;
-    find('[data-customs-request]').textContent = paper.request;
-    find('[data-customs-document-id]').textContent = paper.id;
-    find('[data-customs-supplier]').textContent = paper.supplier;
-    find('[data-customs-name]').textContent = paper.name;
-    root.querySelectorAll('[data-shift]').forEach(step => {
-      if (Number(step.dataset.shift) === paper.shift) step.setAttribute('aria-current', 'step');
-      else step.removeAttribute('aria-current');
-    });
-    stampButtons.forEach(button => { button.disabled = Boolean(stamped || finished); });
-    const impression = find('[data-customs-stamp]');
-    impression.hidden = !stamped;
-    feedback.hidden = !stamped;
-    find('[data-customs-audit]').hidden = !stamped;
-    next.hidden = !stamped || finished;
-    if (stamped) {
-      impression.textContent = STAMP_LABELS[stamped.decision];
-      impression.dataset.decision = stamped.decision;
-      feedback.dataset.correct = String(stamped.correct);
-      feedback.textContent = `${stamped.correct ? 'Stamp accepted.' : 'Citation issued.'} Rules say: ${STAMP_LABELS[stamped.evidence.decision].toLowerCase()}. ${stamped.evidence.reason}.`;
-      const rows = stamped.evidence.checks.map(check => {
-        const row = node('tr');
-        row.dataset.result = check.status;
-        const heading = node('th', capital(check.key));
-        heading.scope = 'row';
-        row.append(heading, node('td', valueLabel(check.request)), node('td', valueLabel(check.candidate)), node('td', resultLabels[check.status]));
-        return row;
-      });
-      find('[data-customs-checks]').replaceChildren(...rows);
-      next.textContent = paper.inShift === 3 ? `Start shift ${paper.shift + 1} →` : 'Next document →';
-    }
-    const manifest = find('[data-customs-manifest]');
-    manifest.hidden = !finished;
-    if (finished) {
-      const approved = state.ledger.filter(row => row.decision === 'yes');
-      const wrongApprovals = approved.filter(row => row.evidence.decision !== 'yes').length;
-      find('[data-customs-summary]').textContent = `${state.cleared ? 'Desk cleared.' : 'Desk closed: three citations.'} ${state.ledger.length} / ${state.total} documents processed; ${state.ledger.length - state.errors} correct decisions. You approved ${approved.length} listing${approved.length === 1 ? '' : 's'}, with ${wrongApprovals} invalid approval${wrongApprovals === 1 ? '' : 's'}.`;
-      const items = approved.map(row => {
-        const item = node('li');
-        item.append(node('strong', `${row.id} · ${row.name}`), node('br'));
-        item.append(node(row.correct ? 'span' : 'b', row.correct ? `Verified identity: ${row.request}. ${row.evidence.reason}.` : `Flagged: ${row.evidence.reason}. This should be ${STAMP_LABELS[row.evidence.decision].toLowerCase()}.`));
-        return item;
-      });
-      if (!items.length) items.push(node('li', 'No listings were approved into your catalog.'));
-      find('[data-customs-ledger]').replaceChildren(...items);
-    }
-  }
-
-  stampButtons.forEach(button => button.addEventListener('click', () => {
-    session.stamp(button.dataset.customsDecision);
-    render();
-    if (session.getState().finished) find('#customs-manifest-title').focus();
-    else next.focus();
-  }));
-  next.addEventListener('click', () => {
-    const previousShift = session.getState().document.shift;
-    session.next();
-    render();
-    const newShift = session.getState().document.shift !== previousShift;
-    find(newShift ? '[data-customs-request]' : '[data-customs-name]').focus();
-  });
-  find('[data-customs-restart]').addEventListener('click', () => { session.reset(); render(); find('[data-customs-request]').focus(); });
-  render();
-  find('[data-js-note]').hidden = true;
-  find('[data-customs-controls]').hidden = false;
 }
 
 const COLORS = { blue: '#79b6d9', rose: '#dc91a5', gold: '#e4bd6d' };

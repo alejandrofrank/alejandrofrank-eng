@@ -1,22 +1,26 @@
 export function renderIdentityGame(): string {
   return `<section id="identity-game" class="identity-mini" aria-labelledby="customs-title">
-  <div class="idg-heading"><div><span class="idg-kicker">Catalog Match · inspection desk</span><h3 id="customs-title">Catalog Customs</h3></div><span class="idg-badge">3 shifts / 9 documents</span></div>
-  <p class="idg-intro">Keep false matches out of the catalog. Compare each listing with the requested product, then stamp it. Three mistakes close the desk.</p>
+  <div class="idg-heading"><div><span class="idg-kicker">Catalog Match · inspection campaign</span><h3 id="customs-title">Catalog Customs</h3></div><span class="idg-badge">8 checkpoints / 35 declarations</span></div>
+  <p class="idg-intro">Start at the stamp desk. Graduate to crowded shelves of almost-identical products. Find the one that actually fits — or prove that none does. Three citations close your shift.</p>
   <p data-js-note>Enable JavaScript to open the inspection desk.</p>
   <div data-customs-controls hidden>
-    <div class="idg-dashboard"><span data-customs-progress></span><span data-customs-errors></span></div>
-    <ol class="idg-shifts" aria-label="Inspection shifts"><li data-shift="1"><span>01</span> Units</li><li data-shift="2"><span>02</span> Qualifiers</li><li data-shift="3"><span>03</span> Packs</li></ol>
+    <div class="idg-dashboard"><span data-customs-progress></span><span data-customs-streak></span><span data-customs-errors></span></div>
+    <ol class="idg-campaign-track" data-customs-track aria-label="Campaign checkpoints"></ol>
+    <div class="idg-brief"><span data-customs-tier class="idg-kicker"></span><h4 data-customs-title tabindex="-1"></h4><p data-customs-brief></p></div>
     <div class="idg-desk">
-      <aside class="idg-order"><span class="idg-paper-label">REQUESTED IDENTITY</span><strong data-customs-request tabindex="-1"></strong><hr><h4>Desk rules</h4><p><b>Approve</b> when every required attribute agrees.</p><p><b>Reject</b> when an explicit attribute conflicts.</p><p><b>Hold</b> when evidence is incomplete or unsupported.</p><small>Equivalent units and supported aliases can match. Missing detail is not proof of equality.</small></aside>
-      <article class="idg-document" aria-labelledby="customs-document-title"><div class="idg-document-meta"><span data-customs-document-id></span><span data-customs-supplier></span></div><span class="idg-paper-label">SUPPLIER DECLARATION</span><h4 id="customs-document-title" data-customs-name tabindex="-1"></h4><div class="idg-document-lines" aria-hidden="true"><span></span><span></span><span></span></div><div class="idg-stamp-impression" data-customs-stamp hidden></div><p class="idg-document-footer">One listing. One decision.<br>The normalized audit appears after your stamp.</p></article>
+      <aside class="idg-order"><div><span class="idg-paper-label">REQUESTED IDENTITY</span><strong data-customs-request tabindex="-1"></strong></div><div class="idg-order-rules"><h4>Gate rules</h4><p><b>Verified</b> means every required attribute agrees.</p><p><b>Conflict</b> means an explicit attribute differs.</p><p><b>Review</b> means evidence is missing or unsupported.</p><small>Size and pack count are separate. Never guess missing detail.</small></div></aside>
+      <article class="idg-document" data-customs-document aria-labelledby="customs-document-title"><div class="idg-document-meta"><span data-customs-document-id></span><span data-customs-supplier></span></div><span class="idg-paper-label">SUPPLIER DECLARATION</span><h4 id="customs-document-title" data-customs-name tabindex="-1"></h4><div class="idg-document-lines" aria-hidden="true"><span></span><span></span><span></span></div><div class="idg-stamp-impression" data-customs-stamp hidden></div><p class="idg-document-footer">One listing. One decision.<br>The normalized audit appears after your stamp.</p></article>
+      <div class="idg-lineup" data-customs-lineup hidden><p id="customs-shelf-instructions" class="idg-shelf-instructions">Select one declaration. You can change your selection until you commit.</p><div class="idg-product-shelf" data-customs-products role="group" aria-label="Product declarations"></div><button type="button" class="idg-no-match" data-customs-none aria-pressed="false">∅ No verified match</button></div>
     </div>
-    <div class="idg-stamps" aria-label="Stamp the supplier document"><button type="button" data-customs-decision="yes"><span>✓</span> Approve</button><button type="button" data-customs-decision="no"><span>×</span> Reject</button><button type="button" data-customs-decision="uncertain"><span>?</span> Hold for review</button></div>
-    <div class="idg-feedback" id="customs-feedback" data-customs-feedback role="status" aria-live="polite" aria-atomic="true" hidden></div>
-    <div class="idg-audit" data-customs-audit hidden><table><caption>Repository matcher audit</caption><thead><tr><th scope="col">Attribute</th><th scope="col">Requested</th><th scope="col">Declared</th><th scope="col">Evidence</th></tr></thead><tbody data-customs-checks></tbody></table></div>
-    <button class="idg-next" type="button" data-customs-next aria-describedby="customs-feedback" hidden>Next document →</button>
-    <section class="idg-manifest" data-customs-manifest hidden aria-labelledby="customs-manifest-title"><h4 id="customs-manifest-title" tabindex="-1">End-of-shift manifest</h4><p data-customs-summary></p><ol data-customs-ledger></ol><button class="idg-next" type="button" data-customs-restart>Open a new desk</button></section>
+    <div class="idg-stamps" data-customs-stamps aria-label="Stamp the supplier document"><button type="button" data-customs-decision="yes"><span>✓</span> Approve</button><button type="button" data-customs-decision="no"><span>×</span> Reject</button><button type="button" data-customs-decision="uncertain"><span>?</span> Hold for review</button></div>
+    <div class="idg-commit-bar" data-customs-commit-bar hidden><span data-customs-selection role="status">Select a declaration first.</span><button class="idg-next" type="button" data-customs-commit disabled>Commit inspection →</button></div>
+    <div class="idg-hint-row"><button type="button" class="idg-hint-button" data-customs-hint>Give me a reasoning hint</button><span data-customs-hint-count></span></div><p class="idg-hint" data-customs-hint-text role="status" hidden></p>
+    <div class="idg-feedback" id="customs-feedback" data-customs-feedback role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden></div>
+    <button class="idg-next" type="button" data-customs-next aria-describedby="customs-feedback" hidden>Next checkpoint →</button>
+    <section class="idg-campaign-audit" data-customs-audit hidden aria-labelledby="customs-audit-title"><h4 id="customs-audit-title">Inspect every declaration</h4><p>The pinned repository matcher computed these checks. Open a declaration to see the attributes behind its verdict.</p><div data-customs-checks></div></section>
+    <section class="idg-manifest" data-customs-manifest hidden aria-labelledby="customs-manifest-title"><h4 id="customs-manifest-title" tabindex="-1">End-of-shift manifest</h4><p data-customs-summary></p><ol data-customs-ledger></ol><button class="idg-next" type="button" data-customs-restart>Start a shuffled campaign</button></section>
   </div>
-  <p class="idg-footnote">Fictional listings; each verdict runs the actual Catalog Match rules in your browser. Desk-inspection mechanic inspired by <a href="https://papersplea.se/presskit/" target="_blank" rel="noopener noreferrer">Papers, Please ↗</a>. Original interface and artwork.</p>
+  <p class="idg-footnote">35 fictional declarations; real Catalog Match rules, with no cloud calls or model decisions. Replays shuffle shelf positions. Desk-inspection mechanic inspired by <a href="https://papersplea.se/presskit/" target="_blank" rel="noopener noreferrer">Papers, Please ↗</a>. Original interface and artwork.</p>
   </section>`;
 }
 
@@ -130,4 +134,59 @@ export const identityStyles = `
 #garment-game .idg-footnote{color:#bcb1c7}
 #garment-game .idg-footnote a{color:#e0d3ed}
 @media(max-width:600px){:is(#identity-game,#garment-game){padding:16px 12px}:is(#identity-game,#garment-game) h3{font-size:21px}#identity-game .idg-desk{gap:16px;padding:17px 12px;grid-template-columns:1fr}#identity-game .idg-order{padding:12px 14px}#identity-game .idg-order hr{margin:12px 0}#identity-game .idg-order p{display:inline;font-size:11px;margin-right:8px}#identity-game .idg-order p:after{content:' ';white-space:pre}#identity-game .idg-order small{margin-top:10px}#identity-game .idg-document{min-height:220px}#identity-game .idg-document h4{max-width:none;font-size:20px}#identity-game .idg-document-lines{margin-bottom:20px}#identity-game .idg-stamps{gap:6px}#identity-game .idg-stamps button{font-size:10px;padding:9px 4px}#identity-game .idg-stamps button span{display:block;font-size:17px;margin:0 0 3px}#identity-game .idg-shifts{gap:5px;font-size:9px}#identity-game .idg-shifts li{padding:7px 4px}#identity-game .idg-shifts li span{margin-right:3px}#garment-game .idg-rack{gap:7px}#garment-game .idg-fixed-card,#garment-game .idg-slot{padding:9px 4px;min-height:133px}#garment-game svg{width:62px;height:62px}#garment-game .idg-card-name{font-size:10px}#garment-game .idg-card-detail{font-size:8px}#garment-game .idg-attribute-results{grid-template-columns:1fr}#garment-game .idg-attribute-results li{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}#garment-game .idg-attribute-results strong{min-width:55px}}
+#identity-game .idg-campaign-track{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin:16px 0 22px;padding:0;list-style:none}
+#identity-game .idg-campaign-track li{padding:8px 4px;border:1px solid #415448;border-radius:4px;text-align:center;color:#b8c8b9}
+#identity-game .idg-campaign-track li span{display:block;font:12px/1.5 var(--mono,monospace)}
+#identity-game .idg-campaign-track li small{display:block;font:9px/1.5 var(--mono,monospace)}
+#identity-game .idg-campaign-track [aria-current=step]{border-color:#e2cf98;background:#3a3829;color:#f0e4ba}
+#identity-game .idg-campaign-track [data-result=correct]{border-bottom:3px solid #9fd1a6}
+#identity-game .idg-campaign-track [data-result=incorrect]{border-bottom:3px solid #e9a491}
+#identity-game .idg-brief{margin:0 0 20px}
+#identity-game .idg-brief h4{font-size:20px;line-height:1.35;letter-spacing:-.02em;margin:6px 0 8px;color:#e6ecdf}
+#identity-game .idg-brief p{font-size:13px;line-height:1.65;color:#bacdba;margin:0;max-width:78ch}
+#identity-game .idg-order-rules{margin-top:20px;border-top:1px solid #8b9c85;padding-top:15px}
+#identity-game[data-mode=lineup] .idg-desk{display:block;padding:18px;background:#121d17}
+#identity-game[data-mode=lineup] .idg-order{display:grid;grid-template-columns:1fr 1fr;gap:24px;box-shadow:none;margin-bottom:22px;padding:17px 20px}
+#identity-game[data-mode=lineup] .idg-order strong{font-size:21px;line-height:1.4}
+#identity-game[data-mode=lineup] .idg-order-rules{border:0;border-left:1px solid #8b9c85;padding:0 0 0 20px;margin:0}
+#identity-game[data-mode=lineup] .idg-order p{margin:3px 0}
+#identity-game .idg-shelf-instructions{font:11px/1.6 var(--mono,monospace);color:#b8cbb9;margin:0 0 15px}
+#identity-game .idg-product-shelf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:stretch}
+#identity-game .idg-product{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;border:1px solid #64705f;border-bottom:4px solid #64705f;border-radius:5px;background:#d4d4bf;color:#243429;padding:10px 9px 12px;min-width:0;min-height:220px}
+#identity-game .idg-product-number{font:8px/1.5 var(--mono,monospace);letter-spacing:.06em;color:#43533e;align-self:flex-start}
+#identity-game .idg-product-art svg{display:block;width:74px;height:80px;margin:8px auto 10px}
+#identity-game .idg-product strong{font-size:12px;line-height:1.5;font-weight:650;overflow-wrap:anywhere}
+#identity-game .idg-product small{font:8px/1.6 var(--mono,monospace);color:#4d5d47;padding-top:10px;margin-top:auto}
+#identity-game .idg-product:not(:disabled):hover{background:#e5e4cf;border-color:#becba9}
+#identity-game .idg-product[aria-pressed=true]{outline:3px solid #ecd49a;outline-offset:2px;border-color:#5b644b;background:#eee6c8}
+#identity-game .idg-product:disabled{opacity:1}
+#identity-game .idg-product[data-verdict=yes]{border-bottom-color:#387648}
+#identity-game .idg-product[data-verdict=no]{border-bottom-color:#9b5140}
+#identity-game .idg-product[data-verdict=uncertain]{border-bottom-color:#9b741e}
+#identity-game .idg-product-verdict{display:block;font:8px/1.5 var(--mono,monospace);text-transform:uppercase;font-weight:600;border-top:1px solid #9ba68c;padding-top:8px;margin-top:8px;width:100%}
+#identity-game .idg-no-match{display:block;min-height:44px;width:100%;margin-top:14px;border:1px dashed #7b927a;border-radius:4px;background:#213126;color:#d1e1cd;font:12px/1.5 var(--mono,monospace);padding:10px}
+#identity-game .idg-no-match[aria-pressed=true]{outline:2px solid #ecd49a;outline-offset:2px;background:#394430;color:#f3e9c6}
+#identity-game .idg-commit-bar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:18px 0}
+#identity-game .idg-commit-bar>span{font-size:12px;line-height:1.6;color:#cfdec8;max-width:60ch}
+#identity-game .idg-commit-bar button{flex-shrink:0;background:#b8d2a5;color:#203020;border-color:#c9e2b6}
+#identity-game .idg-commit-bar button:not(:disabled):hover{background:#cde3bd}
+#identity-game .idg-hint-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font:10px/1.5 var(--mono,monospace);color:#aac0a9;margin:16px 0 6px}
+#identity-game .idg-hint-button{border:0;border-bottom:1px solid #7d9478;border-radius:0;background:transparent;color:#ceddc5;padding:6px 0;font-size:11px;min-height:44px;text-align:left}
+#identity-game .idg-hint{font-size:12px;line-height:1.7;color:#e0d8b5;background:#363326;border-left:3px solid #c4b376;padding:12px 14px;margin:10px 0 20px}
+#identity-game .idg-feedback:focus-visible,#identity-game [tabindex="-1"]:focus-visible{outline:2px solid #e4cf8c;outline-offset:4px}
+#identity-game .idg-campaign-audit{margin:23px 0;border-top:1px solid #49604b;padding-top:20px}
+#identity-game .idg-campaign-audit>h4{font-size:15px;margin:0 0 6px;color:#e3ecda}
+#identity-game .idg-campaign-audit>p{font-size:11px;line-height:1.7;margin:0 0 15px;color:#b9cdb4}
+#identity-game .idg-audit-entry{border:1px solid #49604b;border-radius:4px;margin:8px 0;background:#1c2b20}
+#identity-game .idg-audit-entry summary{display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer;font-size:11px;line-height:1.5;min-height:44px}
+#identity-game .idg-audit-entry summary:after{content:'+';margin-left:auto;font:15px/1 var(--mono,monospace)}
+#identity-game .idg-audit-entry[open] summary:after{content:'−'}
+#identity-game .idg-audit-entry summary:focus-visible{outline:3px solid #e4cf8c;outline-offset:2px}
+#identity-game .idg-audit-entry .idg-verdict{color:#b3d9b2;flex-shrink:0;font:9px/1.5 var(--mono,monospace);width:95px;text-transform:uppercase}
+#identity-game .idg-audit-entry[data-verdict=no] .idg-verdict{color:#edb3a0}
+#identity-game .idg-audit-entry[data-verdict=uncertain] .idg-verdict{color:#e6cd90}
+#identity-game .idg-audit-entry>p{font-size:12px;line-height:1.6;margin:0 12px 12px;color:#cadbc3}
+#identity-game .idg-audit-entry .idg-audit{margin:0 12px 14px}
+@media(max-width:900px){#identity-game .idg-product-shelf{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){#identity-game .idg-campaign-track{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}#identity-game .idg-campaign-track li{padding:5px 3px}#identity-game .idg-campaign-track li span,#identity-game .idg-campaign-track li small{display:inline;margin:0 3px}#identity-game .idg-brief h4{font-size:18px}#identity-game[data-mode=lineup] .idg-desk{padding:12px 9px}#identity-game[data-mode=lineup] .idg-order{grid-template-columns:1fr;gap:12px;padding:14px;margin-bottom:18px}#identity-game[data-mode=lineup] .idg-order strong{font-size:18px}#identity-game[data-mode=lineup] .idg-order-rules{padding:10px 0 0;border-left:0;border-top:1px solid #8b9c85}#identity-game .idg-product-shelf{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}#identity-game .idg-product{min-height:210px;padding:9px 7px 11px}#identity-game .idg-product strong{font-size:11px}#identity-game .idg-product-art svg{width:65px;height:70px}#identity-game .idg-commit-bar{flex-direction:column;align-items:stretch;gap:10px}#identity-game .idg-commit-bar button{width:100%}#identity-game .idg-audit-entry summary{gap:8px;padding:10px}#identity-game .idg-audit-entry .idg-verdict{width:70px;font-size:8px}#identity-game .idg-audit-entry summary strong{font-size:10px}#identity-game .idg-hint-row{font-size:9px}}
 `;
