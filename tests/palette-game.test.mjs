@@ -1,112 +1,62 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import { render } from '../public/play/image-engine/core.mjs';
-import {
-  WORKSHOP_LEVELS, WORKSHOP_INK, WORKSHOP_PALETTE, createWorkshopSession,
-  workshopSource, workshopRecipe, applyWorkshopTool, compareWorkshopImages, toolUnavailable,
-} from '../public/play/games/palette-model.mjs';
+import { SHUFFLE_LEVELS,createShuffleSession,pictureSource,pictureSettings,renderPicture,tilePixels,inspectBoard } from '../public/play/games/palette-model.mjs';
 
-test('all five authored jobs are solvable with genuine geometry and renderer operations', () => {
-  const game = createWorkshopSession();
-  for (let index=0;index<WORKSHOP_LEVELS.length;index++) {
-    const level = WORKSHOP_LEVELS[index];
-    assert.equal(game.state.index,index);
-    assert.equal(game.check().won,false,'a job must not start solved');
-    for (const operation of level.solution) assert.equal(game.apply(operation),true);
-    const result = game.check();
-    assert.equal(result.won,true); assert.equal(result.stars,3);
-    assert.equal(result.matching,result.total);
-    assert.equal(game.state.best[index],level.par);
-    if (index<WORKSHOP_LEVELS.length-1) assert.equal(game.next(),true);
+function solve(game){
+  for(let i=0;i<game.state.board.length;i++){
+    let s=game.state;if(s.won)break;
+    if(s.board[i].id!==i){const from=s.board.findIndex(tile=>tile.id===i);game.choose(i);game.choose(from);}
   }
-  assert.deepEqual(game.state.cleared,[0,1,2,3,4]);
-  assert.equal(game.next(),false);
+  for(let i=0;i<game.state.board.length;i++){
+    let s=game.state;if(s.won)break;
+    if(s.board[i].turns){game.choose(i);while(game.state.board[i].turns&&!game.state.won)game.rotate();if(game.state.selected!==null)game.choose(i);}
+  }
+}
+test('five distinct pictures start scrambled and solve automatically within their move goals',()=>{
+  const game=createShuffleSession();
+  for(let i=0;i<SHUFFLE_LEVELS.length;i++){
+    assert.equal(game.state.index,i);assert.equal(game.state.won,false);solve(game);
+    assert.equal(game.state.won,true);assert.ok(game.state.moves<=game.state.goal);assert.equal(game.state.stars,3);
+    assert.equal(game.next(),i<4);
+  }
+  assert.equal(game.state.cleared.length,5);
 });
-
-test('no job can be solved with fewer operations than its authored par', () => {
-  for (let index=0;index<WORKSHOP_LEVELS.length;index++) {
-    const level = WORKSHOP_LEVELS[index], target = workshopRecipe(index,level.solution);
-    let frontier = [workshopSource(index)];
-    const seen = new Set();
-    for (let depth=0;depth<level.par;depth++) {
-      const next = [];
-      for (const image of frontier) {
-        assert.equal(compareWorkshopImages(image,target).exact,false,`job ${index + 1} should need ${level.par} moves`);
-        if (depth===level.par-1) continue;
-        for (const operation of level.tools) {
-          if (toolUnavailable(image,operation)) continue;
-          const candidate = applyWorkshopTool(image,operation);
-          const key = `${candidate.width}:${candidate.height}:${createHash('sha256').update(candidate.data).digest('hex')}`;
-          if (seen.has(key)) continue;
-          seen.add(key); next.push(candidate);
-        }
-      }
-      frontier = next;
-    }
+test('reshuffles preserve every piece, stay solvable and leave progress honest',()=>{
+  const game=createShuffleSession();game.select(4);assert.deepEqual(game.state.cleared,[]);
+  let previous=JSON.stringify(game.state.board);
+  for(let seed=0;seed<12;seed++){
+    game.shuffle();const s=game.state;
+    assert.notEqual(JSON.stringify(s.board),previous);previous=JSON.stringify(s.board);
+    assert.equal(s.won,false);assert.deepEqual(s.board.map(t=>t.id).sort((a,b)=>a-b),Array.from({length:16},(_,i)=>i));
+    solve(game);assert.equal(game.state.won,true);assert.ok(game.state.moves<=game.state.goal);
   }
 });
-
-test('reversing crop/print, sampling/print and spatial operations produces wrong pixels', () => {
-  const wrong = [
-    ['turn','mirror'],
-    ['turn','right'],
-    ['right','diffuse'],
-    ['ordered','small','turn'],
-    ['right','turn','diffuse','small','mirror'],
-  ];
-  wrong.forEach((recipe,index) => {
-    const target = workshopRecipe(index,WORKSHOP_LEVELS[index].solution);
-    assert.equal(compareWorkshopImages(workshopRecipe(index,recipe),target).exact,false,`order must matter in job ${index + 1}`);
+test('selection is free, swaps and rotations cost one move, undo restores exact play state',()=>{
+  const game=createShuffleSession();const start=game.state.board;
+  assert.equal(game.choose(-1),false);assert.equal(game.choose(.5),false);assert.equal(game.rotate(),false);assert.equal(game.next(),false);
+  game.choose(0);assert.equal(game.state.moves,0);game.choose(0);assert.equal(game.state.selected,null);
+  game.choose(0);game.choose(1);assert.equal(game.state.moves,1);game.undo();assert.deepEqual(game.state.board,start);assert.equal(game.state.moves,0);
+  game.select(2);game.choose(0);const before=game.state;game.rotate();assert.equal(game.state.moves,1);game.undo();assert.deepEqual(game.state.board,before.board);assert.equal(game.state.selected,0);
+  const snapshot=game.state;snapshot.board[0].id=99;snapshot.image.data.fill(0);assert.notEqual(game.state.board[0].id,99);
+  game.reset();assert.equal(game.state.moves,0);assert.equal(game.state.canUndo,false);
+  game.restart();assert.deepEqual(game.state.cleared,[]);assert.throws(()=>game.select(99),RangeError);
+});
+test('going over the goal never locks the player out and solved boards remain stable',()=>{
+  const game=createShuffleSession();for(let i=0;i<10;i++){game.choose(0);game.choose(1);}
+  assert.ok(game.state.moves>game.state.goal);solve(game);assert.equal(game.state.won,true);assert.equal(game.state.stars,1);assert.equal(game.choose(0),false);
+  game.reset();solve(game);assert.equal(game.state.awards[0],3);
+});
+test('the unchanged renderer produces every puzzle and tile pixels reassemble without loss',()=>{
+  SHUFFLE_LEVELS.forEach((level,i)=>{
+    const picture=renderPicture(i),expected=render(pictureSource(i),pictureSettings(level));assert.deepEqual(picture.data,expected.data);assert.equal(picture.width,48);
+    const board=Array.from({length:level.grid**2},(_,id)=>({id,turns:0}));assert.equal(inspectBoard(picture,level.grid,board).won,true);
+    const tile=tilePixels(picture,level.grid,{id:0,turns:0});assert.equal(tile.width,48/level.grid);
+    assert.deepEqual(tilePixels(picture,level.grid,{id:0,turns:4}).data,tile.data);
+    const palette=new Set(level.palette.map(hex=>hex.toLowerCase()));for(let p=0;p<picture.data.length;p+=4){const color='#'+[...picture.data.slice(p,p+3)].map(n=>n.toString(16).padStart(2,'0')).join('');assert.ok(palette.has(color));}
   });
-  const target = workshopRecipe(3,WORKSHOP_LEVELS[3].solution);
-  assert.equal(compareWorkshopImages(workshopRecipe(3,['small','turn','ordered']),target).exact,false);
 });
-
-test('printing and shrinking execute the pinned renderer without substituted scoring', () => {
-  const source = workshopSource(4);
-  for (const operation of ['small','ink','diffuse','ordered']) {
-    const expected = render(source,{ columns: operation==='small'?16:source.width,
-      palette: operation==='small'?WORKSHOP_PALETTE:WORKSHOP_INK,
-      mode:['small','ink'].includes(operation)?'pixels':'dither',
-      algorithm:operation==='ordered'?'bayer':'floyd',strength:1,noise:0,seed:42 });
-    const actual = applyWorkshopTool(source,operation);
-    assert.deepEqual(actual.data,expected.data);
-    assert.equal(actual.width,expected.width); assert.equal(actual.height,expected.height);
-    assert.deepEqual(applyWorkshopTool(source,operation),actual,'repeated operations on identical input must reproduce exactly');
-  }
-});
-
-test('budget limits, undo, invalid tools and progress guards preserve the puzzle state', () => {
-  const game = createWorkshopSession();
-  assert.equal(game.next(),false); assert.equal(game.undo(),false);
-  assert.equal(game.apply('diffuse'),false,'locked tools cannot be injected into a job');
-  const source = game.state.source;
-  game.apply('turn'); game.apply('turn'); game.apply('turn');
-  assert.equal(game.state.remaining,0); assert.equal(game.apply('mirror'),false);
-  assert.equal(game.check().won,false); assert.equal(game.next(),false);
-  assert.equal(game.undo(),true); assert.equal(game.state.remaining,1);
-  game.undo(); game.undo(); assert.deepEqual(game.state.image,source);
-  game.apply('mirror'); game.apply('turn'); game.check();
-  assert.equal(game.apply('mirror'),false,'completed jobs are stable until undo/reset');
-  const snapshot = game.state; snapshot.verdict.won=false; snapshot.image.data.fill(0); snapshot.level.budget=999;
-  assert.equal(game.state.verdict.won,true); assert.equal(game.state.level.budget,3);
-  game.reset(); assert.equal(game.state.operations.length,0); assert.equal(game.state.best[0],2);
-  game.select(4); assert.deepEqual(game.state.cleared,[0],'direct selection is not completion');
-  game.restart(); assert.deepEqual(game.state.cleared,[]);
-});
-
-test('pixels, alpha and dimensions determine success rather than the operation names', () => {
-  const source = workshopSource(0);
-  let equivalent = source;
-  for(let i=0;i<4;i++) equivalent=applyWorkshopTool(equivalent,'turn');
-  assert.equal(compareWorkshopImages(equivalent,source).exact,true);
-  const alpha = structuredClone(source); alpha.data[3]=0;
-  assert.equal(compareWorkshopImages(alpha,source).matching,source.width*source.height-1);
-  assert.equal(compareWorkshopImages({...source,width:16,height:64},source).exact,false);
-  assert.throws(()=>workshopRecipe(0,['unknown']),TypeError);
-  assert.throws(()=>workshopSource(-1),RangeError);
-  const narrow = applyWorkshopTool(source,'right');
-  assert.ok(toolUnavailable(narrow,'right'));
-  assert.throws(()=>applyWorkshopTool(narrow,'right'),RangeError);
+test('a visually identical tile is accepted, while a pixel difference is not',()=>{
+  const uniform={width:4,height:4,data:new Uint8ClampedArray(64).fill(255)},board=[{id:1,turns:1},{id:0,turns:2},{id:3,turns:3},{id:2,turns:0}];
+  assert.equal(inspectBoard(uniform,2,board).won,true);uniform.data[0]=0;assert.equal(inspectBoard(uniform,2,board).won,false);
 });

@@ -55,7 +55,7 @@ export const playStyles = `
 .station-panel { border:1px solid #454153; border-radius:12px; overflow:hidden; margin-top:18px; background:#1a1b27; --station:#c5a2f6; }
 .station-panel:not([hidden]) { animation:console-arrive .28s ease-out both; }
 .arcade-screen .station-panel:not([hidden]){animation:none}
-.arcade-screen .game-content{max-width:1120px;width:100%;margin-inline:auto}.arcade-screen .palette-game .pl-images{max-width:700px;margin-inline:auto}
+.arcade-screen .game-content{max-width:1120px;width:100%;margin-inline:auto}
 .console-header { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 22px; border-bottom:1px solid #393548; background:color-mix(in srgb,var(--station) 6%,#1a1b27); font:10px var(--mono); }
 .console-header .console-slot { color:var(--station); }
 .console-lights { display:flex; gap:5px; }

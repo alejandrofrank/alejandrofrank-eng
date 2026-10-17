@@ -1,103 +1,36 @@
-import { WORKSHOP_LEVELS, WORKSHOP_TOOLS, createWorkshopSession, compareWorkshopImages, toolUnavailable } from './palette-model.mjs';
+import { SHUFFLE_LEVELS, createShuffleSession, tilePixels, pictureSource } from './palette-model.mjs';
 
 export function initPaletteGame() {
-  const root = document.getElementById('palette-game');
-  if (!root || root.dataset.initialized) return;
-  root.dataset.initialized = 'true';
-  const q = id => root.querySelector(`#pl-${id}`);
-  const game = createWorkshopSession();
-  const shortcuts = { turn:'Rotate 90°', mirror:'Flip horizontally', left:'Crop current frame', right:'Crop current frame', small:'16 columns · 4 colors', ink:'2 colors · no dots', diffuse:'2 colors · diffusion', ordered:'2 colors · Bayer' };
-  const draw = (id,image) => {
-    const canvas = q(id);
-    canvas.width = image.width; canvas.height = image.height;
-    canvas.getContext('2d').putImageData(new ImageData(image.data,image.width,image.height),0,0);
-    canvas.parentElement.style.setProperty('--columns',image.width);
-    canvas.parentElement.style.setProperty('--rows',image.height);
-  };
-  const focusTitle = () => q('title').focus({ preventScroll:true });
-
-  function render(message = '') {
-    const state = game.state, { level, image, target, operations, verdict } = state;
-    q('level').value = String(state.index);
-    q('title').textContent = level.title;
-    q('brief').textContent = level.brief;
-    q('moves').textContent = `${operations.length} / ${level.budget}`;
-    q('best').textContent = state.best[state.index] === undefined ? `Goal: ${level.par} moves` : `Best: ${state.best[state.index]} moves`;
-    q('completed').textContent = `${state.cleared.length} / ${state.total} jobs`;
-    q('target-size').textContent = `${target.width} × ${target.height} pixels`;
-    q('output-size').textContent = `${image.width} × ${image.height} pixels`;
-    q('source-size').textContent = `${state.source.width} × ${state.source.height} source pixels`;
-    q('target').setAttribute('aria-label', `Target for ${level.title}, ${target.width} by ${target.height} pixels`);
-    q('output').setAttribute('aria-label', `Current image after ${operations.length} operations, ${image.width} by ${image.height} pixels`);
-    draw('target',target); draw('output',image); draw('source',state.source);
-    const comparison = verdict || compareWorkshopImages(image,target);
-    draw('difference',comparison.difference);
-    q('difference-caption').textContent = comparison.sameSize
-      ? `${comparison.matching} / ${comparison.total} exact pixels. Pink pixels differ; dark pixels agree.`
-      : `Size mismatch: current ${image.width} × ${image.height}, target ${target.width} × ${target.height}. The map compares coordinates inside the target frame.`;
-    const focusedTool = root.querySelector('[data-workshop-tool]:focus');
-    root.querySelectorAll('[data-workshop-tool]').forEach(button => {
-      const unavailable = toolUnavailable(image,button.dataset.workshopTool);
-      button.disabled = Boolean(verdict?.won || !state.remaining || unavailable);
-      button.title = unavailable || WORKSHOP_TOOLS[button.dataset.workshopTool].detail;
-    });
-    q('undo').disabled = operations.length === 0;
-    q('submit').disabled = Boolean(verdict?.won);
-    q('next').hidden = !verdict?.won || state.index === state.total - 1;
-    q('history').replaceChildren(...Array.from({length:level.budget},(_,i) => {
-      const slot = document.createElement('li');
-      slot.dataset.filled = String(i < operations.length);
-      slot.textContent = operations[i] ? `${i + 1}. ${WORKSHOP_TOOLS[operations[i]].name}` : `${i + 1}. Empty`;
-      return slot;
-    }));
-    q('hint').textContent = level.hint;
-    q('lesson').textContent = level.lesson;
-    const status = q('status');
-    status.dataset.outcome = verdict?.won ? 'won' : verdict ? 'lost' : '';
-    status.textContent = verdict?.won
-      ? `${'★'.repeat(verdict.stars)} Job accepted in ${operations.length} moves. Every pixel matches. ${state.cleared.length} of ${state.total} jobs completed.`
-      : verdict ? !verdict.sameSize
-        ? `The frame is ${image.width} × ${image.height}; the order needs ${target.width} × ${target.height}. Undo or change the crop and orientation.`
-        : `${verdict.matching} / ${verdict.total} pixels match. ${state.remaining ? `${state.remaining} moves remain.` : 'Move budget used: undo a step or start over.'} Open the difference map to inspect the mismatch.`
-      : message || `Make the target in ${level.budget} moves or fewer. Every tool changes the current image. Undo is free; there is no timer.`;
-    if (focusedTool?.disabled) {
-      const nextControl = state.remaining && !verdict?.won ? root.querySelector('[data-workshop-tool]:not(:disabled)') : null;
-      (nextControl || q('submit')).focus({ preventScroll:true });
-    }
+  const root=document.getElementById('palette-game');if(!root||root.dataset.initialized)return;
+  root.dataset.initialized='true';const game=createShuffleSession(),q=id=>root.querySelector(`#pl-${id}`),board=q('board');
+  const draw=(canvas,image)=>{canvas.width=image.width;canvas.height=image.height;canvas.getContext('2d').putImageData(new ImageData(image.data,image.width,image.height),0,0);};
+  q('level').innerHTML=SHUFFLE_LEVELS.map((level,i)=>`<option value="${i}">${i+1} · ${level.title}</option>`).join('');
+  function update(){
+    const s=game.state;q('moves').textContent=String(s.moves);q('goal').textContent=String(s.goal);q('placed').textContent=`${s.correct} / ${s.board.length}`;q('completed').textContent=`${s.cleared.length} / 5 pictures`;
+    root.dataset.won=String(s.won);q('undo').disabled=!s.canUndo;q('rotate').hidden=!s.level.turned;q('rotate').disabled=s.selected===null||s.won;
+    q('next').hidden=!s.won||s.index===4;q('replay').hidden=!s.won||s.index!==4;
+    const status=q('status');status.dataset.outcome=s.won?'won':'playing';
+    status.textContent=s.won?`${'★'.repeat(s.stars)} Picture restored in ${s.moves} moves. ${s.cleared.length===5?'All five complete!':'Ready for the next picture.'}`:s.selected===null?`Tap two tiles to swap them.${s.level.turned?' Select a tile and use ↻ Turn if it is sideways.':''}`:`Tile selected. Tap another to swap${s.level.turned?', or ↻ Turn to rotate it':''}. Tap it again to cancel.`;
+    board.querySelectorAll('button').forEach((button,i)=>{draw(button.querySelector('canvas'),tilePixels(s.image,s.level.grid,s.board[i]));button.setAttribute('aria-pressed',String(s.selected===i));button.disabled=s.won;});
   }
-
-  function load(index) {
-    game.select(index);
-    q('tools').replaceChildren(...WORKSHOP_LEVELS[index].tools.map(tool => {
-      const button = document.createElement('button'); button.type = 'button'; button.dataset.workshopTool = tool;
-      const icon = document.createElement('span'); icon.textContent = WORKSHOP_TOOLS[tool].icon; icon.setAttribute('aria-hidden','true');
-      const label = document.createElement('strong'); label.textContent = WORKSHOP_TOOLS[tool].name;
-      const detail = document.createElement('small'); detail.textContent = shortcuts[tool];
-      button.append(icon,label,detail);
-      button.addEventListener('click',() => {
-        if (!game.apply(tool)) return;
-        const state = game.state;
-        render(`${WORKSHOP_TOOLS[tool].name} applied. ${state.remaining ? `${state.remaining} moves remain.` : 'Move budget used. Check your pixels, or undo to change the recipe.'}`);
-      });
-      return button;
-    }));
-    q('hint-panel').open = false;
-    render();
+  function afterMove(){update();if(game.state.won)(game.state.index<4?q('next'):q('replay')).focus({preventScroll:true});}
+  function load(focus=false){
+    const s=game.state;q('level').value=String(s.index);q('title').textContent=s.level.title;
+    q('brief').textContent=s.level.turned?'Same picture puzzle. A few pieces are sideways this time.':'Put the picture back together. Tap one tile, then another to swap.';
+    board.style.setProperty('--grid',s.level.grid);board.setAttribute('aria-label',`${s.level.grid} by ${s.level.grid} picture. Arrow keys move focus; Enter selects a tile.`);
+    board.replaceChildren(...s.board.map((_,i)=>{const button=document.createElement('button');button.type='button';button.dataset.tile=String(i);button.setAttribute('aria-label',`Tile row ${Math.floor(i/s.level.grid)+1}, column ${i%s.level.grid+1}`);const canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');button.append(canvas);button.addEventListener('click',()=>{game.choose(i);afterMove();});return button;}));
+    draw(q('target'),s.image);draw(q('source'),pictureSource(s.index));q('evidence').textContent=`The repository renderer turns the original 96 × 96 illustration into these 48 × 48 pixels using ${s.level.palette.length} colors${s.level.method==='pixels'?'':s.level.method==='floyd'?' and error diffusion':' and ordered dithering'}. The game then scrambles the result. A win compares the actual tile pixels, so visually identical pieces are interchangeable.`;
+    update();if(focus){q('title').focus({preventScroll:true});q('title').scrollIntoView?.({block:'start'});}
   }
-
-  q('level').addEventListener('change',() => { load(Number(q('level').value)); focusTitle(); });
-  q('submit').addEventListener('click',() => {
-    const result = game.check(); render();
-    if (result.won) (q('next').hidden ? q('reset') : q('next')).focus({ preventScroll:true });
+  board.addEventListener('keydown',event=>{
+    const tile=event.target.closest('[data-tile]');if(!tile)return;const s=game.state,i=Number(tile.dataset.tile),delta={ArrowLeft:-1,ArrowRight:1,ArrowUp:-s.level.grid,ArrowDown:s.level.grid}[event.key];
+    if(delta!==undefined){event.preventDefault();const next=i+delta;if(next>=0&&next<s.board.length&&!(event.key==='ArrowLeft'&&i%s.level.grid===0)&&!(event.key==='ArrowRight'&&i%s.level.grid===s.level.grid-1))board.querySelector(`[data-tile="${next}"]`).focus();}
+    if(event.key.toLowerCase()==='r'&&s.level.turned){event.preventDefault();if(s.selected===null)game.choose(i);game.rotate();afterMove();}
   });
-  q('undo').addEventListener('click',() => {
-    game.undo(); render('Last operation removed. The earlier pixels are restored exactly.');
-    if (q('undo').disabled) q('submit').focus({ preventScroll:true });
-  });
-  q('reset').addEventListener('click',() => { load(game.state.index); focusTitle(); });
-  q('next').addEventListener('click',() => {
-    if (!game.next()) return;
-    load(game.state.index); focusTitle();
-  });
-  load(0); root.hidden = false;
+  q('rotate').addEventListener('click',()=>{const selected=game.state.selected;game.rotate();afterMove();if(!game.state.won)board.querySelector(`[data-tile="${selected}"]`)?.focus({preventScroll:true});});
+  q('undo').addEventListener('click',()=>{game.undo();update();if(q('undo').disabled)board.querySelector('button').focus({preventScroll:true});});
+  q('reset').addEventListener('click',()=>{game.reset();load(true);});q('shuffle').addEventListener('click',()=>{game.shuffle();load(true);});
+  q('next').addEventListener('click',()=>{if(game.next())load(true);});q('replay').addEventListener('click',()=>{game.restart();load(true);});
+  q('level').addEventListener('change',()=>{game.select(Number(q('level').value));load(true);});
+  load();root.hidden=false;
 }

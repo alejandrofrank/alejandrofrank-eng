@@ -5,6 +5,7 @@ import ts from 'typescript';
 import { Window } from 'happy-dom';
 import { initBasketGame } from '../public/play/games/basket.mjs';
 import { initPaletteGame } from '../public/play/games/palette.mjs';
+import { createShuffleSession } from '../public/play/games/palette-model.mjs';
 import { initIngestionGame } from '../public/play/games/ingestion.mjs';
 import { initIdentityGames } from '../public/play/games/identity.mjs';
 import { initQueryGame } from '../public/play/games/query.mjs';
@@ -77,18 +78,33 @@ test('query controls preserve output while reducing scans and reset on replay', 
   assert.equal(el('#qg-progress').textContent, '01 / 03'); assert.equal(el('#qg-scan').textContent, '54 u');
 });
 
-test('pixel workshop transforms real images through five jobs with undo and move limits', () => {
-  const solutions = [['mirror','turn'],['right','turn'],['diffuse','right'],['small','ordered','turn'],['right','turn','small','diffuse','mirror']];
-  click('#pl-submit'); assert.notEqual(el('#pl-status').dataset.outcome,'won');
-  for(let i=0;i<solutions.length;i++) {
-    for(const tool of solutions[i]) click(`[data-workshop-tool="${tool}"]`);
-    click('#pl-submit'); assert.equal(el('#pl-status').dataset.outcome,'won');
-    assert.ok(el('#pl-output').lastFrame.data.length>0);
-    if(i<4){click('#pl-next'); assert.equal(document.activeElement.id,'pl-title');}
+test('pixel shuffle solves five pictures through direct tile controls without a submit step', () => {
+  const reference=createShuffleSession(), choose=i=>{click(`[data-tile="${i}"]`);reference.choose(i);};
+  assert.equal(el('#pl-submit'),null);assert.equal(el('#pl-rotate').hidden,true);
+  for(let level=0;level<5;level++) {
+    for(let i=0;i<reference.state.board.length&&!reference.state.won;i++) {
+      const board=reference.state.board;
+      if(board[i].id!==i){const from=board.findIndex(t=>t.id===i);choose(i);choose(from);}
+    }
+    for(let i=0;i<reference.state.board.length&&!reference.state.won;i++) {
+      if(reference.state.board[i].turns){choose(i);while(reference.state.board[i].turns&&!reference.state.won){click('#pl-rotate');reference.rotate();}if(reference.state.selected!==null)choose(i);}
+    }
+    assert.equal(el('#pl-status').dataset.outcome,'won');assert.equal(el('#pl-target').lastFrame.data.length,48*48*4);
+    assert.equal(document.activeElement.id,level<4?'pl-next':'pl-replay');
+    if(level<4){click('#pl-next');reference.next();assert.equal(document.activeElement.id,'pl-title');}
   }
-  select('#pl-level','0'); click('[data-workshop-tool="mirror"]'); click('#pl-undo'); assert.equal(document.querySelectorAll('#pl-history [data-filled="true"]').length,0);
-  click('[data-workshop-tool="turn"]'); click('[data-workshop-tool="turn"]'); click('[data-workshop-tool="turn"]');
-  assert.equal(el('[data-workshop-tool="turn"]').disabled,true); click('#pl-reset'); assert.equal(el('[data-workshop-tool="turn"]').disabled,false);
+  assert.match(el('#pl-status').textContent,/All five/);click('#pl-replay');assert.match(el('#pl-completed').textContent,/0 \/ 5/);
+});
+
+test('pixel shuffle has keyboard movement, rotation, free undo and a fresh solvable shuffle',()=>{
+  click('[data-tile="0"]');assert.equal(el('#pl-moves').textContent,'0');assert.equal(el('[data-tile="0"]').getAttribute('aria-pressed'),'true');
+  click('[data-tile="1"]');assert.equal(el('#pl-moves').textContent,'1');click('#pl-undo');assert.equal(el('#pl-moves').textContent,'0');assert.equal(document.activeElement.dataset.tile,'0');
+  el('[data-tile="0"]').dispatchEvent(new win.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));assert.equal(document.activeElement.dataset.tile,'1');
+  select('#pl-level','2');assert.equal(el('#pl-rotate').hidden,false);el('[data-tile="0"]').focus();
+  el('[data-tile="0"]').dispatchEvent(new win.KeyboardEvent('keydown',{key:'r',bubbles:true}));assert.equal(el('#pl-moves').textContent,'1');
+  click('#pl-undo');click('#pl-reset');assert.equal(el('#pl-rotate').disabled,true);
+  const before=[...el('[data-tile="0"] canvas').lastFrame.data];click('#pl-shuffle');assert.equal(el('#pl-moves').textContent,'0');
+  assert.notDeepEqual([...el('[data-tile="0"] canvas').lastFrame.data],before);assert.equal(document.activeElement.id,'pl-title');
 });
 
 test('catalog finds verified products across eight checkpoints and stops after three errors', () => {
