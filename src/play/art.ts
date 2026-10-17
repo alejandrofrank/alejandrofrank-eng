@@ -12,16 +12,19 @@ export function cabinetArt(slug: string, number: string): string {
   const art = STATION_ART[slug];
   return `<svg class="cabinet" viewBox="0 0 160 244" aria-hidden="true">
     <ellipse class="cabinet-shadow" cx="80" cy="231" rx="68" ry="10" fill="#000" opacity=".4"/>
+    <g class="cabinet-body">
     <path d="m119 16 22 14-6 102 12 19-5 72-23 12-4-82z" fill="#151522" stroke="#080a11" stroke-width="3"/>
     <path d="m123 24 12 8-4 94-10 6z" fill="currentColor" opacity=".24"/>
     <path d="M23 16h96l-5 112 15 20-10 87H23l-9-87 15-20z" fill="#262536" stroke="#080a11" stroke-width="3"/>
     <path d="M23 16h96v30H23z" fill="currentColor"/>
     <path d="M28 22h86v19H28z" fill="#10141d"/>
     <text x="71" y="34" text-anchor="middle" fill="currentColor" font-size="7.1" font-weight="700" font-family="monospace">${art.short}</text>
-    <path d="M28 48h86l-4 83H32z" fill="#0b0f16" stroke="#535364"/>
+    <g class="cabinet-display">
+    <path class="screen-bezel" d="M28 48h86l-4 83H32z" fill="#0b0f16" stroke="#535364"/>
     <path class="screen-wash" d="M33 54h75l-3 71H36z" fill="currentColor" opacity=".07"/>
     <g class="screen-art">${art.screen}</g>
     <path d="M35 57h69M35 61h69M35 65h69M35 69h69M35 73h69M35 77h69M35 81h69M35 85h69M35 89h69M35 93h69M35 97h69M35 101h69M35 105h69M35 109h69M35 113h69M35 117h69M35 121h69" stroke="#10141d" stroke-width="1" opacity=".25"/>
+    </g>
     <path d="m29 134 85 0 12 15H17z" fill="currentColor" opacity=".7"/>
     <path d="M17 151h109l-2 9H19z" fill="#11131f"/>
     <ellipse cx="47" cy="145" rx="11" ry="3" fill="#151522"/><path d="M47 144v-11" stroke="#d5d9df" stroke-width="3"/><circle cx="47" cy="131" r="5" fill="currentColor" stroke="#11131f" stroke-width="2"/>
@@ -33,6 +36,7 @@ export function cabinetArt(slug: string, number: string): string {
     <text x="43" y="217" fill="currentColor" font-size="9" font-family="monospace">${number}</text>
     <path d="M23 228h96" stroke="currentColor" stroke-width="2" opacity=".6"/>
     <path d="M23 16v30m0 3 5 78-14 21 9 87" fill="none" stroke="currentColor" stroke-width="2" opacity=".55"/>
+    </g>
   </svg>`;
 }
 

@@ -24,13 +24,44 @@ export const playStyles = `
 .station label small { display:block; color:#9a97a9; font:10px/1.6 var(--mono); margin-top:4px; }
 .station label small[data-playable] { color:#b9e58a; }
 .station input:focus-visible+label { outline:2px solid var(--station); outline-offset:4px; }
-.cabinet { display:block; width:100%; max-width:156px; overflow:visible; transform-origin:50% 90%; transition:transform .28s cubic-bezier(.2,.8,.2,1),filter .28s; }
-.station input:checked+label .cabinet { transform:translateY(-8px); filter:drop-shadow(0 0 9px color-mix(in srgb,var(--station) 24%,transparent)); }
+.cabinet { display:block; width:100%; max-width:156px; overflow:visible; transition:filter .2s; }
+.cabinet-body { transform-origin:80px 228px; }
+.cabinet-shadow { transform-origin:80px 231px; }
+.cabinet-display { transition:filter .18s ease-out; }
+.screen-wash { transition:opacity .18s ease-out; }
+.screen-bezel { transition:stroke .18s ease-out; }
+.screen-art { opacity:.7; transition:opacity .18s ease-out,filter .18s ease-out; }
+.station input:checked+label .cabinet { filter:drop-shadow(0 0 9px color-mix(in srgb,var(--station) 24%,transparent)); }
 .station input:checked+label::before { opacity:1; }
 .station input:checked+label strong { color:var(--station); }
 .station input:checked+label .screen-wash { opacity:.19; }
-.station input:checked+label .screen-art { animation:screen-boot .4s ease-out both; transform-origin:70px 90px; }
-@media(hover:hover) { .station label:hover .cabinet { transform:translateY(-9px) rotate(-2deg); } }
+.station input:checked+label .screen-art { opacity:1; }
+.station input:focus-visible+label .cabinet-body { animation:cabinet-hop .48s ease-out; }
+.station input:focus-visible+label .cabinet-shadow { animation:cabinet-hop-shadow .48s ease-out; }
+.station input:focus-visible+label .cabinet-display { filter:drop-shadow(0 0 6px currentColor); }
+.station input:focus-visible+label .cabinet-display .screen-wash { opacity:.34; }
+.station input:focus-visible+label .screen-bezel { stroke:var(--station); }
+.station input:focus-visible+label .cabinet-display .screen-art { opacity:1;filter:brightness(1.25); }
+@media(hover:hover) {
+  .station label:hover .cabinet-body { animation:cabinet-hop .48s ease-out; }
+  .station label:hover .cabinet-shadow { animation:cabinet-hop-shadow .48s ease-out; }
+  .station label:hover .cabinet-display { filter:drop-shadow(0 0 6px currentColor); }
+  .station label:hover .cabinet-display .screen-wash { opacity:.34; }
+  .station label:hover .screen-bezel { stroke:var(--station); }
+  .station label:hover .cabinet-display .screen-art { opacity:1;filter:brightness(1.25); }
+  .station label:hover::before { opacity:1; }
+}
+@keyframes cabinet-hop {
+  0%,100% { transform:translateY(0) scale(1); }
+  16% { transform:translateY(2px) scale(1.025,.975); }
+  44% { transform:translateY(-13px) scale(.99,1.015); }
+  76% { transform:translateY(0) scale(1.025,.975); }
+}
+@keyframes cabinet-hop-shadow {
+  0%,100% { transform:scaleX(1);opacity:.4; }
+  16%,76% { transform:scaleX(1.04);opacity:.45; }
+  44% { transform:scaleX(.78);opacity:.2; }
+}
 .room-player { position:absolute; top:calc(100% - 86px); left:0; width:54px; text-align:center; pointer-events:none; transition:transform .6s cubic-bezier(.4,0,.2,1); }
 .player-tag { display:inline-block; padding:1px 6px; border-radius:3px; background:#e9e1cf; color:#262030; font:700 9px/1.4 var(--mono); margin-bottom:2px; }
 .player-sprite { display:block; width:42px; height:57px; margin:auto; }
@@ -116,7 +147,6 @@ export const playStyles = `
 @media(max-width:780px) { .console-body { grid-template-columns:1fr; }.station-brief { border-right:0; border-bottom:1px solid #393548; }.station-brief .lesson { display:none; }.match-demo,.image-demo { padding:20px; } }
 @media(max-width:480px) { .match-inputs { grid-template-columns:1fr; }.match-results { gap:8px; }.match-results>div { padding:12px; }.match-results strong { font-size:14px; }.image-demo-controls { gap:7px; }.image-demo-controls label { font-size:9px; }.image-demo-controls select { padding:6px; font-size:12px; }.image-source { gap:12px; }.image-source canvas { width:88px; height:66px; }.image-source strong { font-size:10px; }.image-source span { font-size:11px; }.image-results { gap:10px; }.image-results figcaption { font-size:10px; }.image-results p { font-size:9px; } }
 select:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
-@keyframes screen-boot { from { opacity:.2; transform:scaleY(.1); } to { opacity:1; transform:scaleY(1); } }
 @keyframes console-arrive { from { opacity:.3; transform:translateY(7px); } to { opacity:1; transform:none; } }
 @keyframes walk-leg { to { transform:translateY(-3px); } }
 @keyframes walk-body { to { transform:translateY(-1px); } }
