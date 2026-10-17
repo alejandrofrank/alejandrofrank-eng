@@ -1,0 +1,18 @@
+export function renderBasketGame(): string {
+  return `<section id="basket-game" class="mini-game basket-game" aria-label="Basket Run price puzzle" hidden>
+    <div class="mini-top"><span>MARKET / 16 OCT 2026</span><label class="sr-only" for="bk-level">Basket Run level</label><select id="bk-level"><option value="0">1 · Pack sizes</option><option value="1">2 · Two currencies</option><option value="2">3 · Stale bargains</option></select></div>
+    <h3 id="bk-title"></h3><p id="bk-brief"></p>
+    <div class="bk-order"><strong>ORDER <span>2 L milk + 1 kg rice</span></strong><strong>CEILING <span id="bk-budget"></span></strong><strong>IN BASKET <span id="bk-total"></span></strong></div>
+    <div id="bk-shelf" class="bk-shelf" aria-label="Available grocery listings"></div>
+    <p class="bk-amounts" id="bk-amounts"></p>
+    <div class="mini-actions"><button type="button" id="bk-checkout">Check basket →</button><button type="button" id="bk-reset">Empty basket</button><button type="button" id="bk-next" hidden>Next market →</button></div>
+    <p class="mini-status" id="bk-status" role="status" aria-live="polite"></p>
+    <details id="bk-receipt"><summary>Price trail / receipt</summary><div id="bk-ledger"></div></details>
+    <details><summary>Need a hint?</summary><p id="bk-hint"></p></details>
+    <p class="mini-credit">Quantity-and-budget play inspired by <a href="https://cbs.priceisright.com/game-page/?id=grocery-game" target="_blank" rel="noopener noreferrer">Grocery Game ↗</a>, adapted to compare normalized prices. Fictional prices, dates and rates. This browser puzzle illustrates Bakiano’s data checks; it does not query Bakiano or execute its private pipeline. <a href="https://bakiano.com" target="_blank" rel="noopener noreferrer">Visit Bakiano ↗</a></p>
+  </section>`;
+}
+
+export const basketStyles = `
+.bk-order{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-block:1px solid #494251;padding:13px 0;margin:18px 0}.bk-order strong{font:10px var(--mono);color:var(--muted)}.bk-order span{display:block;font-size:14px;line-height:1.8;color:var(--fg)}.bk-order #bk-total{color:var(--station)}.bk-shelf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.bk-offer{display:grid;grid-template-columns:39px minmax(0,1fr);gap:10px;border:1px solid #514859;border-radius:7px;padding:12px;background:#24212c}.bk-offer[data-selected=true]{border-color:var(--station);background:#302820}.bk-package{height:58px;align-self:start;background:#e8d7aa;color:#342f25;display:grid;place-items:center;border-radius:4px 4px 9px 9px;border-top:8px solid #ccad73;font:700 20px var(--mono)}.bk-package[data-kind=milk]{background:#d2e3e5;border-color:#8cb0b4;color:#2b494e;clip-path:polygon(16% 0,84% 0,100% 18%,100% 100%,0 100%,0 18%)}.bk-offer h4{font-size:13px;margin:0 0 3px}.bk-offer .bk-price{font:700 18px var(--mono);color:var(--station);margin:6px 0}.bk-offer .bk-meta{font:10px/1.6 var(--mono);color:var(--muted);margin:0}.bk-quantity{display:flex;gap:8px;align-items:center;grid-column:1/-1;justify-content:end}.bk-quantity button{width:38px;min-height:36px;padding:4px}.bk-quantity output{min-width:20px;text-align:center;font:14px var(--mono)}.mini-game .bk-amounts{font:12px var(--mono);color:var(--station);padding:12px;background:#211f2a}.bk-ledger-row{border-bottom:1px dashed #514859;padding:10px 0;font:11px/1.7 var(--mono);overflow-wrap:anywhere}.bk-ledger-row strong{color:var(--station)}.bk-ledger-row[data-valid=false]{color:#ffb4a3}@media(max-width:460px){.bk-offer{grid-template-columns:1fr;padding:10px}.bk-package{display:none}.bk-offer .bk-price{font-size:16px}.bk-quantity{justify-content:space-between}.bk-shelf{gap:8px}}
+`;
