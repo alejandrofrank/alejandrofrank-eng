@@ -31,7 +31,20 @@ function fixture(width = 1100, view = 'arcade') {
   return { win, chart, viewport, tick, frames, get: name => win.document.querySelector(`[data-runner-${name}]`) };
 }
 
-test('only Arcade exposes an opt-in runner; no animation loop or game starts on page load', async () => {
+const role = { id: 'role', label: 'Real company', category: 'job', x: 40, width: 70, bottom: 22, height: 12 };
+function runUntil(engine, predicate, frames = 1500) {
+  let state = engine.snapshot();
+  for (let i = 0; i < frames && state.status === 'running' && !predicate(state); i++) state = engine.step(1 / 120);
+  return state;
+}
+function landOnFirstRole(engine) {
+  engine.start(); engine.move(1);
+  runUntil(engine, s => s.x >= 55); engine.move(0);
+  runUntil(engine, s => s.vx === 0); engine.jump();
+  return runUntil(engine, s => s.support === role.id);
+}
+
+test('only Arcade exposes the platformer, with no game or animation loop until Play', async () => {
   for (const view of ['original', 'tech', 'arcade']) {
     const f = fixture(1100, view);
     try {
@@ -42,126 +55,195 @@ test('only Arcade exposes an opt-in runner; no animation loop or game starts on 
         assert.equal(f.get('invitation').hidden, false);
         assert.ok(f.get('avatar').querySelector('.player-sprite .player-leg.left'));
         assert.equal(f.chart.inert, false);
+        assert.equal(initTimelineRunner(f.win.document), null, 'mount only once');
       } else assert.equal(controller, null);
     } finally { await f.win.happyDOM.close(); }
   }
 });
 
-test('desktop and narrow opening courses use every actual bar, including its exact width, lane and title', async () => {
+test('desktop and narrow courses preserve every actual role bar and add unlabeled platforms', async () => {
   for (const width of [1100, 390]) {
     const f = fixture(width);
     try {
       const geometry = readTimelineGeometry(f.chart);
-      const engine = createRunner(geometry.bars); engine.start();
+      const controller = initTimelineRunner(f.win.document); controller.start();
       const actual = [...f.chart.querySelectorAll('.tlp-bar')];
+      const real = controller.snapshot().platforms.filter(bar => bar.real);
       assert.equal(geometry.bars.length, f.win.__SCENES__.length);
-      assert.equal(engine.snapshot().obstacles.filter(bar => bar.real).length, actual.length);
+      assert.equal(real.length, actual.length);
       geometry.bars.forEach((bar, index) => {
         assert.equal(bar.id, actual[index].dataset.role);
         assert.equal(bar.label, actual[index].dataset.title);
         assert.equal(bar.x, Number.parseFloat(actual[index].style.left));
         assert.equal(bar.width, Number.parseFloat(actual[index].style.width));
         assert.equal(bar.bottom + bar.height, geometry.baseline - Number.parseFloat(actual[index].style.top));
+        assert.deepEqual(real[index], { ...bar, real: true, visited: false });
+        assert.ok(actual[index].textContent.includes(bar.label));
       });
-      engine.crouch(true);
-      for (let i = 0; i < 3000 && engine.snapshot().phase !== 'endless'; i++) engine.step(1 / 60, width);
-      const state = engine.snapshot();
-      assert.equal(state.status, 'running');
-      assert.equal(state.phase, 'endless');
-      assert.equal(state.realCleared, actual.length);
-      assert.ok(state.obstacles.some(bar => !bar.real));
+      assert.ok(f.get('generated').querySelector('.runner-platform'));
+      assert.ok(f.get('generated').querySelector('.runner-spike'));
+      assert.equal(f.get('generated').textContent, '', 'extra ledges, gems and threats have no text labels');
     } finally { await f.win.happyDOM.close(); }
   }
 });
 
-const obstacle = (bottom, width = 70) => [{ id: 'test', label: 'Test bar', category: 'job', x: 100, width, height: 20, bottom }];
-function runUntil(engine, predicate, frames = 1500) {
+test('movement is manual, reversible, stops on release and cannot run past the left edge', () => {
+  const engine = createRunner([role]); engine.start();
+  for (let i = 0; i < 300; i++) engine.step(1 / 60);
+  assert.equal(engine.snapshot().x, RUNNER.startX);
+  engine.move(1); runUntil(engine, s => s.x > 80); engine.move(0);
+  const stopped = runUntil(engine, s => s.vx === 0);
+  for (let i = 0; i < 120; i++) engine.step(1 / 60);
+  assert.equal(engine.snapshot().x, stopped.x);
+  engine.move(-1); runUntil(engine, s => s.x === 0);
+  assert.equal(engine.snapshot().x, 0); assert.equal(engine.snapshot().facing, -1);
+  assert.equal(engine.snapshot().status, 'running', 'bar sides are not threats');
+});
+
+test('jump through a real bar from below, land on top, then crouch and drop through it', () => {
+  const engine = createRunner([role]); engine.start(); engine.move(1);
+  runUntil(engine, s => s.x >= 55); engine.move(0); runUntil(engine, s => s.vx === 0);
+  engine.jump();
+  const rising = runUntil(engine, s => s.y > role.bottom + role.height);
+  assert.ok(rising.vy > 0); assert.equal(rising.support, null);
+  const landed = runUntil(engine, s => s.support === role.id);
+  assert.equal(landed.y, role.bottom + role.height); assert.equal(landed.grounded, true);
+  assert.equal(landed.realVisited, 1); assert.equal(landed.checkpoint.label, role.label);
+  engine.crouch(true); engine.step(1 / 60);
+  assert.equal(engine.snapshot().y, landed.y); assert.equal(engine.snapshot().duck, true);
+  engine.jump(); engine.step(1 / 60);
+  assert.ok(engine.snapshot().y < landed.y);
+  const ground = runUntil(engine, s => s.grounded && s.support === null);
+  assert.equal(ground.y, 0); assert.equal(ground.realVisited, 1);
+});
+
+test('air jumps do not create unlimited flight; running off a bar falls and leaves a brief coyote jump', () => {
+  const engine = createRunner([role]); landOnFirstRole(engine);
+  engine.jump(); engine.step(.05); const rising = engine.snapshot();
+  engine.jump(); engine.step(.05);
+  assert.ok(engine.snapshot().vy < rising.vy, 'no second impulse in midair');
+  assert.equal(runUntil(engine, s => s.support === role.id).support, role.id);
+  engine.move(-1);
+  const edge = runUntil(engine, s => !s.grounded);
+  assert.ok(edge.y < role.bottom + role.height); assert.equal(edge.support, null);
+  engine.jump(); engine.step(1 / 120);
+  assert.ok(engine.snapshot().vy > 0, 'last-moment jump still works just off the edge');
+});
+
+test('spikes cause a retry at the last real checkpoint; role progress persists and respawn is safe', () => {
+  const engine = createRunner([role]);
+  const landed = landOnFirstRole(engine);
+  assert.equal(landed.support, role.id);
+  engine.move(1);
+  const hit = runUntil(engine, s => s.status === 'over');
+  assert.equal(hit.status, 'over'); assert.ok(hit.hit.id.startsWith('spike-'));
+  const respawned = engine.respawn();
+  assert.equal(respawned.x, landed.checkpoint.x); assert.equal(respawned.y, landed.y);
+  assert.equal(respawned.realVisited, 1); assert.equal(respawned.gems, hit.gems);
+  for (let i = 0; i < 120; i++) engine.step(1 / 60);
+  assert.equal(engine.snapshot().status, 'running');
+  assert.equal(engine.snapshot().x, respawned.x);
+  const initial = engine.start(); assert.equal(initial.realVisited, 0); assert.equal(initial.score, 0);
+});
+
+test('the upper route supports repeated jumps, gem collection and exploration beyond the chart', () => {
+  const engine = createRunner([role]); engine.start();
   let state = engine.snapshot();
-  for (let i = 0; i < frames && state.status === 'running' && !predicate(state); i++) state = engine.step(1 / 120);
-  return state;
-}
-
-test('standing, crouching and jumping have different collision outcomes, including overhead hazards', () => {
-  const standing = createRunner(obstacle(22)); standing.start();
-  assert.equal(runUntil(standing, s => s.realCleared === 1).status, 'over');
-  const duck = createRunner(obstacle(22)); duck.start(); duck.crouch(true);
-  assert.equal(runUntil(duck, s => s.realCleared === 1).realCleared, 1);
-  const ground = createRunner(obstacle(0, 45)); ground.start(); ground.crouch(true);
-  assert.equal(runUntil(ground, s => s.realCleared === 1).status, 'over');
-  const jump = createRunner(obstacle(0, 45)); jump.start();
-  runUntil(jump, s => s.x + RUNNER.width > 80); jump.jump();
-  assert.equal(runUntil(jump, s => s.realCleared === 1).realCleared, 1);
-  const coast = createRunner(obstacle(62)); coast.start();
-  assert.equal(runUntil(coast, s => s.realCleared === 1).realCleared, 1);
-  const wrongJump = createRunner(obstacle(62)); wrongJump.start();
-  runUntil(wrongJump, s => s.x + RUNNER.width > 65); wrongJump.jump();
-  assert.equal(runUntil(wrongJump, s => s.realCleared === 1).status, 'over');
-});
-
-test('endless courses remain playable as speed rises; obstacle storage stays bounded', () => {
-  for (const seed of [17, 42, 99]) {
-    const engine = createRunner(obstacle(80, 25), seed); engine.start();
-    let state = engine.snapshot();
-    for (let i = 0; i < 26000 && state.status === 'running'; i++) {
-      const next = state.obstacles.filter(b => b.x + b.width > state.x).sort((a, b) => a.x - b.x)[0];
-      const distance = next?.x - state.x - RUNNER.width;
-      engine.crouch(next?.bottom === 26 && distance < 100);
-      if (next?.bottom === 0 && distance < state.speed * .12 && state.y === 0) engine.jump();
-      state = engine.step(1 / 120, 1100);
+  // Play twenty successive ledges through the public controls, including rises,
+  // descents and ledges with spikes. No teleporting or internal state injection.
+  for (let i = 0; i < 20; i++) {
+    const target = state.platforms.find(bar => bar.id === `ledge-${i}`);
+    assert.ok(target);
+    engine.jump();
+    let reached = false;
+    for (let frame = 0; frame < 300 && state.status === 'running'; frame++) {
+      const distance = target.x + 34 - state.x;
+      engine.move(Math.abs(distance) < 17 ? 0 : Math.sign(distance));
+      state = engine.step(1 / 120);
+      if (state.support === target.id && Math.abs(distance) < 17 && Math.abs(state.vx) < 1) { reached = true; break; }
     }
-    assert.equal(state.status, 'running', `course seed ${seed} must allow recovery between obstacles; hit ${state.hit?.label}`);
-    assert.ok(state.cleared > 50);
-    assert.ok(state.speed > 300 && state.speed <= 310);
-    assert.ok(state.obstacles.length < 14);
+    assert.equal(reached, true, `ledge ${i} must be reachable; at ${state.x},${state.y}, support ${state.support}, hit ${state.hit?.id}`);
+    assert.equal(state.status, 'running');
   }
+  assert.equal(state.phase, 'bonus'); assert.ok(state.gems >= 19);
+  assert.ok(state.landings >= 20); assert.ok(state.platforms.length < 50);
+  assert.ok(state.hazards.length < 20); assert.ok(state.coins.length < 24);
+  const gems = state.gems;
+  engine.move(1); runUntil(engine, s => s.status === 'over'); engine.respawn();
+  assert.equal(engine.snapshot().gems, gems, 'checkpoint retry preserves diamonds');
+  assert.ok(!engine.snapshot().coins.some(coin => coin.id === 'gem-0'), 'revisiting does not respawn a collected diamond');
 });
 
-test('pause freezes physics, retry is repeatable, and stalled frames cannot tunnel through bars', () => {
-  const engine = createRunner(obstacle(0)); const initial = engine.start();
-  engine.step(.02); engine.pause();
-  const paused = engine.snapshot(); engine.step(100); engine.jump(); engine.crouch(true);
+test('pause freezes physics, large frame gaps stay bounded, and restarting resets the world', () => {
+  const engine = createRunner([role]); const initial = engine.start();
+  engine.move(1); engine.step(.02); engine.pause();
+  const paused = engine.snapshot(); engine.step(100); engine.jump(); engine.crouch(true); engine.move(-1);
   assert.deepEqual(engine.snapshot(), paused);
-  engine.resume(); const before = engine.snapshot(); engine.step(100);
-  assert.ok(engine.snapshot().x - before.x < 16);
+  engine.resume(); engine.move(1); const before = engine.snapshot(); engine.step(100);
+  assert.ok(engine.snapshot().x - before.x < 12);
   assert.deepEqual(engine.start(), initial);
-  const copy = engine.snapshot(); copy.obstacles[0].x = -999; copy.x = 10000;
+  const copy = engine.snapshot(); copy.platforms[0].x = -999; copy.x = 10000;
   assert.deepEqual(engine.snapshot(), initial);
 });
 
-test('real controls start, jump, duck, pause, resume, retry and exit back to working experience bars', async () => {
-  const f = fixture();
+test('keyboard and simultaneous touch controls move, jump, duck, pause, restart and restore the chart', async () => {
+  const f = fixture(390);
   try {
     f.viewport.scrollLeft = 45;
-    const controller = initTimelineRunner(f.win.document);
-    f.get('start').click();
+    const controller = initTimelineRunner(f.win.document); f.get('start').click();
     const region = f.win.document.querySelector('[data-timeline-runner]');
+    const key = (type, value) => region.dispatchEvent(new f.win.KeyboardEvent(type, { key: value, bubbles: true }));
     assert.equal(controller.snapshot().status, 'running');
     assert.equal(f.chart.inert, true); assert.equal(f.win.document.activeElement, region);
-    f.tick(5);
-    region.dispatchEvent(new f.win.KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
-    f.tick(5); assert.ok(controller.snapshot().y > 0);
+    f.tick(120); assert.equal(controller.snapshot().x, RUNNER.startX);
+    key('keydown', 'ArrowRight'); f.tick(12); key('keyup', 'ArrowRight');
+    assert.ok(controller.snapshot().x > RUNNER.startX);
+    key('keydown', 'ArrowUp'); f.tick(5); assert.ok(controller.snapshot().y > 0);
     f.get('pause').click(); const paused = controller.snapshot(); f.tick(100);
     assert.deepEqual(controller.snapshot(), paused); assert.equal(f.frames.size, 0);
     f.get('retry').click(); assert.equal(controller.snapshot().status, 'running');
     f.win.dispatchEvent(new f.win.Event('blur')); assert.equal(controller.snapshot().status, 'paused');
-    f.get('retry').click(); f.tick(80);
-    region.dispatchEvent(new f.win.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    f.get('restart').click(); assert.equal(controller.snapshot().x, RUNNER.startX);
+    f.get('right').dispatchEvent(new f.win.PointerEvent('pointerdown', { pointerId: 1, cancelable: true }));
+    f.get('jump').click(); f.tick(12);
+    assert.ok(controller.snapshot().x > RUNNER.startX); assert.ok(controller.snapshot().y > 0);
+    f.get('right').dispatchEvent(new f.win.PointerEvent('pointercancel', { pointerId: 1 }));
+    f.tick(20); const stoppedX = controller.snapshot().x; f.tick(20);
+    assert.equal(controller.snapshot().x, stoppedX);
+    key('keydown', 'ArrowDown'); assert.equal(controller.snapshot().duck, true);
+    key('keyup', 'ArrowDown'); assert.equal(controller.snapshot().duck, false);
+    f.get('duck').dispatchEvent(new f.win.PointerEvent('pointerdown', { pointerId: 2, cancelable: true }));
     assert.equal(controller.snapshot().duck, true);
-    f.win.document.dispatchEvent(new f.win.KeyboardEvent('keyup', { key: 'ArrowDown' }));
+    f.get('duck').dispatchEvent(new f.win.PointerEvent('lostpointercapture', { pointerId: 2 }));
     assert.equal(controller.snapshot().duck, false);
-    f.get('duck').dispatchEvent(new f.win.PointerEvent('pointerdown', { pointerId: 1, cancelable: true }));
-    assert.equal(controller.snapshot().duck, true);
-    f.get('duck').dispatchEvent(new f.win.PointerEvent('pointercancel', { pointerId: 1 }));
-    assert.equal(controller.snapshot().duck, false);
-    f.tick(300); assert.equal(controller.snapshot().status, 'over');
-    assert.equal(f.win.document.activeElement, f.get('retry'));
-    f.get('retry').click(); assert.equal(controller.snapshot().x, RUNNER.startX);
-    region.dispatchEvent(new f.win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    key('keydown', 'a'); f.tick(10); key('keyup', 'a');
+    assert.equal(f.get('avatar').dataset.facing, 'left');
+    f.win.dispatchEvent(new f.win.Event('resize')); assert.equal(controller.snapshot().status, 'paused');
+    key('keydown', 'Escape');
     assert.equal(region.hidden, true); assert.equal(f.frames.size, 0);
     assert.equal(controller.snapshot().status, 'idle');
     assert.equal(f.chart.inert, false); assert.equal(f.chart.style.transform, '');
     assert.equal(f.viewport.scrollLeft, 45); assert.equal(f.win.document.activeElement, f.get('start'));
     f.chart.querySelector('.tlp-bar').click();
     assert.equal(f.win.document.querySelector('#tlpModal').getAttribute('aria-hidden'), 'false');
+  } finally { await f.win.happyDOM.close(); }
+});
+
+test('a spike hit shows checkpoint retry, stops the loop and allows a full restart', async () => {
+  const f = fixture();
+  try {
+    const controller = initTimelineRunner(f.win.document); controller.start();
+    const region = f.win.document.querySelector('[data-timeline-runner]');
+    region.dispatchEvent(new f.win.KeyboardEvent('keydown', { key: 'd', bubbles: true }));
+    f.tick(250);
+    assert.equal(controller.snapshot().status, 'over'); assert.equal(f.frames.size, 0);
+    assert.equal(f.win.document.activeElement, f.get('retry'));
+    assert.equal(f.get('retry').textContent, 'Back to checkpoint');
+    f.get('retry').click(); assert.equal(controller.snapshot().status, 'running');
+    assert.equal(controller.snapshot().x, RUNNER.startX);
+    f.tick(100); assert.equal(controller.snapshot().x, RUNNER.startX, 'retry clears held keys');
+    f.get('pause').click(); f.get('restart').click();
+    assert.equal(controller.snapshot().score, 0);
+    f.get('exit').click(); assert.equal(controller.snapshot().status, 'idle');
   } finally { await f.win.happyDOM.close(); }
 });
