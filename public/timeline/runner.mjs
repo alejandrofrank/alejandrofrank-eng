@@ -139,7 +139,8 @@ export function initTimelineRunner(doc = document) {
   function start() {
     stopFrame(); clearHeld();
     if (!active) {
-      geometry = readTimelineGeometry(chart); engine = createRunner(geometry.bars);
+      geometry = readTimelineGeometry(chart);
+      engine = createRunner(geometry.bars, { openingWidth: Math.max(chart.clientWidth || 0, viewport.clientWidth || 0) });
       savedScroll = viewport.scrollLeft; viewport.scrollLeft = 0;
     }
     active = true; checkpointLabel = ''; lavaPhase = '';

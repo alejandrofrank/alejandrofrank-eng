@@ -4,22 +4,26 @@ export const RUNNER = Object.freeze({ width: 20, height: 38, duckHeight: 18, gra
 
 // One-way platforms: rising through a bar is safe; descending onto its top lands.
 // Real role geometry remains untouched. Bonus ledges and spikes are separate data.
-export function createRunner(bars) {
+export function createRunner(bars, { openingWidth = 0 } = {}) {
   const real = bars.map(bar => ({ ...bar, real: true }));
   if (!real.length || real.some(b => ![b.x, b.width, b.bottom, b.height].every(Number.isFinite) || b.width <= 0 || b.height <= 0)) throw new Error('Visible experience bars are required.');
   const realEnd = Math.max(...real.map(bar => bar.x + bar.width));
+  if (!Number.isFinite(openingWidth) || openingWidth < 0) throw new Error('Opening width must be a non-negative number.');
+  // Keep the entire career chart clear. The bonus course begins off its right
+  // edge, with enough space to preserve the last company's bar and label.
+  const bonusStart = Math.max(realEnd + 80, openingWidth + 32);
   const lava = createLava();
   let state, platforms, hazards, coins, visited, collected, direction, jumpBuffer, coyote, dropTime, checkpoint, chunk;
   const top = bar => bar.bottom + bar.height;
   const overlaps = (x, width, b) => x + width > b.x + 1 && x < b.x + b.width - 1;
 
   function buildWorld() {
-    const region = Math.floor(state.x / 155);
+    const region = Math.max(0, Math.floor((state.x - bonusStart) / 155));
     if (region === chunk) return;
     chunk = region;
     platforms = real.map(bar => ({ ...bar })); hazards = []; coins = [];
     for (let i = Math.max(0, region - 9); i <= region + 13; i++) {
-      const x = 130 + i * 155, height = [88, 148, 208, 148][i % 4];
+      const x = bonusStart + i * 155, height = [88, 148, 208, 148][i % 4];
       const ledge = { id: `ledge-${i}`, label: 'Bonus ledge', category: 'bonus', x, width: 104, bottom: height - 10, height: 10, real: false };
       platforms.push(ledge);
       coins.push({ id: `gem-${i}`, x: x + 44, y: height + 27 });
@@ -42,7 +46,7 @@ export function createRunner(bars) {
   function snapshot() {
     const realVisited = real.filter(bar => visited.has(bar.id)).length;
     return { ...state, score: realVisited * 100 + (visited.size - realVisited) * 10 + collected.size * 25,
-      realVisited, totalRoles: real.length, gems: collected.size, checkpoint: { ...checkpoint }, lava: lava.snapshot(),
+      realVisited, totalRoles: real.length, gems: collected.size, bonusStart, checkpoint: { ...checkpoint }, lava: lava.snapshot(),
       platforms: platforms.map(bar => ({ ...bar, visited: visited.has(bar.id) })),
       hazards: hazards.map(hazard => ({ ...hazard })), coins: coins.filter(coin => !collected.has(coin.id)).map(coin => ({ ...coin })) };
   }
@@ -100,7 +104,7 @@ export function createRunner(bars) {
         state.status = 'over'; state.hit = { id: 'lava', type: 'lava' }; direction = 0; state.vx = 0;
       }
       for (const coin of coins) if (Math.abs(state.x + RUNNER.width / 2 - coin.x) < 20 && coin.y > state.y - 6 && coin.y < state.y + height + 8) collected.add(coin.id);
-      state.phase = state.x > realEnd + 80 ? 'bonus' : 'experience';
+      state.phase = state.x + RUNNER.width > bonusStart ? 'bonus' : 'experience';
     }
     return snapshot();
   }

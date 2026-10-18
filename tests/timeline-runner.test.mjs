@@ -63,8 +63,8 @@ test('only Arcade exposes the platformer, with no game or animation loop until P
   }
 });
 
-test('desktop and narrow courses preserve every actual role bar and add unlabeled platforms', async () => {
-  for (const width of [1100, 390]) {
+test('opening desktop and narrow courses contain only real company bars; bonus objects start beyond the chart', async () => {
+  for (const width of [1240, 1100, 390]) {
     const f = fixture(width);
     try {
       const geometry = readTimelineGeometry(f.chart);
@@ -82,9 +82,19 @@ test('desktop and narrow courses preserve every actual role bar and add unlabele
         assert.deepEqual(real[index], { ...bar, real: true, visited: false });
         assert.ok(actual[index].textContent.includes(bar.label));
       });
-      assert.ok(f.get('generated').querySelector('.runner-platform'));
-      assert.ok(f.get('generated').querySelector('.runner-spike'));
+      const state = controller.snapshot();
+      assert.ok(state.bonusStart > f.chart.clientWidth);
+      const realEnd = Math.max(...real.map(bar => bar.x + bar.width));
+      assert.ok(state.platforms.filter(bar => !bar.real).every(bar => bar.x > realEnd && bar.x >= state.bonusStart));
+      assert.ok(state.hazards.every(hazard => hazard.x >= state.bonusStart));
+      assert.ok(state.coins.every(coin => coin.x >= state.bonusStart));
+      assert.equal(f.get('generated').children.length, 0, 'no extra platforms, diamonds or spikes in the opening screen');
       assert.equal(f.get('generated').textContent, '', 'extra ledges, gems and threats have no text labels');
+      f.tick(500);
+      assert.equal(controller.snapshot().status, 'over');
+      assert.equal(f.get('generated').children.length, 0, 'waiting on the opening screen never spawns extra objects');
+      f.get('retry').click();
+      assert.equal(f.get('generated').children.length, 0, 'checkpoint retry keeps the opening screen clean');
     } finally { await f.win.happyDOM.close(); }
   }
 });
@@ -100,6 +110,32 @@ test('movement is manual, reversible, stops on release and cannot run past the l
   engine.move(-1); runUntil(engine, s => s.x === 0);
   assert.equal(engine.snapshot().x, 0); assert.equal(engine.snapshot().facing, -1);
   assert.equal(engine.snapshot().status, 'running', 'bar sides are not threats');
+});
+
+test('bonus platforms, diamonds and spikes scroll in after the company chart and restart clears them from view', async () => {
+  for (const width of [1100, 390]) {
+    const f = fixture(width);
+    try {
+      const controller = initTimelineRunner(f.win.document); controller.start();
+      const region = f.win.document.querySelector('[data-timeline-runner]');
+      region.dispatchEvent(new f.win.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      for (let i = 0; i < 500 && controller.snapshot().phase !== 'bonus' && controller.snapshot().status === 'running'; i++) f.tick();
+      assert.equal(controller.snapshot().status, 'running');
+      assert.equal(controller.snapshot().phase, 'bonus');
+      assert.equal(f.get('phase').textContent, 'Bonus platforms');
+      for (const type of ['platform', 'gem', 'spike']) {
+        assert.ok([...f.get('generated').querySelectorAll(`.runner-${type}`)].some(node => {
+          const left = Number.parseFloat(node.style.left);
+          return left < width && left + Number.parseFloat(node.style.width) > 0;
+        }), `${type} becomes visible beyond the original chart`);
+      }
+      assert.equal(f.get('generated').textContent, '', 'bonus bars remain unlabeled');
+      f.get('pause').click(); f.get('restart').click();
+      assert.equal(controller.snapshot().phase, 'experience');
+      assert.equal(f.get('generated').children.length, 0);
+      controller.exit();
+    } finally { await f.win.happyDOM.close(); }
+  }
 });
 
 test('jump through a real bar from below, land on top, then crouch and drop through it', () => {
@@ -149,7 +185,7 @@ test('spikes cause a retry at the last real checkpoint; role progress persists a
 });
 
 test('the upper route supports repeated jumps, gem collection and exploration beyond the chart', () => {
-  const engine = createRunner([role]); engine.start();
+  const engine = createRunner([role]); landOnFirstRole(engine);
   let state = engine.snapshot();
   // Play twenty successive ledges through the public controls, including rises,
   // descents and ledges with spikes. No teleporting or internal state injection.
@@ -237,7 +273,7 @@ test('a spike hit shows checkpoint retry, stops the loop and allows a full resta
     const controller = initTimelineRunner(f.win.document); controller.start();
     const region = f.win.document.querySelector('[data-timeline-runner]');
     region.dispatchEvent(new f.win.KeyboardEvent('keydown', { key: 'd', bubbles: true }));
-    f.tick(250);
+    f.tick(500);
     assert.equal(controller.snapshot().status, 'over'); assert.equal(f.frames.size, 0);
     assert.equal(f.win.document.activeElement, f.get('retry'));
     assert.equal(f.get('retry').textContent, 'Back to checkpoint');
