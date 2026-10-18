@@ -1,4 +1,4 @@
-import { createNotificationFlood } from './notification-flood.mjs';
+import { createLava, lavaSurface, LAVA } from './lava.mjs';
 
 export const RUNNER = Object.freeze({ width: 20, height: 38, duckHeight: 18, gravity: 1200, jump: 520, speed: 220, startX: 12 });
 
@@ -8,7 +8,7 @@ export function createRunner(bars) {
   const real = bars.map(bar => ({ ...bar, real: true }));
   if (!real.length || real.some(b => ![b.x, b.width, b.bottom, b.height].every(Number.isFinite) || b.width <= 0 || b.height <= 0)) throw new Error('Visible experience bars are required.');
   const realEnd = Math.max(...real.map(bar => bar.x + bar.width));
-  const flood = createNotificationFlood();
+  const lava = createLava();
   let state, platforms, hazards, coins, visited, collected, direction, jumpBuffer, coyote, dropTime, checkpoint, chunk;
   const top = bar => bar.bottom + bar.height;
   const overlaps = (x, width, b) => x + width > b.x + 1 && x < b.x + b.width - 1;
@@ -33,7 +33,7 @@ export function createRunner(bars) {
     hazards = hazards.filter(hazard => !real.some(bar => overlaps(hazard.x, hazard.width, bar) && hazard.bottom < top(bar) + RUNNER.height + 8 && hazard.bottom + hazard.height > top(bar) - 2));
   }
   function reset() {
-    flood.reset();
+    lava.reset();
     visited = new Set(); collected = new Set(); direction = 0; jumpBuffer = 0; coyote = .1; dropTime = 0; chunk = null;
     checkpoint = { x: RUNNER.startX, y: 0, platform: null, label: 'Start' };
     state = { status: 'ready', x: RUNNER.startX, y: 0, vx: 0, vy: 0, grounded: true, support: null, duck: false, facing: 1, phase: 'experience', hit: null, landings: 0 };
@@ -42,7 +42,7 @@ export function createRunner(bars) {
   function snapshot() {
     const realVisited = real.filter(bar => visited.has(bar.id)).length;
     return { ...state, score: realVisited * 100 + (visited.size - realVisited) * 10 + collected.size * 25,
-      realVisited, totalRoles: real.length, gems: collected.size, checkpoint: { ...checkpoint }, flood: flood.snapshot(),
+      realVisited, totalRoles: real.length, gems: collected.size, checkpoint: { ...checkpoint }, lava: lava.snapshot(),
       platforms: platforms.map(bar => ({ ...bar, visited: visited.has(bar.id) })),
       hazards: hazards.map(hazard => ({ ...hazard })), coins: coins.filter(coin => !collected.has(coin.id)).map(coin => ({ ...coin })) };
   }
@@ -94,10 +94,10 @@ export function createRunner(bars) {
           state.status = 'over'; state.hit = { ...hazard }; direction = 0; state.vx = 0; break;
         }
       }
-      flood.step(dt);
-      const tide = flood.snapshot();
-      if (state.status === 'running' && tide.phase !== 'muted' && state.y + 3 < tide.height) {
-        state.status = 'over'; state.hit = { id: 'notification-flood', type: 'flood' }; direction = 0; state.vx = 0;
+      lava.step(dt);
+      const flow = lava.snapshot();
+      if (state.status === 'running' && flow.phase === 'flowing' && state.y + 3 < lavaSurface(flow, state.x + 3)) {
+        state.status = 'over'; state.hit = { id: 'lava', type: 'lava' }; direction = 0; state.vx = 0;
       }
       for (const coin of coins) if (Math.abs(state.x + RUNNER.width / 2 - coin.x) < 20 && coin.y > state.y - 6 && coin.y < state.y + height + 8) collected.add(coin.id);
       state.phase = state.x > realEnd + 80 ? 'bonus' : 'experience';
@@ -111,13 +111,12 @@ export function createRunner(bars) {
     move(value) { if (state.status === 'running') direction = Math.sign(value) || 0; },
     jump() { if (state.status === 'running') jumpBuffer = .12; },
     crouch(value) { if (state.status === 'running') state.duck = Boolean(value); },
-    snooze() { return state.status === 'running' && flood.snooze(); },
     pause() { if (state.status === 'running') { state.status = 'paused'; direction = 0; state.vx = 0; state.duck = false; jumpBuffer = 0; } },
     resume() { if (state.status === 'paused') state.status = 'running'; },
     respawn() {
       if (state.status !== 'over') return snapshot();
       Object.assign(state, { status: 'running', x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, grounded: true, support: checkpoint.platform, duck: false, hit: null });
-      flood.reset();
+      lava.reset(checkpoint.x - LAVA.retryGap);
       direction = 0; jumpBuffer = 0; dropTime = 0; coyote = .1; chunk = null; buildWorld(); return snapshot();
     },
   };

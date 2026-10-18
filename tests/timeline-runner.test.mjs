@@ -5,6 +5,7 @@ import { build } from 'esbuild';
 import { Window } from 'happy-dom';
 import { createRunner, RUNNER } from '../public/timeline/runner-engine.mjs';
 import { initTimelineRunner, readTimelineGeometry } from '../public/timeline/runner.mjs';
+import { lavaSurface, LAVA } from '../public/timeline/lava.mjs';
 
 const { outputFiles } = await build({ entryPoints: [fileURLToPath(new URL('../src/timeline/page.ts', import.meta.url))], bundle: true, write: false, platform: 'node', format: 'esm' });
 const { renderTimelinePage } = await import(`data:text/javascript;base64,${Buffer.from(outputFiles[0].contents).toString('base64')}`);
@@ -55,7 +56,7 @@ test('only Arcade exposes the platformer, with no game or animation loop until P
         assert.equal(f.get('invitation').hidden, false);
         assert.ok(f.get('avatar').querySelector('.player-sprite .player-leg.left'));
         assert.equal(f.chart.inert, false);
-        assert.equal(f.win.document.querySelector('[data-timeline-runner]').hidden, true, 'the flood is hidden until Play too');
+        assert.equal(f.win.document.querySelector('[data-timeline-runner]').hidden, true, 'lava is hidden until Play too');
         assert.equal(initTimelineRunner(f.win.document), null, 'mount only once');
       } else assert.equal(controller, null);
     } finally { await f.win.happyDOM.close(); }
@@ -90,7 +91,7 @@ test('desktop and narrow courses preserve every actual role bar and add unlabele
 
 test('movement is manual, reversible, stops on release and cannot run past the left edge', () => {
   const engine = createRunner([role]); engine.start();
-  for (let i = 0; i < 300; i++) engine.step(1 / 60);
+  for (let i = 0; i < 60; i++) engine.step(1 / 60);
   assert.equal(engine.snapshot().x, RUNNER.startX);
   engine.move(1); runUntil(engine, s => s.x > 80); engine.move(0);
   const stopped = runUntil(engine, s => s.vx === 0);
@@ -249,40 +250,57 @@ test('a spike hit shows checkpoint retry, stops the loop and allows a full resta
   } finally { await f.win.happyDOM.close(); }
 });
 
-test('the visible flood tracks its collision line, warns, snoozes by key or button, and resets on retry', async () => {
+test('the lava enters only from the left, follows world geometry, freezes on pause and resets on retry', async () => {
   for (const width of [390, 1100]) {
     const f = fixture(width);
     try {
       const controller = initTimelineRunner(f.win.document); controller.start();
-      const region = f.win.document.querySelector('[data-timeline-runner]');
-      assert.ok(f.get('flood').textContent.includes('quick call?'));
-      assert.ok(f.get('flood').querySelector('svg'), 'the sea carries miniature computer icons');
-      assert.equal(f.get('flood').getAttribute('aria-hidden'), 'true', 'decorative notifications do not spam assistive tech');
-      f.tick(370);
-      assert.equal(controller.snapshot().flood.phase, 'warning');
-      assert.match(f.get('flood-warning').textContent, /Incoming!/);
-      assert.equal(Number.parseFloat(f.get('flood').style.top), Number.parseFloat(f.get('ground').style.top) - controller.snapshot().flood.height);
-      region.dispatchEvent(new f.win.KeyboardEvent('keydown', { key: 'm', bubbles: true }));
-      assert.equal(controller.snapshot().flood.phase, 'muted');
-      assert.equal(f.get('snooze').getAttribute('aria-disabled'), 'true');
-      assert.match(f.get('snooze').textContent, /Snoozed/);
-      f.tick(60); const cooldown = controller.snapshot().flood.cooldown;
-      f.get('snooze').click(); assert.equal(controller.snapshot().flood.cooldown, cooldown, 'repeat clicks cannot reset the cooldown');
-      controller.pause(); const paused = controller.snapshot(), drift = f.get('flood').style.getPropertyValue('--flood-drift');
+      const region = f.win.document.querySelector('[data-timeline-runner]'), lava = f.get('lava');
+      assert.equal(lava.textContent, ''); assert.equal(f.get('snooze'), null);
+      assert.doesNotMatch(region.textContent, /notification|quick call|snooze|do not disturb/i);
+      assert.equal(lava.getAttribute('aria-hidden'), 'true');
+      assert.equal(Number.parseFloat(lava.style.width), 8, 'a small flow, not a full-width sea');
+      assert.ok(Number.parseFloat(lava.style.height) < 12);
+      f.tick(250);
+      assert.equal(controller.snapshot().lava.phase, 'warning');
+      assert.match(f.get('lava-warning').textContent, /from the left/);
+      assert.equal(Number.parseFloat(lava.style.top), Number.parseFloat(f.get('ground').style.top) - lavaSurface(controller.snapshot().lava, 0));
+      controller.pause(); const paused = controller.snapshot(), drift = lava.style.getPropertyValue('--lava-flow');
       f.tick(500);
       assert.deepEqual(controller.snapshot(), paused);
-      assert.equal(f.get('flood').style.getPropertyValue('--flood-drift'), drift);
-      controller.resume(); f.tick(700);
-      assert.equal(controller.snapshot().hit.type, 'flood');
-      assert.equal(f.get('title').textContent, 'This could have been an email.');
+      assert.equal(lava.style.getPropertyValue('--lava-flow'), drift);
+      controller.resume(); f.tick(250);
+      assert.equal(controller.snapshot().hit.type, 'lava');
+      assert.equal(f.get('title').textContent, 'The lava caught up.');
       assert.equal(f.win.document.activeElement, f.get('retry'));
       f.get('retry').click();
-      assert.equal(controller.snapshot().flood.phase, 'quiet');
-      assert.equal(f.get('snooze').getAttribute('aria-disabled'), 'false');
-      f.get('snooze').click(); assert.equal(controller.snapshot().flood.phase, 'muted');
+      assert.equal(controller.snapshot().lava.phase, 'ready');
+      assert.equal(controller.snapshot().x - controller.snapshot().lava.front, LAVA.retryGap);
+      assert.equal(lava.hidden, true, 'retry moves lava behind the checkpoint, off screen');
       f.get('exit').click();
       assert.equal(region.hidden, true); assert.equal(controller.snapshot().status, 'idle');
       assert.equal(f.frames.size, 0);
     } finally { await f.win.happyDOM.close(); }
   }
+});
+
+test('scrolling ahead leaves the lava behind; returning shows the same world position', async () => {
+  const f = fixture(390);
+  try {
+    const controller = initTimelineRunner(f.win.document); controller.start();
+    const region = f.win.document.querySelector('[data-timeline-runner]');
+    const key = (type, value) => region.dispatchEvent(new f.win.KeyboardEvent(type, { key: value, bubbles: true }));
+    const initial = controller.snapshot().lava;
+    key('keydown', 'd'); key('keydown', ' '); f.tick(60); key('keyup', 'd');
+    assert.equal(controller.snapshot().status, 'running');
+    assert.ok(controller.snapshot().x > 390 * .38, 'camera follows the player');
+    assert.equal(controller.snapshot().lava.front, initial.front);
+    assert.equal(f.get('lava').hidden, true, 'lava is not attached to the screen edge');
+    key('keydown', 'a'); f.tick(60); key('keyup', 'a');
+    assert.ok(controller.snapshot().x < 390 * .38);
+    assert.equal(f.get('lava').hidden, false);
+    assert.equal(Number.parseFloat(f.get('lava').style.width), initial.front);
+    assert.ok(Number.parseFloat(f.get('lava').style.width) < 390);
+    controller.exit();
+  } finally { await f.win.happyDOM.close(); }
 });

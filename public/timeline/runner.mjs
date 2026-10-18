@@ -1,4 +1,5 @@
 import { createRunner } from './runner-engine.mjs';
+import { lavaSurface, LAVA } from './lava.mjs';
 
 export function readTimelineGeometry(chart) {
   const baseline = Number.parseFloat(chart.querySelector('.tlp-line')?.style.top);
@@ -21,9 +22,9 @@ export function initTimelineRunner(doc = document) {
   const region = stage.querySelector('[data-timeline-runner]');
   const launch = find('start'), invitation = find('invitation'), avatar = find('avatar');
   const message = find('message'), retry = find('retry'), pauseButton = find('pause'), duckButton = find('duck');
-  const floodElement = find('flood'), floodStatus = find('flood-status'), snoozeButton = find('snooze');
+  const lavaElement = find('lava'), lavaStatus = find('lava-status');
   const generated = find('generated'), nodes = new Map(), held = new Set();
-  let engine = null, geometry, frameId = null, lastTime = null, active = false, savedScroll = 0, checkpointLabel = '', floodPhase = '', best = 0;
+  let engine = null, geometry, frameId = null, lastTime = null, active = false, savedScroll = 0, checkpointLabel = '', lavaPhase = '', best = 0;
   try { best = Math.max(0, Number(win.localStorage.getItem('experience-platformer-best')) || 0); } catch { /* optional */ }
   if (!Number.isFinite(best)) best = 0;
   const digits = value => String(value).padStart(5, '0');
@@ -57,43 +58,37 @@ export function initTimelineRunner(doc = document) {
     find('left').setAttribute('aria-pressed', String(left)); find('right').setAttribute('aria-pressed', String(right));
     duckButton.setAttribute('aria-pressed', String(duck));
   }
-  function drawFlood(flood, baseline, running) {
-    const seconds = Math.ceil(flood.remaining);
-    floodElement.style.top = `${baseline - flood.height}px`;
-    floodElement.style.setProperty('--flood-drift', `${(flood.elapsed * 9) % 780}px`);
-    floodElement.style.setProperty('--flood-bob', `${Math.sin(flood.elapsed * 1.6) * 3}px`);
-    floodElement.dataset.phase = flood.phase; floodStatus.dataset.phase = flood.phase;
-    find('unread').textContent = flood.unread > 99 ? '99+' : String(flood.unread);
-    const warnings = {
-      quiet: `Pings in ${seconds}s`, warning: `Incoming! ${seconds}s`,
-      rising: `Wave ${flood.wave} · Climb!`, high: 'Stay above the inbox',
-      falling: 'Pings receding…', muted: `Peace and quiet · ${seconds}s`,
-    };
-    find('flood-warning').textContent = warnings[flood.phase];
-    const available = running && flood.cooldown === 0;
-    snoozeButton.setAttribute('aria-disabled', String(!available));
-    snoozeButton.textContent = flood.phase === 'muted' ? `Snoozed ${seconds}s` : flood.cooldown > 0 ? `Recharge ${Math.ceil(flood.cooldown)}s` : 'Do not disturb · M';
-    snoozeButton.setAttribute('aria-label', available ? 'Do not disturb: drain notifications for five seconds. Shortcut M.' : flood.cooldown > 0 ? `Do not disturb recharges in ${Math.ceil(flood.cooldown)} seconds.` : 'Do not disturb is available while playing.');
-    const phase = `${flood.wave}-${flood.phase}`;
-    if (phase !== floodPhase) {
-      floodPhase = phase;
-      if (flood.phase === 'warning') announce('Notification flood incoming. Climb, or press M for Do not disturb.');
-      if (flood.phase === 'rising') announce(`Wave ${flood.wave}. The notification sea is rising. Head to higher platforms.`);
-      if (flood.phase === 'falling') announce('The notification sea is receding. Lower routes are opening.');
+  function drawLava(lava, camera, width, baseline, playerX) {
+    // Clip only what is on screen. The front stays anchored in the world as
+    // the camera follows the player, and no full-width sea is drawn ahead of it.
+    const visibleWidth = Math.max(0, Math.min(width + LAVA.edge, lava.front - camera));
+    const height = lavaSurface(lava, camera);
+    const shoulder = Math.max(0, visibleWidth - LAVA.edge);
+    lavaElement.hidden = visibleWidth === 0;
+    Object.assign(lavaElement.style, { left: '0px', width: `${visibleWidth}px`, height: `${height}px`, top: `${baseline - height}px`,
+      clipPath: `polygon(0 0, ${shoulder}px 0, 100% 100%, 0 100%)` });
+    lavaElement.style.setProperty('--lava-flow', `${(lava.elapsed * 12) % 64}px`);
+    const close = lava.front > playerX - 90;
+    lavaStatus.dataset.danger = String(lava.phase === 'flowing' && close);
+    find('lava-warning').textContent = lava.remaining > 0 ? `Lava from the left in ${Math.ceil(lava.remaining)}s` : close ? 'Lava close! Keep moving →' : 'Lava behind you · keep moving →';
+    if (lava.phase !== lavaPhase) {
+      lavaPhase = lava.phase;
+      if (lava.phase === 'warning') announce('Lava will start flowing from the left in three seconds. Move right and jump onto the bars.');
+      if (lava.phase === 'flowing') announce('Lava is flowing from the left. It gradually grows and speeds up.');
     }
   }
   function draw() {
     const state = engine.snapshot(), width = viewport.clientWidth || 1100;
     // Follow exploration in both directions; high jumps get vertical headroom.
     const camera = Math.max(0, state.x - width * .38);
-    const restingBaseline = Math.min(geometry.baseline, (viewport.clientHeight || geometry.baseline + 44) - 132);
+    const restingBaseline = Math.min(geometry.baseline, (viewport.clientHeight || geometry.baseline + 44) - 116);
     const baseline = restingBaseline + Math.max(0, state.y - Math.max(90, restingBaseline - 175));
     chart.style.transform = `translate3d(${-camera}px,${baseline - geometry.baseline}px,0)`;
     avatar.style.left = `${state.x - camera - 6}px`; avatar.style.top = `${baseline - 44 - state.y}px`;
     avatar.dataset.duck = String(state.duck && state.grounded); avatar.dataset.facing = state.facing < 0 ? 'left' : 'right';
     avatar.dataset.running = String(state.status === 'running' && state.grounded && Math.abs(state.vx) > 15);
     find('ground').style.top = `${baseline}px`;
-    drawFlood(state.flood, baseline, state.status === 'running');
+    drawLava(state.lava, camera, width, baseline, state.x);
     find('score').textContent = digits(state.score);
     find('progress').textContent = `${state.realVisited} / ${state.totalRoles} roles reached · ${state.gems} diamonds`;
     find('phase').textContent = state.phase === 'bonus' ? 'Bonus platforms' : 'Explore the experience';
@@ -123,11 +118,11 @@ export function initTimelineRunner(doc = document) {
   }
   function finish() {
     stopFrame(); clearHeld(); saveBest();
-    const state = engine.snapshot(), flooded = state.hit?.type === 'flood';
-    message.hidden = false; find('title').textContent = flooded ? 'This could have been an email.' : 'Watch the spikes';
-    find('result').textContent = `${flooded ? 'The quick call was not quick. ' : ''}Return to ${state.checkpoint.label} with a fresh warning period. Your diamonds and visited roles are saved.`;
+    const state = engine.snapshot(), burned = state.hit?.type === 'lava';
+    message.hidden = false; find('title').textContent = burned ? 'The lava caught up.' : 'Watch the spikes';
+    find('result').textContent = `Return to ${state.checkpoint.label}. The lava moves back and you get a fresh head start. Your diamonds and visited roles are saved.`;
     retry.textContent = 'Back to checkpoint'; retry.focus(); pauseButton.disabled = true;
-    announce(`${flooded ? 'Caught by the notification flood.' : 'Spikes!'} Return to the ${state.checkpoint.label} checkpoint.`);
+    announce(`${burned ? 'Caught by the lava.' : 'Spikes!'} Return to the ${state.checkpoint.label} checkpoint.`);
   }
   function frame(now) {
     frameId = null;
@@ -147,16 +142,16 @@ export function initTimelineRunner(doc = document) {
       geometry = readTimelineGeometry(chart); engine = createRunner(geometry.bars);
       savedScroll = viewport.scrollLeft; viewport.scrollLeft = 0;
     }
-    active = true; checkpointLabel = ''; floodPhase = '';
+    active = true; checkpointLabel = ''; lavaPhase = '';
     chart.dataset.runnerActive = 'true'; chart.inert = true; chart.setAttribute('aria-hidden', 'true');
     stage.classList.add('is-running'); invitation.hidden = true; region.hidden = false;
     engine.start(); beginFrames();
-    announce('Move left or right. Space or up jumps onto bars. The notification sea rises after eight seconds. M snoozes it for five seconds. Avoid red spikes. Escape exits.');
+    announce('Move left or right. Space or up jumps onto bars. A small lava flow starts from the left after six seconds and gradually gets bigger. Avoid red spikes. Escape exits.');
   }
   function pause(takeFocus = true) {
     if (!active || engine.snapshot().status !== 'running') return;
     clearHeld(); engine.pause(); stopFrame(); draw(); message.hidden = false;
-    find('title').textContent = 'Paused'; find('result').textContent = 'Even the notifications can wait. Your place and the tide are frozen.';
+    find('title').textContent = 'Paused'; find('result').textContent = 'Your place is saved. The lava stops while you pause.';
     retry.textContent = 'Resume'; pauseButton.textContent = 'Resume'; announce('Game paused.');
     if (takeFocus) retry.focus();
   }
@@ -173,20 +168,14 @@ export function initTimelineRunner(doc = document) {
     viewport.scrollLeft = savedScroll; positionIdle(); launch.focus({ preventScroll: true });
   }
   function jump() { if (active) engine.jump(); }
-  function snooze() {
-    if (active && engine.snooze()) {
-      draw(); announce('Do not disturb enabled for five seconds. Notifications are draining.');
-    }
-  }
   launch.addEventListener('click', start); find('exit').addEventListener('click', exit);
   find('restart').addEventListener('click', start);
   retry.addEventListener('click', () => {
     if (engine.snapshot().status === 'paused') resume();
-    else { clearHeld(); engine.respawn(); floodPhase = ''; beginFrames(); }
+    else { clearHeld(); engine.respawn(); lavaPhase = ''; beginFrames(); }
   });
   pauseButton.addEventListener('click', () => engine.snapshot().status === 'paused' ? resume() : pause());
   find('jump').addEventListener('click', jump);
-  snoozeButton.addEventListener('click', snooze);
   for (const name of ['left', 'right', 'duck']) {
     const button = find(name);
     button.addEventListener('pointerdown', event => {
@@ -209,7 +198,6 @@ export function initTimelineRunner(doc = document) {
     if ([' ', 'ArrowUp', 'w', 'W'].includes(event.key)) { event.preventDefault(); if (!event.repeat) jump(); }
     if (movementKeys.includes(event.key)) { event.preventDefault(); held.add(event.key); updateHeld(); }
     if (['p', 'P'].includes(event.key) && !event.repeat) { event.preventDefault(); engine.snapshot().status === 'paused' ? resume() : pause(); }
-    if (['m', 'M'].includes(event.key) && !event.repeat) { event.preventDefault(); snooze(); }
   });
   doc.addEventListener('keyup', event => { if (movementKeys.includes(event.key)) { held.delete(event.key); updateHeld(); } });
   doc.addEventListener('visibilitychange', () => { if (doc.hidden) pause(false); });
