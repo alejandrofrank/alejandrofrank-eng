@@ -17,6 +17,8 @@ All interfaces, artwork, fixtures and game code are original. The references bel
 
 The six games contain 28 authored stages in total: Basket 4, Factory 5, Customs 8, Query 3, Pixel Shuffle 5 and Garments 3. Each has explicit instructions, results, inspection evidence and replay/reset. Stages are intentionally compact; they connect a small playable problem to the project behind it.
 
+The Arcade appearance also adds an optional **Experience runner** to `/timeline`. Its blinking Play button starts a side-scrolling jump/crouch game using the same original SVG player as the project floor. The opening course reads the actual chart buttons: company, category, x position, width, height and lane are preserved, and the chart itself scrolls. Long low bars can be crouched under; jumping into a higher bar is a collision. After the real roles, a labeled endless section generates low blocks, low ceilings and high beams with increasing speed and recovery gaps. These generated bars make no claim about career history. The timeline remains static and clickable until Play; Exit or Escape restores it and its scroll position. Keyboard and touch controls, pause/resume, retry, tab/visibility/resize pausing and a local best score are included. Reduced motion disables decorative blinking and walking animation; gameplay starts only on request.
+
 ## What actually runs
 
 **Catalog Customs** calls the pinned public repository's `compareNames` function for every verdict. The expected answers are computed from its output. Its 35 fictional declarations cover six product kinds. Seeded replay shuffles positions; one lineup deliberately has no verified match. Every submitted inspection exposes an audit of every candidate, including conflicts and uncertainty. Unknown qualifiers remain uncertain. This is neither a trained model nor Bakiano's private production matcher.
@@ -43,7 +45,7 @@ Appearance is a site-wide browser preference saved in the first-party `portfolio
 
 Run `npm test` and `npm run typecheck`. Tests cover exhaustive basket feasibility, picture-puzzle and reshuffle solvability, renderer outputs, spatial routing, duplicate and failure behavior, dated price rejection, unknown matcher attributes, finite attempts, replay state and pinned source integrity. DOM interaction tests use the shipped markup and event listeners to play every stage, check failure paths, reset and keyboard focus. Dialog tests check opening, closing, focus restoration and progress preservation. Canvas calls are captured in those tests; separate renderer tests verify real pixel buffers. DOM tests do not measure layout or replace visual browser checks.
 
-Browser checks should exercise wrong and correct moves, advancing/resetting, keyboard focus, station switching, narrow layouts and the two free inspectors. No account, paid API, cloud query, persistence or analytics is introduced. Without JavaScript, project descriptions, limitations and reading links remain available.
+Browser checks should exercise wrong and correct moves, advancing/resetting, keyboard focus, station switching, narrow layouts and the two free inspectors. No account, paid API, cloud query or analytics is introduced. The appearance preference and runner best score stay in the visitor's browser. Without JavaScript, project descriptions, limitations and reading links remain available.
 
 ### Short walkthroughs
 

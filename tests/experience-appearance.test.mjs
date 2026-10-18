@@ -137,7 +137,7 @@ for (const view of ['tech', 'arcade']) {
     const timeline = await browser.open('/timeline');
     const list = await browser.open('/resume');
     for (const win of [timeline, list]) {
-      for (const script of win.document.querySelectorAll('script:not([src])')) win.eval(script.textContent);
+      for (const script of win.document.querySelectorAll('script:not([src]):not([type=module])')) win.eval(script.textContent);
       const expectedText = view === 'tech' ? '#e6edf3' : '#f1edde';
       assert.equal(win.getComputedStyle(win.document.body).getPropertyValue('--fg'), expectedText);
       assert.equal(win.getComputedStyle(win.document.querySelector('.on-cream')).getPropertyValue('--fg'), expectedText);

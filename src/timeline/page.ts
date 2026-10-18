@@ -14,6 +14,7 @@ import { SCENES } from "../resume/data/scenes.generated";
 import { SCENE_STYLES, SCENE_ENGINE_SCRIPT, playButton } from "../scene-engine";
 import { renderFullText, FULLTEXT_STYLES, FULLTEXT_SCRIPT } from "../resume/fulltext";
 import { PRINT_STYLES, PRINT_SCRIPT } from "../print";
+import { timelineRunner, runnerStyles } from "./runner";
 
 const TIMELINE_STYLES = `
   .tlp-wrap { max-width: 1240px; }
@@ -121,6 +122,7 @@ const TIMELINE_SCRIPT = `<script>
   items.sort(function (a, b) { return a.mid - b.mid; });
 
   function build() {
+    if (tlp.dataset.runnerActive === 'true') return;
     while (tlp.firstChild) tlp.removeChild(tlp.firstChild);
     var W = tlp.clientWidth || 900, H = tlp.clientHeight || 540;
     var padX = 48;
@@ -181,6 +183,8 @@ const TIMELINE_SCRIPT = `<script>
       bar.type = 'button';
       bar.setAttribute('aria-label', it.title + ', ' + yrLabel(scenes[it.i].period));
       bar.className = 'tlp-bar ' + catOf(scenes[it.i]);
+      bar.dataset.role = scenes[it.i].id;
+      bar.dataset.title = it.title;
       bar.style.left = sx + 'px'; bar.style.width = barW + 'px'; bar.style.top = barTop + 'px'; bar.style.height = barH + 'px';
       var name = document.createElement('span');
       name.className = 'tlp-bar-name';
@@ -217,6 +221,7 @@ const TIMELINE_SCRIPT = `<script>
   if (window.FullText) window.FullText.wire(fullEl, function () { if (controller) controller.pause(); });
 
   build();
+  tlp.addEventListener('runner-exit', build);
   var rt;
   window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(build, 150); });
 })();
@@ -236,7 +241,7 @@ ${FAVICON}
 ${FONTS_LINK}
 <title>${SITE.name} · timeline</title>
 <meta name="description" content="A career timeline you can walk through, role by role." />
-<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${TIMELINE_STYLES}${appearance.styles}${PRINT_STYLES}</style>
+<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${TIMELINE_STYLES}${appearance.styles}${view === 'arcade' ? runnerStyles : ''}${PRINT_STYLES}</style>
 </head>
 <body class="${appearance.bodyClass}" data-view="${view}">
   ${appearance.background}
@@ -254,9 +259,11 @@ ${FONTS_LINK}
         <span class="lg project"><i></i> Project</span>
       </div>
     </div>
+    ${view === 'arcade' ? '<div class="timeline-stage" data-timeline-stage>' : ''}
     <div class="tlp-scroll">
       <div class="tlp" id="tlp"></div>
     </div>
+    ${view === 'arcade' ? timelineRunner() + '</div>' : ''}
     <div class="tlp-foot">
       <span class="tlp-hint-desktop">click a company</span>
       <span class="tlp-hint-mobile">swipe ↔ · tap a company</span>
@@ -292,6 +299,7 @@ ${FONTS_LINK}
   ${FULLTEXT_SCRIPT}
   ${PRINT_SCRIPT}
   ${TIMELINE_SCRIPT}
+  ${view === 'arcade' ? '<script type="module">import { initTimelineRunner } from "/timeline/runner.mjs"; initTimelineRunner();</script>' : ''}
   <script type="module" src="/appearance.mjs"></script>
 </body>
 </html>`;
