@@ -1,5 +1,6 @@
 import { PROJECTS, projectPath } from '../projects/catalog';
 import { readingShell } from '../projects/page';
+import type { PortfolioView } from '../appearance';
 import { esc } from '../panels/helpers';
 import { cabinetArt, PLAYER, STATION_ART } from './art';
 import { playStyles } from './styles';
@@ -18,7 +19,7 @@ const GAMES: Record<string, { name: string; task: string; lesson: string; eviden
   vesti: { name: 'Complete the rack', task: 'Choose a third garment so each attribute is either all the same or all different across the rack.', lesson: 'Separate attributes let you reason about an item instead of its whole scene.', evidence: 'Synthetic attribute puzzle', render: renderGarmentGame },
 };
 
-export function renderPlayPage(origin: string): string {
+export function renderPlayPage(origin: string, view: PortfolioView = 'arcade'): string {
   return readingShell('Project arcade', 'Six compact games about the engineering behind the projects: solve a problem, inspect the result and follow the code.', '/play', origin, `
 <header class="arcade-intro"><div><p class="eyebrow">Play the problem. Inspect the result.</p><h1>Project arcade</h1></div><p>Six small games.<br>Each built around a real engineering decision.</p></header>
 <section class="arcade-room" aria-label="Project demo floor" id="arcade-room" hidden>
@@ -38,7 +39,7 @@ export function renderPlayPage(origin: string): string {
       <div class="game-content">${experiment.render()}${p.slug === 'catalog-match-lab' ? `<details class="game-inspector"><summary>Free inspection: try your own product names</summary>${matchMarkup()}</details>` : p.slug === 'ascii-art' ? `<details class="game-inspector" id="image-inspector"><summary>Free inspection: compare rendering methods</summary>${imageMarkup()}</details>` : ''}</div></div>
     </section>`;
   }).join('')}</div>
-<div class="arcade-colophon"><span>PLAY → INSPECT → READ THE CODE</span><span><a href="/tech#projects">Read all projects →</a></span></div>`, playStyles + miniStyles + basketStyles + ingestionStyles + queryStyles + identityStyles, `import { initArcade } from '/play/arcade.mjs'; initArcade();`);
+<div class="arcade-colophon"><span>PLAY → INSPECT → READ THE CODE</span><span><a href="/tech#projects">Read all projects →</a></span></div>`, playStyles + miniStyles + basketStyles + ingestionStyles + queryStyles + identityStyles, `import { initArcade } from '/play/arcade.mjs'; initArcade();`, view);
 }
 
 function matchMarkup(): string {

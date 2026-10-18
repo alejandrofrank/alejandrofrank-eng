@@ -1,9 +1,9 @@
-import { appearanceStyles, appearanceSwitch, experiencePath, portfolioHome, type ExperiencePath, type PortfolioView } from './appearance';
+import { appearanceStyles, appearanceSwitch, portfolioHome, type ExperiencePath, type PortfolioView } from './appearance';
 import { gradientMarkup } from './gradient';
 import { personalStyles } from './personal-styles';
 
 // Server-render the selected view so direct links, refresh and no-JS navigation
-// use the same appearance without a flash or a preference overriding the URL.
+// use the saved appearance before the first paint.
 export function experienceAppearance(view: PortfolioView) {
   return {
     bodyClass: `${view === 'original' ? 'personal' : 'experience-themed'} experience-page`,
@@ -15,7 +15,7 @@ export function experienceAppearance(view: PortfolioView) {
 
 export function experienceNavigation(view: PortfolioView, path: ExperiencePath): string {
   const alternate = path === '/timeline' ? '/resume' : '/timeline';
-  return `<header class="experience-toolbar"><nav class="subnav" aria-label="Experience navigation"><a href="${portfolioHome(view)}">Home</a><a href="${experiencePath(alternate, view)}">${alternate === '/resume' ? 'List view' : 'Timeline view'}</a></nav><div class="view-controls">${appearanceSwitch(view, '', path)}</div></header>`;
+  return `<header class="experience-toolbar"><nav class="subnav" aria-label="Experience navigation"><a href="${portfolioHome(view)}">Home</a><a href="${alternate}">${alternate === '/resume' ? 'List view' : 'Timeline view'}</a></nav><div class="view-controls">${appearanceSwitch(view, '', path)}</div></header>`;
 }
 
 const toolbarStyles = `

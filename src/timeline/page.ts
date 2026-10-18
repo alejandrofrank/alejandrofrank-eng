@@ -1,5 +1,5 @@
 import { experienceAppearance, experienceNavigation } from "../experience-appearance";
-import { experiencePath, type PortfolioView } from "../appearance";
+import type { PortfolioView } from "../appearance";
 // ----------------------------------------------------------------------------
 // /timeline — the career timeline as the centerpiece. A big horizontal
 // blueprint axis (years across, companies placed by date). Click a company and
@@ -260,7 +260,7 @@ ${FONTS_LINK}
     <div class="tlp-foot">
       <span class="tlp-hint-desktop">click a company</span>
       <span class="tlp-hint-mobile">swipe ↔ · tap a company</span>
-      <a href="${experiencePath('/resume', view)}">List view</a>
+      <a href="/resume">List view</a>
     </div>
   </div>
 
@@ -292,6 +292,7 @@ ${FONTS_LINK}
   ${FULLTEXT_SCRIPT}
   ${PRINT_SCRIPT}
   ${TIMELINE_SCRIPT}
+  <script type="module" src="/appearance.mjs"></script>
 </body>
 </html>`;
 }

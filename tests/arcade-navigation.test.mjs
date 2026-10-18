@@ -113,7 +113,7 @@ test('leaving a different cabinet keeps that selection instead of returning to t
   el('.screen-exit').click();
   await settle();
   assertFloor('bakiano');
-  assert.equal(el('.view-choice[data-view="tech"]').getAttribute('href'), '/tech#bakiano');
+  assert.equal(el('.view-choice[data-view="tech"]').getAttribute('href'), '/tech?view=tech#bakiano');
   clickCabinet('vesti');
   assertOpen('vesti', 'Complete the rack');
   cancelDialog();

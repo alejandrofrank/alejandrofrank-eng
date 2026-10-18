@@ -1,16 +1,13 @@
 export type PortfolioView = 'original' | 'tech' | 'arcade';
 export type ExperiencePath = '/timeline' | '/resume';
+export const APPEARANCE_COOKIE = 'portfolio_view';
 
-export function parsePortfolioView(value?: string): PortfolioView {
-  return value === 'tech' || value === 'arcade' ? value : 'original';
+export function isPortfolioView(value?: string): value is PortfolioView {
+  return value === 'original' || value === 'tech' || value === 'arcade';
 }
 
 export function portfolioHome(view: PortfolioView): string {
   return { original: '/', tech: '/tech', arcade: '/play' }[view];
-}
-
-export function experiencePath(path: ExperiencePath, view: PortfolioView): string {
-  return view === 'original' ? path : `${path}?view=${view}`;
 }
 
 const views: { id: PortfolioView; label: string; description: string; icon: string }[] = [
@@ -19,11 +16,11 @@ const views: { id: PortfolioView; label: string; description: string; icon: stri
   { id: 'arcade', label: 'Arcade', description: 'Explore interactive engineering examples', icon: '<path d="M6 6h8c2 0 3 2 3.5 4l1 5c.3 2-1.5 3-3 1l-2-2h-7l-2 2c-1.5 2-3.3 1-3-1l1-5C3 8 4 6 6 6Z"/><path d="M6 8v4m-2-2h4m5 0h.01m2 2h.01"/>' },
 ];
 
-/** Explicit navigation, not a saved preference: / remains the green homepage. */
-export function appearanceSwitch(active: PortfolioView, projectSlug = '', experience?: ExperiencePath): string {
+/** Only these explicit choices change the saved appearance. Ordinary links don't. */
+export function appearanceSwitch(active: PortfolioView, projectSlug = '', currentPage?: string): string {
   const hash = projectSlug ? '#' + encodeURIComponent(projectSlug) : '';
   const destinations = Object.fromEntries(views.map(({ id }) => [id,
-    experience ? experiencePath(experience, id) : portfolioHome(id) + hash,
+    `${currentPage || portfolioHome(id)}?view=${id}${currentPage ? '' : hash}`,
   ]));
   return `<nav class="view-switcher" aria-label="Portfolio view"><span class="view-switcher-label" aria-hidden="true">View</span><div class="view-choices">${views.map(view => `<a class="view-choice" data-view="${view.id}" href="${destinations[view.id]}" title="${view.description}"${active === view.id ? ' aria-current="page"' : ''}><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${view.icon}</svg><span>${view.label}</span></a>`).join('')}</div></nav>`;
 }

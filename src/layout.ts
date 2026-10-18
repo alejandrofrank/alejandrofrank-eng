@@ -116,7 +116,7 @@ ${FONTS_LINK}
 <meta name="twitter:image" content="${origin}/og-forest.png" />
 <style>${styles}${personalStyles}${appearanceStyles}</style>
 </head>
-<body class="personal">
+<body class="personal" data-view="original">
   ${gradientMarkup}
   <div class="wrap">
     <div class="original-appearance">${appearanceSwitch('original')}</div>

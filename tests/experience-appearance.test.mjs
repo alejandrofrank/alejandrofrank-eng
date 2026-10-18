@@ -1,137 +1,176 @@
-import test from 'node:test';
+import test, { afterEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { Window } from 'happy-dom';
 
-// Bundle the real route handlers with the same bundler used by Wrangler.
+// Actual routes and templates, with only unrelated external service calls stubbed.
+mock.method(globalThis, 'fetch', async () => new Response('', { status: 503 }));
 const { outputFiles } = await build({
-  stdin: {
-    contents: `export { default as app } from './src/index';
-      export { renderProjectIndex, renderProjectPage } from './src/projects/page';
-      export { PROJECTS } from './src/projects/catalog';`,
-    resolveDir: fileURLToPath(new URL('..', import.meta.url)),
-    loader: 'ts',
-  },
+  entryPoints: [fileURLToPath(new URL('../src/index.ts', import.meta.url))],
   bundle: true, write: false, platform: 'node', format: 'esm',
 });
-const { app, renderProjectIndex, renderProjectPage, PROJECTS } = await import(
-  `data:text/javascript;base64,${Buffer.from(outputFiles[0].contents).toString('base64')}`
-);
+const { default: app } = await import(`data:text/javascript;base64,${Buffer.from(outputFiles[0].contents).toString('base64')}`);
 
-function documentFor(html, path = '/') {
-  const win = new Window({
-    url: `https://portfolio.test${path}`,
-    settings: { disableCSSFileLoading: true, disableJavaScriptFileLoading: true },
-  });
-  // Inert parsing lets navigation checks run without JavaScript or network access.
-  win.document.documentElement.innerHTML = html;
-  return win;
+const windows = [];
+afterEach(async () => { await Promise.all(windows.splice(0).map(win => win.happyDOM.close())); });
+
+function visitor(initialCookie = '') {
+  let cookie = initialCookie;
+  return {
+    get cookie() { return cookie; },
+    async request(path) {
+      const response = await app.request(`https://portfolio.test${path}`, { headers: { Cookie: cookie } }, { GITHUB_USER: 'example' });
+      const setCookie = response.headers.get('set-cookie');
+      if (setCookie) cookie = setCookie.split(';')[0];
+      return response;
+    },
+    async open(path) {
+      let response;
+      for (let redirects = 0; redirects < 5; redirects++) {
+        response = await this.request(path);
+        if (response.status !== 302) break;
+        path = response.headers.get('location');
+      }
+      assert.equal(response.status, 200, 'navigation must finish without a redirect loop');
+      assert.equal(response.headers.get('cache-control'), 'private, no-store');
+      assert.equal(response.headers.get('vary'), 'Cookie');
+      const win = new Window({ url: `https://portfolio.test${path}`, settings: { disableCSSFileLoading: true, disableJavaScriptFileLoading: true } });
+      win.document.documentElement.innerHTML = await response.text();
+      win.document.cookie = cookie + '; Path=/';
+      windows.push(win);
+      return win;
+    },
+  };
 }
 
-async function page(path) {
-  const response = await app.request(path);
-  assert.equal(response.status, 200);
-  return documentFor(await response.text(), path);
+function assertAppearance(win, view) {
+  assert.equal(win.document.body.dataset.view, view);
+  assert.equal(win.document.querySelector('.view-choice[aria-current=page]').dataset.view, view);
+  assert.equal(Boolean(win.document.querySelector('.color-world')), view === 'original');
+  assert.equal(win.getComputedStyle(win.document.body).getPropertyValue('--fg'), {
+    original: '#f1ecdf', tech: '#e6edf3', arcade: '#f1edde',
+  }[view], 'the visible palette must match the selected picker, not just the page metadata');
 }
-
-const target = (path, view) => view === 'original' ? path : `${path}?view=${view}`;
-const home = { original: '/', tech: '/tech', arcade: '/play' };
 
 for (const view of ['original', 'tech', 'arcade']) {
-  test(`${view}: timeline, list, refresh and Home preserve the selected appearance`, async () => {
-    const windows = [];
-    try {
-      let path = target('/timeline', view);
-      for (const expectedPath of ['/timeline', '/resume', '/timeline']) {
-        const win = await page(path); windows.push(win);
-        const doc = win.document;
-        assert.equal(doc.body.dataset.view, view);
-        assert.equal(doc.body.classList.contains('personal'), view === 'original');
-        assert.equal(Boolean(doc.querySelector('.color-world')), view === 'original');
-        assert.equal(doc.querySelector('.view-choice[aria-current=page]').dataset.view, view);
-        assert.equal(doc.querySelector('.subnav a').getAttribute('href'), home[view]);
-        for (const choice of doc.querySelectorAll('.view-choice')) {
-          assert.equal(choice.getAttribute('href'), target(expectedPath, choice.dataset.view));
-        }
-        path = doc.querySelector('.subnav a:last-child').getAttribute('href');
-        const otherPage = expectedPath === '/timeline' ? '/resume' : '/timeline';
-        for (const link of doc.querySelectorAll(`a[href^="${otherPage}"]`)) {
-          assert.equal(link.getAttribute('href'), target(otherPage, view));
-        }
-        const refreshed = await page(win.location.pathname + win.location.search);
-        windows.push(refreshed);
-        assert.equal(refreshed.document.body.dataset.view, view);
+  test(`${view}: a saved choice survives every page and every Experience entry without query parameters`, async () => {
+    const browser = visitor();
+    await browser.open(`/timeline?view=${view}`);
+    for (const path of ['/', '/tech', '/play', '/projects/bakiano', '/projects/vesti', '/timeline', '/resume']) {
+      const win = await browser.open(path);
+      assertAppearance(win, view);
+      for (const link of win.document.querySelectorAll('a[href^="/timeline"]:not(.view-choice),a[href^="/resume"]:not(.view-choice)')) {
+        const href = link.getAttribute('href');
+        assert.ok(!href.includes('view='), 'ordinary links must not override the preference');
+        assertAppearance(await browser.open(href), view);
       }
-    } finally { await Promise.all(windows.map(win => win.happyDOM.close())); }
+      assertAppearance(await browser.open(win.location.pathname), view); // refresh
+      assert.equal(browser.cookie, `portfolio_view=${view}`);
+    }
   });
 }
 
-test('every Experience entry from Tech, its case studies and Arcade carries its view', async () => {
-  const windows = [
-    [documentFor(renderProjectIndex('https://portfolio.test', '')), 'tech'],
-    ...PROJECTS.map(project => [documentFor(renderProjectPage(project.slug, 'https://portfolio.test')), 'tech']),
-    [await page('/play'), 'arcade'],
-  ];
-  try {
-    for (const [win, view] of windows) {
-      const links = [...win.document.querySelectorAll('a[href^="/timeline"]')];
-      assert.ok(links.length, 'each entry surface must link to Experience');
-      for (const link of links) assert.equal(link.getAttribute('href'), target('/timeline', view));
+test('only an explicit picker choice changes the preference, including switching back to Original', async () => {
+  const browser = visitor();
+  let win = await browser.open('/play?view=arcade');
+  for (const view of ['tech', 'original', 'arcade']) {
+    win = await browser.open(win.document.querySelector(`.view-choice[data-view="${view}"]`).getAttribute('href'));
+    assertAppearance(win, view);
+    assert.equal(win.location.search, '', 'consume the choice so old history URLs cannot reselect it');
+    win = await browser.open('/timeline');
+    assertAppearance(win, view);
+    assertAppearance(await browser.open('/resume'), view);
+    assertAppearance(await browser.open('/'), view);
+  }
+});
+
+test('case study and Experience pickers keep the current page when changing appearance', async () => {
+  const browser = visitor('portfolio_view=arcade');
+  for (const path of ['/projects/bakiano', '/timeline', '/resume']) {
+    const start = await browser.open(path);
+    for (const view of ['original', 'tech', 'arcade']) {
+      const win = await browser.open(start.document.querySelector(`.view-choice[data-view="${view}"]`).getAttribute('href'));
+      assert.equal(win.location.pathname, path);
+      assertAppearance(win, view);
     }
-  } finally { await Promise.all(windows.map(([win]) => win.happyDOM.close())); }
-});
-
-test('appearance choices change the skin on the current Experience page', async () => {
-  for (const path of ['/timeline', '/resume']) {
-    const start = await page(`${path}?view=arcade`);
-    try {
-      for (const choice of start.document.querySelectorAll('.view-choice')) {
-        const next = await page(choice.getAttribute('href'));
-        try {
-          assert.equal(next.location.pathname, path);
-          assert.equal(next.document.body.dataset.view, choice.dataset.view);
-          assert.equal(next.document.querySelectorAll('.ft-body').length, start.document.querySelectorAll('.ft-body').length);
-        } finally { await next.happyDOM.close(); }
-      }
-    } finally { await start.happyDOM.close(); }
   }
 });
 
-test('unrecognized appearance values fall back to Original without entering the HTML', async () => {
-  const invalid = '"><script>unexpected()</script>';
-  for (const path of ['/timeline', '/resume']) {
-    const win = await page(`${path}?view=${encodeURIComponent(invalid)}`);
-    try {
-      assert.equal(win.document.body.dataset.view, 'original');
-      assert.ok(!win.document.documentElement.innerHTML.includes('unexpected()'));
-    } finally { await win.happyDOM.close(); }
+test('a first visit establishes a default, but subsequent routes cannot silently change it', async () => {
+  for (const [path, view] of [['/', 'original'], ['/tech', 'tech'], ['/play', 'arcade']]) {
+    const browser = visitor();
+    assertAppearance(await browser.open(path), view);
+    assertAppearance(await browser.open('/timeline'), view);
+    assertAppearance(await browser.open('/projects/bakiano'), view);
   }
+});
+
+test('choice cookie lasts across visits and remains isolated between visitors', async () => {
+  const first = visitor();
+  const response = await first.request('/timeline?view=arcade');
+  assert.equal(response.status, 302);
+  assert.match(response.headers.get('set-cookie'), /Max-Age=31536000/i);
+  assert.match(response.headers.get('set-cookie'), /Path=\//i);
+  assert.match(response.headers.get('set-cookie'), /Secure/i);
+  assert.match(response.headers.get('set-cookie'), /SameSite=Lax/i);
+  const returning = visitor(first.cookie);
+  const separate = visitor('portfolio_view=tech');
+  assertAppearance(await returning.open('/timeline'), 'arcade');
+  assertAppearance(await separate.open('/timeline'), 'tech');
+  assertAppearance(await returning.open('/resume'), 'arcade');
+});
+
+test('invalid cookie and picker values never become appearance markup or erase a valid choice', async () => {
+  const invalid = encodeURIComponent('"><script>unexpected()</script>');
+  const valid = visitor('portfolio_view=arcade');
+  assertAppearance(await valid.open(`/timeline?view=${invalid}`), 'arcade');
+  const unknown = visitor(`portfolio_view=${invalid}`);
+  const win = await unknown.open('/timeline');
+  assertAppearance(win, 'original');
+  assert.ok(!win.document.documentElement.innerHTML.includes('unexpected()'));
 });
 
 for (const view of ['tech', 'arcade']) {
-  test(`${view}: role walkthroughs still open, close and change roles`, async () => {
-    const timeline = await page(`/timeline?view=${view}`);
-    const list = await page(`/resume?view=${view}`);
-    try {
-      for (const win of [timeline, list]) {
-        for (const script of win.document.querySelectorAll('script:not([src])')) win.eval(script.textContent);
-        const expectedText = view === 'tech' ? '#e6edf3' : '#f1edde';
-        assert.equal(win.getComputedStyle(win.document.body).getPropertyValue('--fg'), expectedText);
-        assert.equal(win.getComputedStyle(win.document.querySelector('.on-cream')).getPropertyValue('--fg'), expectedText);
-      }
-      const firstRole = timeline.document.querySelector('.tlp-bar');
-      assert.ok(firstRole);
-      firstRole.focus(); firstRole.click();
-      assert.equal(timeline.document.querySelector('#tlpModal').getAttribute('aria-hidden'), 'false');
-      assert.ok(timeline.document.querySelectorAll('#tlpScene .node').length > 0);
-      timeline.document.dispatchEvent(new timeline.KeyboardEvent('keydown', { key: 'Escape' }));
-      assert.equal(timeline.document.querySelector('#tlpModal').getAttribute('aria-hidden'), 'true');
-      assert.equal(timeline.document.activeElement, firstRole);
-      list.document.querySelectorAll('.tab')[1].click();
-      assert.equal(list.document.querySelectorAll('.tab')[1].getAttribute('aria-pressed'), 'true');
-      assert.ok(list.document.querySelectorAll('#scene .node').length > 0);
-      assert.equal(list.location.search, `?view=${view}`, 'role deep links must keep the appearance query');
-    } finally { await Promise.all([timeline.happyDOM.close(), list.happyDOM.close()]); }
+  test(`${view}: role walkthroughs still work with a saved appearance`, async () => {
+    const browser = visitor(`portfolio_view=${view}`);
+    const timeline = await browser.open('/timeline');
+    const list = await browser.open('/resume');
+    for (const win of [timeline, list]) {
+      for (const script of win.document.querySelectorAll('script:not([src])')) win.eval(script.textContent);
+      const expectedText = view === 'tech' ? '#e6edf3' : '#f1edde';
+      assert.equal(win.getComputedStyle(win.document.body).getPropertyValue('--fg'), expectedText);
+      assert.equal(win.getComputedStyle(win.document.querySelector('.on-cream')).getPropertyValue('--fg'), expectedText);
+    }
+    const firstRole = timeline.document.querySelector('.tlp-bar');
+    firstRole.focus(); firstRole.click();
+    assert.equal(timeline.document.querySelector('#tlpModal').getAttribute('aria-hidden'), 'false');
+    assert.ok(timeline.document.querySelectorAll('#tlpScene .node').length > 0);
+    timeline.document.dispatchEvent(new timeline.KeyboardEvent('keydown', { key: 'Escape' }));
+    assert.equal(timeline.document.querySelector('#tlpModal').getAttribute('aria-hidden'), 'true');
+    assert.equal(timeline.document.activeElement, firstRole);
+    list.document.querySelectorAll('.tab')[1].click();
+    assert.equal(list.document.querySelectorAll('.tab')[1].getAttribute('aria-pressed'), 'true');
+    assertAppearance(await browser.open('/resume' + list.location.hash), view);
   });
 }
+
+test('restoring a stale history page reloads its skin; matching pages keep live state', async () => {
+  const browser = visitor('portfolio_view=tech');
+  const win = await browser.open('/timeline');
+  globalThis.window = win; globalThis.document = win.document;
+  try {
+    const { syncAppearance, setAppearanceProject } = await import('../public/appearance.mjs');
+    let reloads = 0;
+    const restored = { document: win.document, location: { reload: () => reloads++ } };
+    syncAppearance(restored);
+    assert.equal(reloads, 0);
+    win.document.cookie = 'portfolio_view=arcade; Path=/';
+    syncAppearance(restored);
+    assert.equal(reloads, 1);
+    // The arcade controller updates project hashes, but must retain picker intent.
+    setAppearanceProject('bakiano');
+    assert.equal(win.document.querySelector('[data-view="original"].view-choice').getAttribute('href'), '/?view=original#bakiano');
+    assert.equal(win.document.querySelector('[data-view="tech"].view-choice').getAttribute('href'), '/tech?view=tech#bakiano');
+  } finally { delete globalThis.window; delete globalThis.document; }
+});

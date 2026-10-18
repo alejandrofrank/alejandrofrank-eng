@@ -89,6 +89,7 @@ ${FONTS_LINK}
   ${FULLTEXT_SCRIPT}
   ${PRINT_SCRIPT}
   ${PLAYER_SCRIPT}
+  <script type="module" src="/appearance.mjs"></script>
 </body>
 </html>`;
 }
