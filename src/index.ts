@@ -9,6 +9,7 @@ import { renderAmbientCalendar } from "./panels/github";
 import { renderPlayPage } from "./play/page";
 import { renderResumePage } from "./resume/page";
 import { renderTimelinePage } from "./timeline/page";
+import { parsePortfolioView } from "./appearance";
 import { styles } from "./styles";
 import { FAVICON } from "./favicon";
 import { FONTS_LINK, DIAMOND } from "./ui";
@@ -29,9 +30,9 @@ app.get("/projects/:slug", (c) => {
   const page = renderProjectPage(c.req.param('slug'), new URL(c.req.url).origin);
   return page ? c.html(page) : c.notFound();
 });
-app.get("/resume", (c) => c.html(renderResumePage()));
+app.get("/resume", (c) => c.html(renderResumePage(parsePortfolioView(c.req.query('view')))));
 app.get("/play", (c) => c.html(renderPlayPage(new URL(c.req.url).origin)));
-app.get("/timeline", (c) => c.html(renderTimelinePage()));
+app.get("/timeline", (c) => c.html(renderTimelinePage(parsePortfolioView(c.req.query('view')))));
 app.get("/health", (c) => c.json({ ok: true }));
 
 app.notFound((c) =>

@@ -1,5 +1,5 @@
-import { personalStyles } from "../personal-styles";
-import { gradientMarkup } from "../gradient";
+import { experienceAppearance, experienceNavigation } from "../experience-appearance";
+import type { PortfolioView } from "../appearance";
 // ----------------------------------------------------------------------------
 // /resume page — job-selector tabs + a job header + the SVG scene player.
 // Reuses the site's theme tokens (styles) and card language for consistency.
@@ -15,27 +15,28 @@ import { SCENE_STYLES, SCENE_ENGINE_SCRIPT, playButton } from "../scene-engine";
 import { PLAYER_STYLES, PLAYER_SCRIPT } from "./player";
 import { renderFullText, FULLTEXT_STYLES, FULLTEXT_SCRIPT } from "./fulltext";
 
-export function renderResumePage(): string {
+export function renderResumePage(view: PortfolioView = 'original'): string {
   // Guard against a data payload accidentally closing the <script>.
   const data = JSON.stringify(SCENES).replace(/</g, "\\u003c");
+  const appearance = experienceAppearance(view);
 
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#192822" />
+<meta name="theme-color" content="${appearance.color}" />
 ${FAVICON}
 ${FONTS_LINK}
 <title>${SITE.name} · experience</title>
 <meta name="description" content="Each role as a keynote of what I actually built." />
-<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${PLAYER_STYLES}${personalStyles}${PRINT_STYLES}</style>
+<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${PLAYER_STYLES}${appearance.styles}${PRINT_STYLES}</style>
 </head>
-<body class="personal experience-page">
-  ${gradientMarkup}
+<body class="${appearance.bodyClass}" data-view="${view}">
+  ${appearance.background}
   <div class="wrap resumewrap">
     <div class="resume">
-      <nav class="subnav"><a href="/">Home</a><a href="/timeline">Timeline view</a></nav>
+      ${experienceNavigation(view, '/resume')}
       <div class="print-head">
         <b>${SITE.name}</b>
         ${[`<span>${SITE.location}</span>`]

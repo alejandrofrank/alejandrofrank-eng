@@ -39,6 +39,8 @@ The previous unrestricted product-name inspector and worker-backed image A/B com
 
 ## Verification
 
+Experience keeps the originating appearance through explicit URLs: `/timeline?view=tech` or `/timeline?view=arcade`, with the same parameter on `/resume`. Home returns to that view; the appearance picker switches the current Experience page. Bare Experience URLs retain the original green design. Rendering happens on the server, so refreshes and navigation without JavaScript preserve the view. The screen themes leave the print stylesheet unchanged.
+
 Run `npm test` and `npm run typecheck`. Tests cover exhaustive basket feasibility, picture-puzzle and reshuffle solvability, renderer outputs, spatial routing, duplicate and failure behavior, dated price rejection, unknown matcher attributes, finite attempts, replay state and pinned source integrity. DOM interaction tests use the shipped markup and event listeners to play every stage, check failure paths, reset and keyboard focus. Dialog tests check opening, closing, focus restoration and progress preservation. Canvas calls are captured in those tests; separate renderer tests verify real pixel buffers. DOM tests do not measure layout or replace visual browser checks.
 
 Browser checks should exercise wrong and correct moves, advancing/resetting, keyboard focus, station switching, narrow layouts and the two free inspectors. No account, paid API, cloud query, persistence or analytics is introduced. Without JavaScript, project descriptions, limitations and reading links remain available.

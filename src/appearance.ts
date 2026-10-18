@@ -1,4 +1,17 @@
-type PortfolioView = 'original' | 'tech' | 'arcade';
+export type PortfolioView = 'original' | 'tech' | 'arcade';
+export type ExperiencePath = '/timeline' | '/resume';
+
+export function parsePortfolioView(value?: string): PortfolioView {
+  return value === 'tech' || value === 'arcade' ? value : 'original';
+}
+
+export function portfolioHome(view: PortfolioView): string {
+  return { original: '/', tech: '/tech', arcade: '/play' }[view];
+}
+
+export function experiencePath(path: ExperiencePath, view: PortfolioView): string {
+  return view === 'original' ? path : `${path}?view=${view}`;
+}
 
 const views: { id: PortfolioView; label: string; description: string; icon: string }[] = [
   { id: 'original', label: 'Original', description: 'The green portfolio', icon: '<rect x="3" y="3" width="14" height="14" rx="4"/><path d="M3 9h14M9 9v8"/>' },
@@ -7,9 +20,11 @@ const views: { id: PortfolioView; label: string; description: string; icon: stri
 ];
 
 /** Explicit navigation, not a saved preference: / remains the green homepage. */
-export function appearanceSwitch(active: PortfolioView, projectSlug = ''): string {
+export function appearanceSwitch(active: PortfolioView, projectSlug = '', experience?: ExperiencePath): string {
   const hash = projectSlug ? '#' + encodeURIComponent(projectSlug) : '';
-  const destinations = { original: '/' + hash, tech: '/tech' + hash, arcade: '/play' + hash };
+  const destinations = Object.fromEntries(views.map(({ id }) => [id,
+    experience ? experiencePath(experience, id) : portfolioHome(id) + hash,
+  ]));
   return `<nav class="view-switcher" aria-label="Portfolio view"><span class="view-switcher-label" aria-hidden="true">View</span><div class="view-choices">${views.map(view => `<a class="view-choice" data-view="${view.id}" href="${destinations[view.id]}" title="${view.description}"${active === view.id ? ' aria-current="page"' : ''}><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${view.icon}</svg><span>${view.label}</span></a>`).join('')}</div></nav>`;
 }
 

@@ -5,7 +5,7 @@ import { esc } from '../panels/helpers';
 import { bakianoTechnical, vestiTechnical } from '../panels/technical';
 import { PROJECTS, projectPath, type Project } from './catalog';
 import { readingStyles } from './styles';
-import { appearanceSwitch, appearanceStyles } from '../appearance';
+import { appearanceSwitch, appearanceStyles, experiencePath } from '../appearance';
 import { renderProjectExplorer } from './explorer';
 import { explorerStyles } from './explorer-styles';
 
@@ -28,7 +28,7 @@ export function readingShell(title: string, description: string, path: string, o
 <style>${readingStyles}${appearanceStyles}${extraStyles}</style></head><body>
 <a class="skip-link" href="#main">Skip to content</a><div class="site-wrap">
 <header class="site-nav"><a class="site-name" href="/tech">${SITE.name}</a><nav class="nav-links" aria-label="Main navigation">
-<a href="/tech#projects"${path === '/tech' || path.startsWith('/projects/') ? ' aria-current="page"' : ''}>Projects</a><a href="/timeline">Experience</a><a href="/tech#contact">Contact</a>
+<a href="/tech#projects"${path === '/tech' || path.startsWith('/projects/') ? ' aria-current="page"' : ''}>Projects</a><a href="${experiencePath('/timeline', funMode ? 'arcade' : 'tech')}">Experience</a><a href="/tech#contact">Contact</a>
 </nav><div class="view-controls">${appearanceSwitch(funMode ? 'arcade' : 'tech', currentProject?.slug)}</div></header><main id="main">${body}</main>
 <footer class="site-footer" id="contact"><p>Have a problem worth working on? Get in touch.</p><nav class="footer-links" aria-label="Contact">${LINKS.filter(l => ['Email', 'GitHub', 'LinkedIn'].includes(l.label)).map(l => `<a href="${esc(l.href)}"${l.href.startsWith('https:') ? ' target="_blank" rel="noopener noreferrer"' : ''}>${esc(l.label)}${l.href.startsWith('https:') ? ' ↗' : ''}</a>`).join('')}</nav></footer>
 </div><script type="module" src="/appearance.mjs"></script>${script ? `<script type="module">${script}</script>` : ''}</body></html>`;
@@ -40,7 +40,7 @@ export function renderProjectIndex(origin: string, calendar: string): string {
 <section id="projects" aria-labelledby="projects-title"><h2 id="projects-title" class="explorer-section-title">Selected work</h2>${renderProjectExplorer()}
 <div class="work-layout" data-project-list><aside class="reading-guide"><nav aria-label="Project reading order"><h2>A suggested reading order</h2><ol>${PROJECTS.map((p, i) => `<li><a href="#${p.slug}"><span>${String(i + 1).padStart(2, '0')}</span>${esc(p.title)}</a></li>`).join('')}</ol></nav><p>Each story covers the problem, the approach, and what you can inspect.</p></aside>
 <ol class="project-index">${PROJECTS.map((p, i) => `<li class="project-entry" id="${p.slug}"><article aria-labelledby="title-${p.slug}"><div class="entry-meta"><span class="number">${String(i + 1).padStart(2, '0')} / ${esc(p.category)}</span>${projectState(p)}</div><h3 id="title-${p.slug}"><a href="${projectPath(p)}">${esc(p.title)} <span aria-hidden="true">→</span></a></h3><p class="entry-question">${esc(p.question)}</p><p>${esc(p.summary)}</p><div class="entry-bottom"><span class="stack">${p.stack.map(esc).join(' · ')}</span><a class="read-link" href="${projectPath(p)}" aria-label="Read ${esc(p.title)}">Read project →</a></div></article></li>`).join('')}</ol></div></section>
-<section class="about-strip" id="about" aria-labelledby="about-title"><h2 id="about-title">About me</h2><div><p>${esc(SITE.subtitle)} Based in Madrid, with experience across data platforms, automation and product development.</p><a href="/timeline">Explore my experience →</a>${calendar}</div></section>`, explorerStyles, `import '/projects/explorer.mjs';`);
+<section class="about-strip" id="about" aria-labelledby="about-title"><h2 id="about-title">About me</h2><div><p>${esc(SITE.subtitle)} Based in Madrid, with experience across data platforms, automation and product development.</p><a href="${experiencePath('/timeline', 'tech')}">Explore my experience →</a>${calendar}</div></section>`, explorerStyles, `import '/projects/explorer.mjs';`);
 }
 
 export function renderProjectPage(slug: string, origin: string): string | undefined {
@@ -57,5 +57,5 @@ npm run dev</code></pre><p class="run-note">Then open <code>http://127.0.0.1:${p
 <header class="case-head"><div class="entry-meta"><span class="eyebrow">${esc(project.category)}</span>${projectState(project)}</div><h1>${esc(project.title)}</h1><p class="question">${esc(project.question)}</p><p class="summary">${esc(project.summary)}</p>${project.links.length ? `<div class="actions">${project.links.map((link, i) => `<a class="action${i === 0 ? ' primary' : ''}" href="${esc(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)} ↗</a>`).join('')}</div>` : ''}</header>
 <div class="case-grid"><div class="case-copy"><section><h2>The problem</h2><p>${esc(project.problem)}</p></section><section><h2>The approach</h2><ul>${project.approach.map(p => `<li>${esc(p)}</li>`).join('')}</ul></section><section><h2>What you can inspect</h2><p>${esc(project.evidence)}</p></section><section class="case-note"><h2>Scope & limitations</h2><p>${esc(project.boundary)}</p></section>${run}${technical}</div>
 <aside class="case-aside" aria-label="Project at a glance"><h2>System at a glance</h2><ol class="flow">${project.flow.map(p => `<li>${esc(p)}</li>`).join('')}</ol><h2>Working with</h2><p>${project.stack.map(esc).join(' · ')}</p></aside></div>
-<nav class="next-project" aria-label="Continue reading"><a href="/tech#projects">Back to project index</a>${next ? `<a href="${projectPath(next)}"><span>Next in the reading path</span>${esc(next.title)} →</a>` : '<a href="/timeline">Explore my experience →</a>'}</nav>`);
+<nav class="next-project" aria-label="Continue reading"><a href="/tech#projects">Back to project index</a>${next ? `<a href="${projectPath(next)}"><span>Next in the reading path</span>${esc(next.title)} →</a>` : `<a href="${experiencePath('/timeline', 'tech')}">Explore my experience →</a>`}</nav>`);
 }

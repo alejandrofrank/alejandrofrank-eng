@@ -1,5 +1,5 @@
-import { personalStyles } from "../personal-styles";
-import { gradientMarkup } from "../gradient";
+import { experienceAppearance, experienceNavigation } from "../experience-appearance";
+import { experiencePath, type PortfolioView } from "../appearance";
 // ----------------------------------------------------------------------------
 // /timeline — the career timeline as the centerpiece. A big horizontal
 // blueprint axis (years across, companies placed by date). Click a company and
@@ -222,25 +222,26 @@ const TIMELINE_SCRIPT = `<script>
 })();
 </script>`;
 
-export function renderTimelinePage(): string {
+export function renderTimelinePage(view: PortfolioView = 'original'): string {
   const data = JSON.stringify(SCENES).replace(/</g, "\\u003c");
+  const appearance = experienceAppearance(view);
 
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#192822" />
+<meta name="theme-color" content="${appearance.color}" />
 ${FAVICON}
 ${FONTS_LINK}
 <title>${SITE.name} · timeline</title>
 <meta name="description" content="A career timeline you can walk through, role by role." />
-<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${TIMELINE_STYLES}${personalStyles}${PRINT_STYLES}</style>
+<style>${styles}${SCENE_STYLES}${FULLTEXT_STYLES}${TIMELINE_STYLES}${appearance.styles}${PRINT_STYLES}</style>
 </head>
-<body class="personal experience-page">
-  ${gradientMarkup}
+<body class="${appearance.bodyClass}" data-view="${view}">
+  ${appearance.background}
   <div class="wrap tlp-wrap">
-    <nav class="subnav"><a href="/">Home</a><a href="/resume">List view</a></nav>
+    ${experienceNavigation(view, '/timeline')}
     ${sectionLabel("Timeline", `${SCENES.length} roles`)}
     <div class="tlp-head">
       <div>
@@ -259,7 +260,7 @@ ${FONTS_LINK}
     <div class="tlp-foot">
       <span class="tlp-hint-desktop">click a company</span>
       <span class="tlp-hint-mobile">swipe ↔ · tap a company</span>
-      <a href="/resume">List view</a>
+      <a href="${experiencePath('/resume', view)}">List view</a>
     </div>
   </div>
 
