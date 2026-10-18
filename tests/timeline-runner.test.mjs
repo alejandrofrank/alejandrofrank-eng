@@ -55,6 +55,7 @@ test('only Arcade exposes the platformer, with no game or animation loop until P
         assert.equal(f.get('invitation').hidden, false);
         assert.ok(f.get('avatar').querySelector('.player-sprite .player-leg.left'));
         assert.equal(f.chart.inert, false);
+        assert.equal(f.win.document.querySelector('[data-timeline-runner]').hidden, true, 'the flood is hidden until Play too');
         assert.equal(initTimelineRunner(f.win.document), null, 'mount only once');
       } else assert.equal(controller, null);
     } finally { await f.win.happyDOM.close(); }
@@ -246,4 +247,42 @@ test('a spike hit shows checkpoint retry, stops the loop and allows a full resta
     assert.equal(controller.snapshot().score, 0);
     f.get('exit').click(); assert.equal(controller.snapshot().status, 'idle');
   } finally { await f.win.happyDOM.close(); }
+});
+
+test('the visible flood tracks its collision line, warns, snoozes by key or button, and resets on retry', async () => {
+  for (const width of [390, 1100]) {
+    const f = fixture(width);
+    try {
+      const controller = initTimelineRunner(f.win.document); controller.start();
+      const region = f.win.document.querySelector('[data-timeline-runner]');
+      assert.ok(f.get('flood').textContent.includes('quick call?'));
+      assert.ok(f.get('flood').querySelector('svg'), 'the sea carries miniature computer icons');
+      assert.equal(f.get('flood').getAttribute('aria-hidden'), 'true', 'decorative notifications do not spam assistive tech');
+      f.tick(370);
+      assert.equal(controller.snapshot().flood.phase, 'warning');
+      assert.match(f.get('flood-warning').textContent, /Incoming!/);
+      assert.equal(Number.parseFloat(f.get('flood').style.top), Number.parseFloat(f.get('ground').style.top) - controller.snapshot().flood.height);
+      region.dispatchEvent(new f.win.KeyboardEvent('keydown', { key: 'm', bubbles: true }));
+      assert.equal(controller.snapshot().flood.phase, 'muted');
+      assert.equal(f.get('snooze').getAttribute('aria-disabled'), 'true');
+      assert.match(f.get('snooze').textContent, /Snoozed/);
+      f.tick(60); const cooldown = controller.snapshot().flood.cooldown;
+      f.get('snooze').click(); assert.equal(controller.snapshot().flood.cooldown, cooldown, 'repeat clicks cannot reset the cooldown');
+      controller.pause(); const paused = controller.snapshot(), drift = f.get('flood').style.getPropertyValue('--flood-drift');
+      f.tick(500);
+      assert.deepEqual(controller.snapshot(), paused);
+      assert.equal(f.get('flood').style.getPropertyValue('--flood-drift'), drift);
+      controller.resume(); f.tick(700);
+      assert.equal(controller.snapshot().hit.type, 'flood');
+      assert.equal(f.get('title').textContent, 'This could have been an email.');
+      assert.equal(f.win.document.activeElement, f.get('retry'));
+      f.get('retry').click();
+      assert.equal(controller.snapshot().flood.phase, 'quiet');
+      assert.equal(f.get('snooze').getAttribute('aria-disabled'), 'false');
+      f.get('snooze').click(); assert.equal(controller.snapshot().flood.phase, 'muted');
+      f.get('exit').click();
+      assert.equal(region.hidden, true); assert.equal(controller.snapshot().status, 'idle');
+      assert.equal(f.frames.size, 0);
+    } finally { await f.win.happyDOM.close(); }
+  }
 });
