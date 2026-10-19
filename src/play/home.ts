@@ -11,30 +11,20 @@ import { arcadeHomeStyles } from './home-styles';
 const COLORS = ['#263b3e', '#426b5b', '#628c68', '#96bd81', '#c6e5a4'];
 const level = (count: number) => count <= 0 ? 0 : count <= 2 ? 1 : count <= 4 ? 2 : count <= 7 ? 3 : 4;
 
-/** A projection of the real week/day cells, not a procedural contribution chart. */
-function floor(calendar: Calendar | null): string {
+/** The calendar itself is the play field. Dates and counts never change during play. */
+function calendarGrid(calendar: Calendar | null): string {
   const columns = calendar?.weeks.length || 53;
-  const point = (x: number, y: number) => {
-    const depth = y / 7;
-    const width = 540 + depth * 620;
-    return `${(500 + (x / columns - .5) * width).toFixed(1)},${(200 + depth * 340).toFixed(1)}`;
-  };
   const cells: string[] = [];
   for (let week = 0; week < columns; week++) {
     const days = calendar?.weeks[week].days;
     for (let row = 0; row < (days?.length ?? 7); row++) {
       const day = days?.[row];
       const weekday = day ? new Date(day.date + 'T00:00:00Z').getUTCDay() : row;
-      const points = [point(week + .08, weekday + .08), point(week + .92, weekday + .08), point(week + .92, weekday + .92), point(week + .08, weekday + .92)].join(' ');
-      cells.push(`<polygon points="${points}" fill="${day ? COLORS[level(day.count)] : '#26343e'}"${day ? ` data-date="${esc(day.date)}" data-count="${day.count}"` : ''}/>`);
+      const label = day ? `${day.date}: ${day.count} contributions` : 'Practice square';
+      cells.push(`<span class="range-day" data-column="${week}" data-row="${weekday}" style="grid-column:${week + 1};grid-row:${weekday + 1};--cell:${day ? COLORS[level(day.count)] : COLORS[0]}"${day ? ` data-date="${esc(day.date)}" data-count="${day.count}"` : ''} title="${esc(label)}"><span class="sr-only">${esc(label)}</span></span>`);
     }
   }
-  return `<svg class="range-floor" viewBox="0 0 1000 540" preserveAspectRatio="none" aria-hidden="true"><path d="M0 170H1000M0 110H1000M230 0V200M770 0V200" stroke="#2c3148" fill="none"/><path d="M230 200H770L1080 540H-80Z" fill="#141f29" stroke="#628c68"/>${cells.join('')}</svg>`;
-}
-
-function activity(calendar: Calendar | null): string {
-  if (!calendar) return '<p>GitHub activity is temporarily unavailable. The range uses a neutral practice floor.</p>';
-  return `<details class="activity-details"><summary>Read the contribution graph</summary><div class="activity-scroll"><div class="activity-grid">${calendar.weeks.map(week => `<div>${week.days.map(day => `<span style="--cell:${COLORS[level(day.count)]};grid-row:${new Date(day.date + 'T00:00:00Z').getUTCDay() + 1}" title="${esc(day.date)}: ${day.count} contributions"><span class="sr-only">${esc(day.date)}: ${day.count} contributions</span></span>`).join('')}</div>`).join('')}</div></div><p>One tile per day, oldest weeks on the left. Brighter tiles mean more contributions. Shots do not change this data.</p></details>`;
+  return `<div class="range-scroll" data-grid-scroll><div class="range-grid" data-grid data-columns="${columns}" style="--columns:${columns}">${cells.join('')}<div class="range-targets" data-targets></div><div class="range-feedback" data-feedback aria-hidden="true"></div></div></div>`;
 }
 
 const ICONS = {
@@ -60,19 +50,16 @@ ${FAVICON}${FONTS_LINK}<title>${SITE.name} · Arcade</title><meta name="descript
 <a class="lobby-card" href="/timeline"><span class="menu-icon">${icon('experience')}</span><span><b>Experience</b><small>Explore the timeline</small></span><span class="menu-arrow" aria-hidden="true">↗</span></a>
 <details class="lobby-panel" name="lobby" id="contact"><summary class="lobby-card"><span class="menu-icon">${icon('contact')}</span><span><b>Say hello</b><small>Open a channel</small></span><span class="menu-arrow" aria-hidden="true">+</span></summary><section class="lobby-panel-body"><h2>Let’s talk.</h2><p>Have a problem worth working on?</p><nav aria-label="Contact">${LINKS.filter(link => ['Email', 'GitHub', 'LinkedIn'].includes(link.label)).map(link => `<a href="${esc(link.href)}"${link.href.startsWith('https:') ? ' target="_blank" rel="noopener noreferrer"' : ''}>${esc(link.label)} ↗</a>`).join('')}</nav></section></details>
 </div>
-<section class="aim-range" aria-labelledby="range-title" data-aim-range>
-<header class="range-header"><div><span class="range-kicker">01 / WARM-UP</span><h2 id="range-title">Commit range</h2></div><div class="range-metrics" aria-label="Round statistics"><div><span>Time</span><b data-stat="time">30.0</b></div><div><span>Score</span><b data-stat="score">00000</b></div><div><span>Accuracy</span><b data-stat="accuracy">—</b></div><div><span>Combo</span><b data-stat="combo">×0</b></div></div></header>
-<div class="range-board" tabindex="-1" aria-label="Aim-training range. Click or tap the round targets. Escape pauses." data-range-board>
-${floor(calendar)}<span class="range-wall-label" aria-hidden="true">GITHUB / ${esc(user.toUpperCase())}</span>
-<div class="range-stage" aria-hidden="true"><span data-stage>READY</span><span data-stage-hint>30 SECOND ROUND</span></div>
-<div class="range-targets" data-targets></div><div class="range-feedback" aria-hidden="true" data-feedback></div>
-<div class="range-overlay" data-overlay><div class="range-overlay-card"><span class="range-kicker" data-overlay-kicker>AIM TRAINING</span><h3 data-overlay-title>30-second warm-up</h3><p data-overlay-copy>Hit targets before their rings run out. Misses cost 25 points. Every ten seconds, the range gets harder.</p><div class="range-options" data-options><label for="aim-input">Controls</label><select id="aim-input"><option value="pointer">Mouse / touch</option><option value="keyboard">Keyboard practice</option></select></div><button class="range-primary" data-start disabled>Start round →</button><p class="range-loading" data-loading>Loading range…</p><noscript><p>Enable JavaScript to play. The portfolio menu and contribution graph work without it.</p></noscript></div></div>
-</div>
-<div class="range-toolbar"><p data-instructions>Click / tap to shoot · Esc to pause · 30 seconds</p><div><button data-pause hidden>Pause</button><button data-stop hidden>Exit range</button></div></div>
-<div class="range-progress" aria-hidden="true"><span data-progress></span></div>
+<section class="aim-range" aria-label="GitHub activity and aim game" data-aim-range data-status="ready">
+<header class="range-caption"><a href="${github}" target="_blank" rel="noopener noreferrer">GitHub · ${esc(user)} ↗</a><span>${calendar ? `${calendar.total.toLocaleString()} contributions in the last year` : 'Practice grid · GitHub activity unavailable'}</span></header>
+<div class="range-launch"><button class="range-primary" data-start disabled><span aria-hidden="true">▶</span> Play</button><span data-stage hidden></span><div class="range-metrics" data-metrics hidden aria-label="Round statistics"><div><span>Time</span><b data-stat="time">30.0</b></div><div><span>Score</span><b data-stat="score">00000</b></div><div><span>Accuracy</span><b data-stat="accuracy">—</b></div><div><span>Combo</span><b data-stat="combo">×0</b></div></div></div>
+<div class="range-board" tabindex="-1" aria-label="Contribution grid. During play, shoot the glowing groups of four squares. Escape pauses." data-range-board>${calendarGrid(calendar)}</div>
+<div class="range-progress" aria-hidden="true" data-progress-track hidden><span data-progress></span></div>
+<div class="range-toolbar"><p data-instructions>Play a 30-second round on the squares. Hit the glowing groups of four.</p><div class="range-controls"><label data-options><span class="sr-only">Controls</span><select id="aim-input"><option value="pointer">Mouse / touch</option><option value="keyboard">Keyboard practice</option></select></label><button data-pause hidden>Pause</button><button data-stop hidden>Exit game</button></div></div>
+<p class="range-result" data-result hidden></p>
 <p class="sr-only" role="status" aria-live="polite" data-announcement></p>
-<footer class="range-caption"><a href="${github}" target="_blank" rel="noopener noreferrer">GitHub · ${esc(user)} ↗</a><span>${calendar ? `${calendar.total.toLocaleString()} contributions in the last year · real activity, playable floor` : 'Practice floor · GitHub activity unavailable'}</span></footer>
-${activity(calendar)}
+<p class="range-note">${calendar ? 'Real daily activity. Exit restores the original colors.' : 'GitHub activity is temporarily unavailable. These are neutral practice squares.'}<span> Scroll sideways to explore the year.</span></p>
+<noscript><p>Enable JavaScript to play. The contribution graph and portfolio menu remain available.</p></noscript>
 </section>
 <p class="lobby-footnote">The menu is always open. No high score required.</p>
 </main></div><script type="module" src="/appearance.mjs"></script><script type="module">import { initAimRange } from '/play/aim-range.mjs'; initAimRange();</script></body></html>`;

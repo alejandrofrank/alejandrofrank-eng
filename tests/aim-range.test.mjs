@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import { build } from 'esbuild';
 import { fileURLToPath } from 'node:url';
 import { Window } from 'happy-dom';
-import { createAimRound } from '../public/play/aim-engine.mjs';
+import { createAimRound, INTRO_SECONDS } from '../public/play/aim-engine.mjs';
 import { initAimRange } from '../public/play/aim-range.mjs';
 
-const liveCalendar = { totalContributions: 17, weeks: [
-  { contributionDays: [{ date: '2026-10-16', contributionCount: 2 }, { date: '2026-10-17', contributionCount: 0 }] },
-  { contributionDays: [{ date: '2026-10-18', contributionCount: 10 }, { date: '2026-10-19', contributionCount: 5 }] },
-] };
+const weeks = Array.from({ length: 53 }, (_, column) => ({ contributionDays: Array.from({ length: 7 }, (_, row) => ({
+  date: new Date(Date.UTC(2025, 9, 19 + column * 7 + row)).toISOString().slice(0, 10), contributionCount: (column + row) % 11,
+})).filter((_, row) => column === 0 ? row >= 4 : column === 52 ? row <= 2 : true) }));
+const liveCalendar = { totalContributions: weeks.flatMap(week => week.contributionDays).reduce((sum, day) => sum + day.contributionCount, 0), weeks };
 let calendar = liveCalendar;
 mock.method(globalThis, 'fetch', async () => Response.json({ data: { user: { contributionsCollection: { contributionCalendar: calendar } } } }));
 const { outputFiles } = await build({ entryPoints: [fileURLToPath(new URL('../src/index.ts', import.meta.url))], bundle: true, write: false, platform: 'node', format: 'esm' });
@@ -24,155 +24,178 @@ async function fixture({ width = 1100, reduced = false, hash = '' } = {}) {
   win.document.documentElement.innerHTML = await response.text();
   const media = new win.EventTarget(); media.matches = reduced; win.matchMedia = () => media;
   const root = win.document.querySelector('[data-aim-range]'), board = root.querySelector('[data-range-board]');
-  board.getBoundingClientRect = () => ({ left: 0, top: 0, width, height: 400 });
+  const grid = root.querySelector('[data-grid]'), scroll = root.querySelector('[data-grid-scroll]');
+  const columns = +grid.dataset.columns;
+  const size = Math.max(width <= 600 ? 22 : 16, (width - (columns - 1) * 4) / columns);
+  const gridWidth = columns * (size + 4) - 4, height = 7 * (size + 4) - 4;
+  Object.defineProperty(scroll, 'clientWidth', { value: width }); Object.defineProperty(scroll, 'scrollWidth', { value: gridWidth });
+  scroll.getBoundingClientRect = () => ({ left: 0, right: width, top: 0, width, height });
+  grid.getBoundingClientRect = () => ({ left: -scroll.scrollLeft, top: 0, width: gridWidth, height });
+  for (const cell of grid.querySelectorAll('.range-day')) cell.getBoundingClientRect = () => {
+    const left = +cell.dataset.column * (size + 4) - scroll.scrollLeft;
+    return { left, right: left + size, top: +cell.dataset.row * (size + 4), width: size, height: size };
+  };
   const pending = new Map(); let sequence = 0, time = 0;
-  const f = { win, root, board, media, pending,
+  const f = { win, root, board, grid, scroll, media, pending, size,
     get: name => root.querySelector(`[data-${name}]`),
     tick(seconds) {
-      const frames = Math.round(seconds * 60);
-      for (let index = 0; index < frames; index++) {
-        time += 1000 / 60;
-        const callbacks = [...pending.values()]; pending.clear(); callbacks.forEach(fn => fn(time));
+      for (let index = 0; index < Math.round(seconds * 60); index++) {
+        time += 1000 / 60; const callbacks = [...pending.values()]; pending.clear(); callbacks.forEach(fn => fn(time));
       }
     },
-    pointer(node, extra = {}) { node.dispatchEvent(new win.PointerEvent('pointerdown', { bubbles: true, cancelable: true, isPrimary: true, button: 0, clientX: width / 2, clientY: 100, ...extra })); },
+    pointer(node, extra = {}) { node.dispatchEvent(new win.PointerEvent('pointerdown', { bubbles: true, cancelable: true, isPrimary: true, button: 0, clientX: width / 2, clientY: 70, ...extra })); },
     key(key, repeat = false) { win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key, repeat, bubbles: true, cancelable: true })); },
+    play() { f.get('start').click(); f.tick(1.3); assert.equal(f.controller.snapshot().status, 'running'); },
   };
   f.controller = initAimRange(root, { random: () => .5, frames: { request(fn) { const id = ++sequence; pending.set(id, fn); return id; }, cancel(id) { pending.delete(id); } } });
   fixtures.push(f); return f;
 }
 
-test('Arcade has its own homepage, ungated portfolio menu and real contribution floor', async () => {
+test('the ordinary daily graph is visible first, with a top-center Play control and no game overlay', async () => {
   const f = await fixture(), doc = f.win.document;
   assert.equal(doc.body.dataset.view, 'arcade');
-  assert.equal(doc.querySelector('.lobby-name').getAttribute('href'), '/');
-  assert.equal(doc.querySelector('.view-choice[aria-current=page]').dataset.view, 'arcade');
   assert.deepEqual([...doc.querySelectorAll('.lobby-menu > a')].map(link => link.getAttribute('href')), ['/play', '/timeline']);
   assert.ok(doc.querySelector('#about summary')); assert.ok(doc.querySelector('#contact a[href^="mailto:"]'));
-  assert.equal(doc.querySelector('[data-start]').disabled, false);
   assert.equal(f.controller.snapshot().status, 'ready'); assert.equal(f.pending.size, 0);
-  const cells = [...doc.querySelectorAll('.range-floor [data-date]')];
-  assert.deepEqual(cells.map(cell => [cell.dataset.date, +cell.dataset.count]), liveCalendar.weeks.flatMap(week => week.contributionDays.map(day => [day.date, day.contributionCount])));
-  assert.equal(cells.length, 4, 'no invented contribution dates in a partial calendar');
-  assert.match(doc.querySelector('.range-caption').textContent, /17 contributions/);
-  assert.match(doc.querySelector('.activity-grid').textContent, /2026-10-19: 5 contributions/);
+  assert.equal(f.get('start').disabled, false); assert.equal(f.get('start').hidden, false);
+  assert.ok(f.get('start').closest('.range-launch'));
+  assert.ok([...f.root.children].indexOf(f.get('start').closest('.range-launch')) < [...f.root.children].indexOf(f.board));
+  assert.equal(winStyle(f, '.range-launch', 'justifyContent'), 'center');
+  assert.equal(doc.querySelector('.range-overlay,.range-floor,.aim-orb'), null);
+  assert.equal(f.get('metrics').hidden, true); assert.equal(f.get('targets').hidden, true);
+  const cells = [...doc.querySelectorAll('.range-day[data-date]')];
+  assert.deepEqual(cells.map(cell => [cell.dataset.date, +cell.dataset.count]), weeks.flatMap(week => week.contributionDays.map(day => [day.date, day.contributionCount])));
+  assert.match(doc.querySelector('.range-caption').textContent, new RegExp(liveCalendar.totalContributions.toLocaleString() + ' contributions'));
   const unchanged = cells.map(cell => cell.outerHTML);
-  f.get('start').click(); f.pointer(f.get('target-id')); f.tick(1);
-  assert.deepEqual(cells.map(cell => cell.outerHTML), unchanged, 'shooting never edits GitHub data');
+  f.play(); f.pointer(f.get('target-id')); f.get('stop').click();
+  assert.equal(f.root.dataset.status, 'ready'); assert.equal(f.grid.dataset.boot, '');
+  assert.deepEqual(cells.map(cell => cell.outerHTML), unchanged, 'exit restores every original cell, color, date and count');
 });
 
-test('missing or malformed GitHub data leaves an honest, playable practice floor', async () => {
-  for (const value of [null, { totalContributions: 12, weeks: [] }, { totalContributions: 12, weeks: [{ contributionDays: [{ date: 'bad-date', contributionCount: 2 }] }] }]) {
-    calendar = value; const f = await fixture();
-    assert.equal(f.win.document.querySelectorAll('.range-floor [data-date]').length, 0);
-    assert.match(f.root.textContent, /Practice floor · GitHub activity unavailable/);
-    assert.doesNotMatch(f.root.textContent, /12 contributions/);
-    f.get('start').click(); assert.equal(f.controller.snapshot().status, 'running');
-  }
-});
+function winStyle(f, selector, property) { return f.win.getComputedStyle(f.root.querySelector(selector))[property]; }
 
-test('round timing, streaks, misses and expirations reward aiming rather than clicking rapidly', () => {
-  const round = createAimRound({ random: () => .5 });
-  round.step(100); assert.equal(round.snapshot().status, 'ready');
-  round.start(); round.step(.5);
-  const first = round.snapshot().targets[0];
-  const hit = round.shoot(first.id); assert.ok(hit.points > 100);
-  assert.equal(round.shoot(first.id), null, 'queued duplicate shots cannot inflate the score');
-  assert.equal(round.snapshot().shots, 1); assert.equal(round.snapshot().accuracy, 100);
-  assert.equal(round.snapshot().reaction, 500);
-  round.shoot(round.snapshot().targets[0].id); assert.equal(round.snapshot().combo, 2);
-  const score = round.snapshot().score; round.shoot();
-  assert.equal(round.snapshot().score, score - 25); assert.equal(round.snapshot().accuracy, 67);
-  assert.equal(round.snapshot().combo, 0); assert.equal(round.snapshot().bestCombo, 2);
-  round.step(3); assert.ok(round.snapshot().escaped > 0);
-  assert.equal(round.snapshot().shots, 3, 'an expired target is reported separately from a fired miss');
-  round.step(100); assert.equal(round.snapshot().remaining, 0); assert.equal(round.snapshot().status, 'finished');
-  assert.equal(round.shoot(), null); assert.equal(round.snapshot().targets.length, 0);
-  round.start(); assert.equal(round.snapshot().score, 0); assert.equal(round.snapshot().remaining, 30);
-});
-
-test('three stages shorten target windows and introduce bounded movement; pause is exact', () => {
-  const round = createAimRound({ random: () => .5 }); round.start();
-  const early = round.snapshot().targets[0]; round.step(10);
-  assert.equal(round.snapshot().stage, 1); assert.ok(round.snapshot().targets[0].lifetime < early.lifetime);
-  round.step(10); assert.equal(round.snapshot().stage, 2);
-  const before = round.snapshot().targets[0]; round.step(.2);
-  assert.notEqual(round.snapshot().targets[0].x, before.x);
-  round.pause(); const paused = round.snapshot(); round.step(20); round.shoot();
-  assert.deepEqual(round.snapshot(), paused);
-  round.resume(); round.step(.1); assert.ok(round.snapshot().elapsed > paused.elapsed);
-  for (let index = 0; index < 500; index++) {
-    round.step(.01);
-    for (const target of round.snapshot().targets) {
-      assert.ok(target.x > .08 && target.x < .92); assert.ok(target.y > .25 && target.y < .8);
+test('Play lights the whole graph, turns it off, then starts the clock and four-square targets', async () => {
+  const f = await fixture(); f.get('start').click();
+  assert.equal(f.controller.snapshot().status, 'starting'); assert.equal(f.grid.dataset.boot, 'lit');
+  assert.equal(f.get('start').hidden, true); assert.equal(f.root.querySelectorAll('.is-target').length, 0);
+  f.pointer(f.grid); assert.equal(f.controller.snapshot().shots, 0);
+  f.tick(.7); assert.equal(f.grid.dataset.boot, 'dark'); assert.equal(f.controller.snapshot().remaining, 30);
+  f.tick(.6); assert.equal(f.controller.snapshot().status, 'running'); assert.equal(f.grid.dataset.boot, '');
+  assert.ok(f.controller.snapshot().remaining > 29.8);
+  assert.equal(f.root.querySelectorAll('.range-day.is-target').length, 12);
+  for (const target of f.controller.snapshot().targets) {
+    const button = f.root.querySelector(`[data-target-id="${target.id}"]`);
+    assert.equal(button.style.gridColumn, `${target.column + 1} / span 2`);
+    assert.equal(button.style.gridRow, `${target.row + 1} / span 2`);
+    for (const column of [target.column, target.column + 1]) for (const row of [target.row, target.row + 1]) {
+      assert.ok(f.root.querySelector(`.range-day.is-target[data-column="${column}"][data-row="${row}"]`));
     }
   }
-  const copy = round.snapshot(); copy.targets[0].x = -100;
-  assert.ok(round.snapshot().targets[0].x > 0, 'snapshots cannot mutate the simulation');
 });
 
-test('reduced motion and keyboard practice keep targets stationary, even after a preference change', () => {
-  for (const options of [{ still: true }, { mode: 'keyboard' }]) {
-    const round = createAimRound({ random: () => .5 }); round.start(options); round.step(20);
-    const first = round.snapshot().targets[0]; round.step(.3);
-    assert.equal(round.snapshot().targets[0].x, first.x); assert.equal(round.snapshot().targets[0].y, first.y);
+test('startup can pause, resume and exit; reduced motion skips the light-up entirely', async () => {
+  const f = await fixture(); f.get('start').click(); f.tick(.3); f.key('Escape');
+  const paused = f.controller.snapshot(); f.tick(10); assert.deepEqual(f.controller.snapshot(), paused);
+  assert.equal(f.grid.dataset.boot, ''); assert.equal(f.pending.size, 0);
+  f.get('start').click(); assert.equal(f.controller.snapshot().status, 'starting'); f.tick(1); assert.equal(f.controller.snapshot().status, 'running');
+  f.get('stop').click(); f.get('start').click(); f.get('stop').click(); f.tick(10);
+  assert.equal(f.controller.snapshot().status, 'ready'); assert.equal(f.grid.dataset.boot, ''); assert.equal(f.pending.size, 0);
+  const still = await fixture({ reduced: true }); still.get('start').click();
+  assert.equal(still.controller.snapshot().status, 'running'); assert.equal(still.grid.dataset.boot, '');
+});
+
+test('every clump uses four existing cells, never overlaps another target or spills into missing/future days', () => {
+  const cells = weeks.flatMap((week, column) => week.contributionDays.map(day => ({ column, row: new Date(day.date + 'T00:00:00Z').getUTCDay() })));
+  const available = new Set(cells.map(cell => `${cell.column}:${cell.row}`));
+  const round = createAimRound({ cells, columns: 53, random: () => .99 }); round.start({ skipIntro: true, window: { first: 40, last: 52 } });
+  for (let index = 0; index < 290; index++) {
+    const occupied = new Set();
+    for (const target of round.snapshot().targets) {
+      for (const other of round.snapshot().targets.filter(other => other.id !== target.id)) {
+        assert.ok(Math.abs(target.column - other.column) >= 3 || Math.abs(target.row - other.row) >= 3, 'a dark row or column separates each clump');
+      }
+      assert.ok(target.column >= 40 && target.column + 1 <= 52); assert.ok(target.row >= 0 && target.row < 6);
+      for (const column of [target.column, target.column + 1]) for (const row of [target.row, target.row + 1]) {
+        const position = `${column}:${row}`; assert.ok(available.has(position)); assert.ok(!occupied.has(position)); occupied.add(position);
+      }
+    }
+    round.step(.1); if (index % 3 === 0) round.shoot(round.snapshot().targets[0]?.id);
   }
-  const round = createAimRound(); round.start(); round.step(20); round.pause(); round.resume({ still: true });
-  const first = round.snapshot().targets[0]; round.step(.2); assert.equal(round.snapshot().targets[0].x, first.x);
+  const sparse = createAimRound({ columns: 2, cells: [{ column: 0, row: 0 }, { column: 1, row: 1 }] });
+  assert.equal(sparse.start().canPlay, false); assert.equal(sparse.snapshot().status, 'ready');
 });
 
-test('mouse and touch shots, pause, resume, results, replay and exit use the shipped controls', async () => {
+test('difficulty shortens time windows while keeping four-square targets and scoring honest', () => {
+  const round = createAimRound({ random: () => .5 }); round.start(); round.step(INTRO_SECONDS);
+  round.step(.5); const first = round.snapshot().targets[0];
+  const hit = round.shoot(first.id); assert.ok(hit.points > 100); assert.equal(round.shoot(first.id), null);
+  assert.equal(round.snapshot().shots, 1); assert.equal(round.snapshot().reaction, 500);
+  round.shoot(round.snapshot().targets[0].id); const score = round.snapshot().score; round.shoot();
+  assert.equal(round.snapshot().score, score - 25); assert.equal(round.snapshot().accuracy, 67); assert.equal(round.snapshot().combo, 0);
+  round.step(3); assert.ok(round.snapshot().escaped > 0); assert.equal(round.snapshot().shots, 3);
+  round.step(6.5); assert.equal(round.snapshot().stage, 1); const quick = round.snapshot().targets[0].lifetime;
+  assert.ok(quick < first.lifetime); round.step(10); assert.equal(round.snapshot().stage, 2);
+  assert.ok(round.snapshot().targets[0].lifetime < quick);
+  const copy = round.snapshot(); copy.targets[0].column = -1; assert.ok(round.snapshot().targets[0].column >= 0);
+  round.pause(); const paused = round.snapshot(); round.step(50); round.shoot(); assert.deepEqual(round.snapshot(), paused);
+  round.resume(); round.step(100); assert.equal(round.snapshot().status, 'finished'); assert.equal(round.snapshot().remaining, 0);
+});
+
+test('small screens use visible weeks with tappable clumps and recalculate after scrolling', async () => {
+  const f = await fixture({ width: 360 }); assert.ok(f.scroll.scrollLeft > 0);
+  assert.ok(f.size * 2 + 4 >= 44, 'the clump remains at least 44px across');
+  f.play(); let state = f.controller.snapshot(); assert.ok(state.window.first > 0);
+  for (const target of state.targets) assert.ok(target.column >= state.window.first && target.column + 1 <= state.window.last);
+  f.scroll.scrollLeft = 0; f.scroll.dispatchEvent(new f.win.Event('scroll')); assert.equal(f.controller.snapshot().status, 'paused');
+  f.get('start').click(); state = f.controller.snapshot(); assert.equal(state.window.first, 0);
+  for (const target of state.targets) assert.ok(target.column >= state.window.first && target.column + 1 <= state.window.last);
+});
+
+test('mouse, touch, results, replay and Escape restore the graph without duplicate shots', async () => {
   for (const width of [360, 1100]) {
-    const f = await fixture({ width });
-    f.get('start').click(); assert.equal(f.win.document.activeElement, f.board);
-    assert.equal(f.get('overlay').hidden, true); assert.equal(f.get('pause').hidden, false);
-    f.tick(.5);
-    const target = f.get('target-id');
-    f.pointer(target, { pointerType: 'touch' });
-    target.dispatchEvent(new f.win.MouseEvent('click', { detail: 1, bubbles: true }));
-    assert.equal(f.controller.snapshot().hits, 1, 'one pointer gesture produces one shot');
-    f.pointer(f.board, { button: 2 }); f.pointer(f.board, { isPrimary: false });
-    assert.equal(f.controller.snapshot().shots, 1, 'right click and secondary touches are ignored');
-    f.pointer(f.board); assert.equal(f.controller.snapshot().shots, 2);
-    assert.equal(f.get('stat="accuracy"').textContent, '50%');
-    f.get('pause').click(); const paused = f.controller.snapshot(); f.tick(8);
-    assert.deepEqual(f.controller.snapshot(), paused); assert.equal(f.pending.size, 0);
-    assert.equal(f.win.document.activeElement, f.get('start'));
-    f.get('start').click(); f.tick(31);
-    assert.equal(f.controller.snapshot().status, 'finished'); assert.equal(f.pending.size, 0);
-    assert.equal(f.get('overlay').hidden, false); assert.match(f.get('overlay-copy').textContent, /50% accuracy/);
-    assert.equal(f.win.document.activeElement, f.get('start'));
-    assert.ok(Number(f.win.localStorage.getItem('portfolio-aim-best-v1-pointer')) > 0);
-    f.get('start').click(); assert.equal(f.controller.snapshot().score, 0);
-    f.key('Escape'); assert.equal(f.controller.snapshot().status, 'paused');
-    f.key('Escape'); assert.equal(f.controller.snapshot().status, 'ready'); assert.equal(f.pending.size, 0);
-    f.get('start').click(); f.get('stop').click(); assert.equal(f.controller.snapshot().status, 'ready');
+    const f = await fixture({ width }); f.play(); assert.equal(f.win.document.activeElement, f.board);
+    const target = f.get('target-id'); f.pointer(target, { pointerType: 'touch' });
+    target.dispatchEvent(new f.win.MouseEvent('click', { detail: 1, bubbles: true })); assert.equal(f.controller.snapshot().hits, 1);
+    f.pointer(f.grid, { button: 2 }); f.pointer(f.grid, { isPrimary: false }); assert.equal(f.controller.snapshot().shots, 1);
+    f.pointer(f.grid); assert.equal(f.get('stat="accuracy"').textContent, '50%');
+    f.get('pause').click(); const paused = f.controller.snapshot(); f.tick(8); assert.deepEqual(f.controller.snapshot(), paused);
+    assert.equal(f.root.querySelectorAll('.is-target').length, 0); assert.equal(f.win.document.activeElement, f.get('start'));
+    f.get('start').click(); f.tick(31); assert.equal(f.controller.snapshot().status, 'finished'); assert.equal(f.pending.size, 0);
+    assert.equal(f.root.querySelectorAll('.is-target').length, 0); assert.match(f.get('result').textContent, /50% accuracy/);
+    assert.ok(Number(f.win.localStorage.getItem('portfolio-grid-aim-best-v2-pointer')) > 0);
+    f.get('start').click(); assert.equal(f.controller.snapshot().status, 'starting'); assert.equal(f.controller.snapshot().score, 0);
+    f.key('Escape'); f.key('Escape'); assert.equal(f.controller.snapshot().status, 'ready'); assert.equal(f.pending.size, 0);
   }
 });
 
-test('menu focus, opening a section, tab hiding and resizing freeze gameplay without trapping navigation', async () => {
-  const f = await fixture();
-  f.get('start').click(); f.tick(1);
-  const link = f.win.document.querySelector('.lobby-menu>a'); link.focus();
+test('menu focus, tab hiding and resizing freeze gameplay without trapping navigation', async () => {
+  const f = await fixture(); f.play(); const link = f.win.document.querySelector('.lobby-menu>a'); link.focus();
   assert.equal(f.controller.snapshot().status, 'paused'); assert.equal(f.win.document.activeElement, link);
   const panel = f.win.document.querySelector('#about'); panel.open = true; panel.dispatchEvent(new f.win.Event('toggle'));
   f.key('Escape'); assert.equal(panel.open, false); assert.equal(f.win.document.activeElement, panel.querySelector('summary'));
-  f.get('start').click(); assert.equal(f.controller.snapshot().status, 'running');
-  f.win.dispatchEvent(new f.win.Event('blur')); assert.equal(f.controller.snapshot().status, 'paused');
-  f.get('start').click(); f.win.dispatchEvent(new f.win.Event('resize')); assert.equal(f.controller.snapshot().status, 'paused');
+  for (const event of ['blur', 'resize', 'pagehide']) { f.get('start').click(); f.win.dispatchEvent(new f.win.Event(event)); assert.equal(f.controller.snapshot().status, 'paused'); }
   f.get('start').click(); Object.defineProperty(f.win.document, 'hidden', { configurable: true, value: true });
   f.win.document.dispatchEvent(new f.win.Event('visibilitychange')); assert.equal(f.controller.snapshot().status, 'paused');
   const deep = await fixture({ hash: '#contact' }); assert.equal(deep.win.document.querySelector('#contact').open, true);
 });
 
-test('keyboard practice ignores held keys, stays separate from pointer best scores, and tolerates blocked storage', async () => {
-  const f = await fixture(); f.get('start').click(); f.get('stop').click();
-  f.root.querySelector('#aim-input').value = 'keyboard'; f.get('start').click();
-  f.key('1'); f.key('2', true); assert.equal(f.controller.snapshot().hits, 1);
-  f.key('2'); f.key('3'); assert.equal(f.controller.snapshot().hits, 3);
-  f.tick(31); assert.ok(Number(f.win.localStorage.getItem('portfolio-aim-best-v1-keyboard')) > 0);
-  assert.equal(f.win.localStorage.getItem('portfolio-aim-best-v1-pointer'), null);
+test('keyboard practice and blocked storage remain playable, with scores separate from the old range', async () => {
+  const f = await fixture({ reduced: true }); f.root.querySelector('#aim-input').value = 'keyboard'; f.get('start').click();
+  f.key('1'); f.key('2', true); assert.equal(f.controller.snapshot().hits, 1); f.key('2'); f.key('3'); assert.equal(f.controller.snapshot().hits, 3);
+  f.tick(31); assert.ok(Number(f.win.localStorage.getItem('portfolio-grid-aim-best-v2-keyboard')) > 0);
+  assert.equal(f.win.localStorage.getItem('portfolio-grid-aim-best-v2-pointer'), null);
+  assert.equal(f.win.localStorage.getItem('portfolio-aim-best-v1-keyboard'), null);
   mock.method(f.win.localStorage, 'setItem', () => { throw new Error('Storage blocked'); });
-  f.get('start').click(); f.tick(31); assert.equal(f.controller.snapshot().status, 'finished');
-  assert.match(f.get('overlay-kicker').textContent, /KEYBOARD PRACTICE/);
+  f.get('start').click(); f.tick(31); assert.equal(f.controller.snapshot().status, 'finished'); assert.match(f.get('result').textContent, /Keyboard practice/);
+});
+
+test('missing GitHub data uses labeled practice squares; an incomplete calendar never invents real days', async () => {
+  for (const value of [null, { totalContributions: 12, weeks: [] }]) {
+    calendar = value; const f = await fixture();
+    assert.equal(f.root.querySelectorAll('.range-day[data-date]').length, 0);
+    assert.match(f.root.textContent, /Practice grid · GitHub activity unavailable/); f.play();
+  }
+  calendar = { totalContributions: 2, weeks: [{ contributionDays: [{ date: '2026-10-20', contributionCount: 2 }] }] };
+  const f = await fixture(); assert.equal(f.root.querySelectorAll('.range-day').length, 1); assert.equal(f.get('start').disabled, true);
+  assert.match(f.root.textContent, /Not enough adjacent days/);
 });
