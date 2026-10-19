@@ -85,6 +85,22 @@ test('only an explicit picker choice changes the preference, including switching
   }
 });
 
+test('choosing Arcade from Home opens the lobby; project and Experience links keep the appearance', async () => {
+  const browser = visitor();
+  const original = await browser.open('/');
+  const lobby = await browser.open(original.document.querySelector('.view-choice[data-view=arcade]').getAttribute('href'));
+  assert.equal(lobby.location.pathname, '/'); assertAppearance(lobby, 'arcade');
+  assert.ok(lobby.document.querySelector('[data-aim-range]'));
+  assert.equal(lobby.document.querySelector('[data-start]').disabled, true, 'start waits for its game module');
+  const projects = await browser.open(lobby.document.querySelector('.lobby-menu>a[href="/play"]').getAttribute('href'));
+  assert.ok(projects.document.querySelector('.cabinet')); assertAppearance(projects, 'arcade');
+  assert.equal(projects.document.querySelector('.site-name').getAttribute('href'), '/');
+  const timeline = await browser.open('/timeline'); assertAppearance(timeline, 'arcade');
+  const home = await browser.open('/'); assert.ok(home.document.querySelector('[data-aim-range]'));
+  const restored = await browser.open(home.document.querySelector('.view-choice[data-view=original]').getAttribute('href'));
+  assertAppearance(restored, 'original'); assert.equal(restored.document.querySelector('[data-aim-range]'), null);
+});
+
 test('case study and Experience pickers keep the current page when changing appearance', async () => {
   const browser = visitor('portfolio_view=arcade');
   for (const path of ['/projects/bakiano', '/timeline', '/resume']) {
@@ -172,5 +188,8 @@ test('restoring a stale history page reloads its skin; matching pages keep live 
     setAppearanceProject('bakiano');
     assert.equal(win.document.querySelector('[data-view="original"].view-choice').getAttribute('href'), '/?view=original#bakiano');
     assert.equal(win.document.querySelector('[data-view="tech"].view-choice').getAttribute('href'), '/tech?view=tech#bakiano');
+    assert.equal(win.document.querySelector('[data-view="arcade"].view-choice').getAttribute('href'), '/play?view=arcade#bakiano');
+    setAppearanceProject('');
+    assert.equal(win.document.querySelector('[data-view="arcade"].view-choice').getAttribute('href'), '/?view=arcade');
   } finally { delete globalThis.window; delete globalThis.document; }
 });

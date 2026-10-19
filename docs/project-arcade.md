@@ -1,6 +1,18 @@
 # Project arcade
 
-Six compact games turn a project's engineering decisions into actions, constraints and visible outcomes. The default green homepage remains at `/`; the optional Arcade view stays at `/play`. Tap a cabinet or use arrow keys and Enter to open its screen. A native modal dialog keeps the working game near the top, contains focus, and makes the floor inert. Back to arcade, Escape and browser Back exit; progress stays in the same live DOM and focus returns to the selected cabinet. Direct `#concept-project-slug` links open a cabinet. The room supports mobile scrolling and reduced motion.
+Six compact games turn a project's engineering decisions into actions, constraints and visible outcomes. The default green homepage remains at `/`; selecting Arcade now renders an arcade lobby at the same path. Its Projects card opens the cabinet room at `/play`. Tap a cabinet or use arrow keys and Enter to open its screen. A native modal dialog keeps the working game near the top, contains focus, and makes the floor inert. Back to arcade, Escape and browser Back exit; progress stays in the same live DOM and focus returns to the selected cabinet. Direct `#concept-project-slug` links open a cabinet. The room supports mobile scrolling and reduced motion.
+
+## Arcade homepage
+
+The lobby keeps About me and Say hello as expandable menu cards, with ordinary links to Projects and Experience. All four work without playing; the menu works without JavaScript. Appearance selection still persists across the whole site. Picking Arcade with a selected project keeps the cabinet destination; without a selected project it opens the lobby.
+
+**Commit range** is an original aim-training game. A perspective floor projects the real cached GitHub contribution calendar, preserving dates, counts and week/day order. The flat calendar remains available below it. If GitHub is unavailable or returns malformed data, the game uses an explicitly labeled neutral practice floor, without invented contribution totals. Targets are game objects, independent of contribution counts; shooting cannot alter activity data.
+
+Start explicitly begins a 30-second round. Three ten-second stages introduce steady targets, shorter lifetimes and drifting targets. Hits earn points for speed and streaks; misses deduct 25 and break the streak. Expired targets also break the streak and are counted separately from shot accuracy. The results show hits, accuracy, escaped targets, best streak and average time to hit. Personal best scores are stored locally; keyboard practice uses a separate score key. No account, network calls or analytics are involved in gameplay.
+
+Mouse and touch fire directly; keyboard practice uses 1/2/3, with stationary targets and longer lifetimes. Native target buttons also support keyboard activation. Reduced motion keeps targets stationary. Pause freezes the clock and targets; Escape pauses, a second Escape exits, and Exit range is also available. Moving focus to the portfolio menu, opening its cards, hiding the tab, blurring, resizing or changing the motion preference pauses play. Resume does not charge time spent paused. Replay resets the round, and all timers stop when the round ends or exits.
+
+Automated tests run the actual route, server-rendered markup, input handlers and pure game engine. They cover real/partial/offline contribution data, homepage and appearance routing, pointer/touch/keyboard controls, scoring, difficulty, frozen pauses, replay, navigation, storage failures and reduced motion. These DOM checks do not replace visual browser verification.
 
 ## Games and references
 

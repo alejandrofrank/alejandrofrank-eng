@@ -2,7 +2,7 @@
 // choice parameter instead of replacing the link with an ordinary navigation URL.
 export function setAppearanceProject(slug) {
   const hash = slug ? '#' + encodeURIComponent(slug) : '';
-  const paths = { original: '/', tech: '/tech', arcade: '/play' };
+  const paths = { original: '/', tech: '/tech', arcade: slug ? '/play' : '/' };
   document.querySelectorAll('.view-choice[data-view]').forEach(link => {
     const path = paths[link.dataset.view];
     if (path) link.setAttribute('href', path + '?view=' + link.dataset.view + hash);

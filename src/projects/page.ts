@@ -30,7 +30,7 @@ export function readingShell(title: string, description: string, path: string, o
 ${appearance.background}
 <a class="skip-link" href="#main">Skip to content</a><div class="site-wrap">
 <header class="site-nav"><a class="site-name" href="${portfolioHome(view)}">${SITE.name}</a><nav class="nav-links" aria-label="Main navigation">
-<a href="/tech#projects"${path === '/tech' || path.startsWith('/projects/') ? ' aria-current="page"' : ''}>Projects</a><a href="/timeline">Experience</a><a href="/tech#contact">Contact</a>
+<a href="${view === 'arcade' ? '/play' : '/tech#projects'}"${path === '/tech' || path === '/play' || path.startsWith('/projects/') ? ' aria-current="page"' : ''}>Projects</a><a href="/timeline">Experience</a><a href="${view === 'arcade' ? '/#contact' : '/tech#contact'}">Contact</a>
 </nav><div class="view-controls">${appearanceSwitch(view, currentProject?.slug, currentProject ? path : undefined)}</div></header><main id="main">${body}</main>
 <footer class="site-footer" id="contact"><p>Have a problem worth working on? Get in touch.</p><nav class="footer-links" aria-label="Contact">${LINKS.filter(l => ['Email', 'GitHub', 'LinkedIn'].includes(l.label)).map(l => `<a href="${esc(l.href)}"${l.href.startsWith('https:') ? ' target="_blank" rel="noopener noreferrer"' : ''}>${esc(l.label)}${l.href.startsWith('https:') ? ' ↗' : ''}</a>`).join('')}</nav></footer>
 </div><script type="module" src="/appearance.mjs"></script>${script ? `<script type="module">${script}</script>` : ''}</body></html>`;

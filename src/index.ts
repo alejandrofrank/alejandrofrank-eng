@@ -8,6 +8,7 @@ import { renderPage } from "./layout";
 import { renderProjectIndex, renderProjectPage } from "./projects/page";
 import { renderAmbientCalendar } from "./panels/github";
 import { renderPlayPage } from "./play/page";
+import { renderArcadeHome } from "./play/home";
 import { renderResumePage } from "./resume/page";
 import { renderTimelinePage } from "./timeline/page";
 import { APPEARANCE_COOKIE, isPortfolioView, portfolioHome, type PortfolioView } from "./appearance";
@@ -54,9 +55,12 @@ app.use('*', async (c, next) => {
   await next();
 });
 
-app.get("/", async (c) => c.get('view') === 'original'
-  ? c.html(await renderPage(c.env, new URL(c.req.url).origin))
-  : c.redirect(portfolioHome(c.get('view')), 302));
+app.get("/", async (c) => {
+  const origin = new URL(c.req.url).origin;
+  if (c.get('view') === 'arcade') return c.html(await renderArcadeHome(c.env, origin));
+  if (c.get('view') === 'original') return c.html(await renderPage(c.env, origin));
+  return c.redirect(portfolioHome('tech'), 302);
+});
 app.get("/tech", async (c) => c.html(renderProjectIndex(new URL(c.req.url).origin, await renderAmbientCalendar(c.env), c.get('view'))));
 app.get("/projects/:slug", (c) => {
   const page = renderProjectPage(c.req.param('slug'), new URL(c.req.url).origin, c.get('view'));

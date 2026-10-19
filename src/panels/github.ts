@@ -25,7 +25,7 @@ interface LatestRepo {
   when: string;
 }
 
-interface Calendar {
+export interface Calendar {
   total: number;
   streak: number;
   todayCount: number;
@@ -94,7 +94,11 @@ async function fetchCalendar(user: string, env: Env): Promise<Calendar | null> {
 
   const json = (await res.json()) as any;
   const cal = json?.data?.user?.contributionsCollection?.contributionCalendar;
-  if (!cal) return null;
+  if (!cal || !Number.isInteger(cal.totalContributions) || cal.totalContributions < 0 || !Array.isArray(cal.weeks) || !cal.weeks.length) return null;
+  if (cal.weeks.some((week: any) => !Array.isArray(week.contributionDays) || week.contributionDays.some((day: any) =>
+    !Number.isInteger(day.contributionCount) || day.contributionCount < 0 || typeof day.date !== 'string' ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(day.date) || !Number.isFinite(Date.parse(day.date + 'T00:00:00Z'))
+  ))) return null;
 
   const weeks = (cal.weeks as any[]).map((w) => ({
     days: (w.contributionDays as any[]).map((d) => ({
@@ -159,10 +163,15 @@ function renderHeatmap(cal: Calendar): string {
 }
 
 /** Quiet homepage calendar; uses the same real, cached contribution data. */
-export async function renderAmbientCalendar(env: Env): Promise<string> {
+export async function getContributionCalendar(env: Env): Promise<{ user: string; calendar: Calendar | null }> {
   const user = env.GITHUB_USER || DEFAULT_USER;
   let cal: Calendar | null = null;
   try { cal = await fetchCalendar(user, env); } catch { /* Keep the profile link available. */ }
+  return { user, calendar: cal };
+}
+
+export async function renderAmbientCalendar(env: Env): Promise<string> {
+  const { user, calendar: cal } = await getContributionCalendar(env);
   const label = cal ? `${cal.total.toLocaleString()} contributions in the last year` : "Contribution calendar temporarily unavailable";
   return `<a class="ambient-calendar" href="https://github.com/${encodeURIComponent(user)}" target="_blank" rel="noopener noreferrer" aria-label="GitHub: ${label}. Open ${esc(user)} on GitHub.">
     <span class="calendar-caption"><span>GitHub · ${esc(user)}</span><span>${label} ↗</span></span>
