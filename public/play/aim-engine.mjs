@@ -1,7 +1,7 @@
 // The play field is the calendar: every target occupies four existing day cells.
 export const ROUND_SECONDS = 30;
 export const INTRO_SECONDS = 1.2;
-export const BURST_SECONDS = .28;
+export const BURST_SECONDS = .4;
 export const STAGES = [
   { name: '01 / WARM UP', lifetime: 2.8 },
   { name: '02 / QUICK', lifetime: 1.9 },

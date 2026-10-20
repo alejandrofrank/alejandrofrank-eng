@@ -38,6 +38,7 @@ h1,h2,h3,p { margin:0; } a { color:inherit; text-underline-offset:4px; } button,
 .range-day { display:block; aspect-ratio:1; border-radius:3px; background:var(--cell); transition:background-color .22s,box-shadow .22s; }
 .range-grid[data-boot=lit] .range-day { background:#b8df97; box-shadow:0 0 8px #b8df9740; }
 .range-grid[data-boot=dark] .range-day,.aim-range[data-status=running] .range-day { background:#233130; box-shadow:none; }
+.aim-range[data-status=running] .range-day { transition:none; }
 .aim-range[data-status=running] .range-day.is-target { background:#c4ee96; box-shadow:0 0 10px #b6eb8e45; }
 .aim-range[data-status=running] .range-day.is-urgent { background:#eac286; box-shadow:0 0 8px #eac28635; }
 .aim-range[data-status=running] .range-day.is-burst { background:color-mix(in srgb,#ff626b calc(var(--burst) * 100%),#233130); box-shadow:0 0 calc(var(--burst) * 12px) #ff626b70; transition:none; }

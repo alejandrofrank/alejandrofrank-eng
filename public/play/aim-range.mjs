@@ -83,15 +83,19 @@ export function initAimRange(root = document.querySelector('[data-aim-range]'), 
     painted = glowing;
     const blast = new Map();
     if (active) for (const burst of state.bursts) {
-      // A one-cell halo around the expired 2×2 group. Only real, visible
-      // squares can light up, and a fresh live target always stays readable.
-      for (let column = burst.column - 1; column <= burst.column + 2; column++) {
+      // A thin ring travels from the clump's center, leaving dark cells behind.
+      // Cell spacing is equal on both axes, so radial distance stays circular.
+      const progress = burst.age / BURST_SECONDS;
+      const radius = reduced.matches ? 2.6 : Math.SQRT1_2 + progress * 3;
+      for (let column = burst.column - 4; column <= burst.column + 5; column++) {
         if (column < state.window.first || column > state.window.last) continue;
-        for (let row = burst.row - 1; row <= burst.row + 2; row++) {
+        for (let row = Math.max(0, burst.row - 4); row <= Math.min(6, burst.row + 5); row++) {
           const cell = dayByPosition.get(`${column}:${row}`);
           if (!cell || glowing.has(cell)) continue;
-          const core = column >= burst.column && column <= burst.column + 1 && row >= burst.row && row <= burst.row + 1;
-          const strength = (core ? 1 : .72) * (1 - burst.age / BURST_SECONDS);
+          const distance = Math.hypot(column - burst.column - .5, row - burst.row - .5);
+          const strength = Math.max(0, 1 - Math.abs(distance - radius) / .65)
+            * (reduced.matches ? .5 : Math.sqrt(1 - progress));
+          if (strength <= 0) continue;
           blast.set(cell, Math.max(blast.get(cell) || 0, strength));
         }
       }

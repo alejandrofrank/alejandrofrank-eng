@@ -165,19 +165,19 @@ test('timeouts briefly redden nearby existing visible cells, protect live target
     const f = await fixture(settings), days = [...f.grid.querySelectorAll('.range-day')];
     const data = () => days.map(day => [day.dataset.date, day.dataset.count, day.style.getPropertyValue('--cell')]);
     const original = data(); f.play(); const before = f.controller.snapshot();
-    f.tick(before.targets[0].lifetime - before.elapsed + .05);
+    f.tick(before.targets[0].lifetime - before.elapsed + .1);
     const expired = f.controller.snapshot(), red = [...f.grid.querySelectorAll('.is-burst')];
     assert.ok(red.length > 4, 'the timeout colors surrounding squares, not just a text marker');
     assert.ok(red.some(day => !before.targets.some(target => +day.dataset.column >= target.column && +day.dataset.column <= target.column + 1 && +day.dataset.row >= target.row && +day.dataset.row <= target.row + 1)), 'some red squares must be outside every expired clump');
     for (const day of red) {
       const column = +day.dataset.column, row = +day.dataset.row;
       assert.ok(column >= expired.window.first && column <= expired.window.last);
-      assert.ok(expired.bursts.some(burst => column >= burst.column - 1 && column <= burst.column + 2 && row >= burst.row - 1 && row <= burst.row + 2));
+      assert.ok(expired.bursts.some(burst => Math.hypot(column - burst.column - .5, row - burst.row - .5) < 4.4));
       assert.equal(day.classList.contains('is-target'), false);
       assert.ok(Number(day.style.getPropertyValue('--burst')) > 0);
     }
     f.tick(.15); assert.equal(f.grid.querySelector('.is-burst.is-target'), null, 'respawned targets must stay green');
-    f.tick(.2); assert.equal(f.grid.querySelector('.is-burst'), null);
+    f.tick(BURST_SECONDS); assert.equal(f.grid.querySelector('.is-burst'), null);
     assert.ok(days.every(day => day.style.getPropertyValue('--burst') === ''));
     assert.deepEqual(data(), original);
     // Interrupt another burst and ensure it cannot return on Resume or replay.
@@ -187,6 +187,42 @@ test('timeouts briefly redden nearby existing visible cells, protect live target
     f.get('start').click(); assert.equal(f.grid.querySelector('.is-burst'), null);
     f.get('stop').click(); assert.deepEqual(data(), original); assert.equal(f.grid.querySelector('.is-burst'), null);
   }
+});
+
+test('timeout ripples travel in a circular wave, reaching sides before corners and clearing the center', async () => {
+  let random = .51;
+  const f = await fixture({ random: () => random }); f.play();
+  const initial = f.controller.snapshot(), target = initial.targets[0];
+  // Let one central clump expire; move other targets away from its ripple.
+  random = .95;
+  f.tick(target.lifetime - initial.elapsed - .05);
+  for (const other of initial.targets.slice(1)) f.pointer(f.root.querySelector(`[data-target-id="${other.id}"]`));
+  for (let frame = 0; frame < 10 && !f.controller.snapshot().bursts.length; frame++) f.tick(1 / 60);
+  assert.equal(f.controller.snapshot().bursts.length, 1);
+  const cell = (dx, dy) => f.grid.querySelector(`.range-day[data-column="${target.column + dx}"][data-row="${target.row + dy}"]`);
+  const red = (dx, dy) => cell(dx, dy).classList.contains('is-burst');
+  assert.ok(red(0, 0)); assert.equal(red(-1, 0), false);
+  f.tick(.1);
+  assert.ok(red(-1, 0), 'the nearer side receives the wave first');
+  assert.equal(red(-1, -1), false, 'the diagonal corner is farther away, despite the same square-grid offset');
+  assert.equal(cell(-1, 0).style.getPropertyValue('--burst'), cell(2, 0).style.getPropertyValue('--burst'), 'equal radial distances light equally');
+  f.tick(.1);
+  assert.equal(red(0, 0), false, 'the core goes dark behind the wave');
+  assert.ok(red(-1, -1), 'the wave reaches the diagonal next');
+  f.tick(.1);
+  assert.ok(red(-2, -1), 'the wave continues outward');
+  assert.equal(red(-1, -1), false, 'the inner ring clears too');
+  assert.equal(red(-3, -3), false, 'distant corners never become a rectangular flash');
+  f.tick(.15); assert.equal(f.grid.querySelector('.is-burst'), null);
+});
+
+test('reduced motion keeps the circular timeout cue stationary', async () => {
+  const f = await fixture({ reduced: true }); f.play();
+  const state = f.controller.snapshot(); f.tick(state.targets[0].lifetime - state.elapsed + .02);
+  const redCells = () => [...f.grid.querySelectorAll('.is-burst')].map(day => [day.dataset.column, day.dataset.row, day.style.getPropertyValue('--burst')]);
+  const first = redCells(); assert.ok(first.length > 0);
+  f.tick(.05); assert.deepEqual(redCells(), first, 'no outward movement or pulsing');
+  f.tick(BURST_SECONDS); assert.deepEqual(redCells(), []);
 });
 
 test('small screens use visible weeks with tappable clumps and recalculate after scrolling', async () => {
