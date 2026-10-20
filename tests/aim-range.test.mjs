@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { build } from 'esbuild';
 import { fileURLToPath } from 'node:url';
 import { Window } from 'happy-dom';
-import { createAimRound, INTRO_SECONDS } from '../public/play/aim-engine.mjs';
+import { createAimRound, INTRO_SECONDS, BURST_SECONDS } from '../public/play/aim-engine.mjs';
 import { initAimRange } from '../public/play/aim-range.mjs';
 
 const weeks = Array.from({ length: 53 }, (_, column) => ({ contributionDays: Array.from({ length: 7 }, (_, row) => ({
@@ -17,7 +17,7 @@ const { default: app } = await import(`data:text/javascript;base64,${Buffer.from
 const fixtures = [];
 afterEach(async () => { calendar = liveCalendar; await Promise.all(fixtures.splice(0).map(f => { f.controller?.destroy(); return f.win.happyDOM.close(); })); });
 
-async function fixture({ width = 1100, reduced = false, hash = '' } = {}) {
+async function fixture({ width = 1100, reduced = false, hash = '', random = () => .5 } = {}) {
   const response = await app.request('https://portfolio.test/', { headers: { Cookie: 'portfolio_view=arcade' } }, { GITHUB_USER: 'fixture-user', GITHUB_TOKEN: 'test-only' });
   assert.equal(response.status, 200);
   const win = new Window({ url: 'https://portfolio.test/' + hash, settings: { disableCSSFileLoading: true, disableJavaScriptFileLoading: true } });
@@ -47,7 +47,7 @@ async function fixture({ width = 1100, reduced = false, hash = '' } = {}) {
     key(key, repeat = false) { win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key, repeat, bubbles: true, cancelable: true })); },
     play() { f.get('start').click(); f.tick(1.3); assert.equal(f.controller.snapshot().status, 'running'); },
   };
-  f.controller = initAimRange(root, { random: () => .5, frames: { request(fn) { const id = ++sequence; pending.set(id, fn); return id; }, cancel(id) { pending.delete(id); } } });
+  f.controller = initAimRange(root, { random, frames: { request(fn) { const id = ++sequence; pending.set(id, fn); return id; }, cancel(id) { pending.delete(id); } } });
   fixtures.push(f); return f;
 }
 
@@ -139,6 +139,54 @@ test('difficulty shortens time windows while keeping four-square targets and sco
   const copy = round.snapshot(); copy.targets[0].column = -1; assert.ok(round.snapshot().targets[0].column >= 0);
   round.pause(); const paused = round.snapshot(); round.step(50); round.shoot(); assert.deepEqual(round.snapshot(), paused);
   round.resume(); round.step(100); assert.equal(round.snapshot().status, 'finished'); assert.equal(round.snapshot().remaining, 0);
+});
+
+test('only timeouts produce short-lived bursts; shots, transitions and pauses cannot leave stale explosions', () => {
+  const round = createAimRound({ random: () => .5 }); round.start({ skipIntro: true });
+  const initial = round.snapshot().targets;
+  round.shoot(initial[0].id); round.shoot();
+  assert.deepEqual(round.snapshot().bursts, [], 'neither hits nor fired misses cause timeout feedback');
+  const score = round.snapshot().score;
+  round.step(2.8); let state = round.snapshot();
+  assert.deepEqual(state.bursts.map(burst => [burst.id, burst.column, burst.row]), initial.slice(1).map(target => [target.id, target.column, target.row]));
+  assert.equal(state.escaped, 2); assert.equal(state.shots, 2); assert.equal(state.score, score);
+  state.bursts[0].column = -999; assert.ok(round.snapshot().bursts[0].column >= 0);
+  round.step(BURST_SECONDS / 2); assert.ok(round.snapshot().bursts.every(burst => burst.age > 0));
+  round.step(BURST_SECONDS); assert.deepEqual(round.snapshot().bursts, []);
+  round.start({ skipIntro: true }); round.step(2.8); round.pause();
+  assert.deepEqual(round.snapshot().bursts, []); round.resume(); assert.deepEqual(round.snapshot().bursts, []);
+  round.start({ skipIntro: true }); round.step(10); assert.deepEqual(round.snapshot().bursts, [], 'a difficulty transition is not a timeout');
+  round.step(1.9); assert.ok(round.snapshot().bursts.length > 0);
+  round.step(30); assert.deepEqual(round.snapshot().bursts, []); assert.equal(round.snapshot().status, 'finished');
+});
+
+test('timeouts briefly redden nearby existing visible cells, protect live targets and restore the graph', async () => {
+  for (const settings of [{ width: 1100, random: () => 0 }, { width: 360, random: () => 0 }, { reduced: true }]) {
+    const f = await fixture(settings), days = [...f.grid.querySelectorAll('.range-day')];
+    const data = () => days.map(day => [day.dataset.date, day.dataset.count, day.style.getPropertyValue('--cell')]);
+    const original = data(); f.play(); const before = f.controller.snapshot();
+    f.tick(before.targets[0].lifetime - before.elapsed + .05);
+    const expired = f.controller.snapshot(), red = [...f.grid.querySelectorAll('.is-burst')];
+    assert.ok(red.length > 4, 'the timeout colors surrounding squares, not just a text marker');
+    assert.ok(red.some(day => !before.targets.some(target => +day.dataset.column >= target.column && +day.dataset.column <= target.column + 1 && +day.dataset.row >= target.row && +day.dataset.row <= target.row + 1)), 'some red squares must be outside every expired clump');
+    for (const day of red) {
+      const column = +day.dataset.column, row = +day.dataset.row;
+      assert.ok(column >= expired.window.first && column <= expired.window.last);
+      assert.ok(expired.bursts.some(burst => column >= burst.column - 1 && column <= burst.column + 2 && row >= burst.row - 1 && row <= burst.row + 2));
+      assert.equal(day.classList.contains('is-target'), false);
+      assert.ok(Number(day.style.getPropertyValue('--burst')) > 0);
+    }
+    f.tick(.15); assert.equal(f.grid.querySelector('.is-burst.is-target'), null, 'respawned targets must stay green');
+    f.tick(.2); assert.equal(f.grid.querySelector('.is-burst'), null);
+    assert.ok(days.every(day => day.style.getPropertyValue('--burst') === ''));
+    assert.deepEqual(data(), original);
+    // Interrupt another burst and ensure it cannot return on Resume or replay.
+    for (let frame = 0; frame < 200 && !f.grid.querySelector('.is-burst'); frame++) f.tick(1 / 60);
+    assert.ok(f.grid.querySelector('.is-burst')); f.get('pause').click();
+    assert.equal(f.grid.querySelector('.is-burst'), null); assert.equal(f.pending.size, 0);
+    f.get('start').click(); assert.equal(f.grid.querySelector('.is-burst'), null);
+    f.get('stop').click(); assert.deepEqual(data(), original); assert.equal(f.grid.querySelector('.is-burst'), null);
+  }
 });
 
 test('small screens use visible weeks with tappable clumps and recalculate after scrolling', async () => {

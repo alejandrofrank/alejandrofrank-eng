@@ -1,4 +1,4 @@
-import { createAimRound, ROUND_SECONDS, STAGES } from './aim-engine.mjs';
+import { createAimRound, ROUND_SECONDS, BURST_SECONDS, STAGES } from './aim-engine.mjs';
 
 export function initAimRange(root = document.querySelector('[data-aim-range]'), options = {}) {
   if (!root || root.dataset.initialized) return;
@@ -15,7 +15,7 @@ export function initAimRange(root = document.querySelector('[data-aim-range]'), 
   const reduced = win.matchMedia('(prefers-reduced-motion: reduce)');
   const frames = options.frames || { request: callback => win.requestAnimationFrame(callback), cancel: id => win.cancelAnimationFrame(id) };
   const nodes = new Map(), marks = [], listeners = [];
-  let frame = null, previousTime = null, lastStage = -1, lastStatus = '', painted = new Set();
+  let frame = null, previousTime = null, lastStage = -1, lastStatus = '', painted = new Set(), blasted = new Set();
   const on = (target, type, callback) => { target.addEventListener(type, callback); listeners.push(() => target.removeEventListener(type, callback)); };
   const say = text => { find('[data-announcement]').textContent = text; };
   const inPlay = status => status === 'starting' || status === 'running';
@@ -81,6 +81,27 @@ export function initAimRange(root = document.querySelector('[data-aim-range]'), 
       day.classList.toggle('is-target', glowing.has(day)); day.classList.toggle('is-urgent', urgent.has(day));
     }
     painted = glowing;
+    const blast = new Map();
+    if (active) for (const burst of state.bursts) {
+      // A one-cell halo around the expired 2×2 group. Only real, visible
+      // squares can light up, and a fresh live target always stays readable.
+      for (let column = burst.column - 1; column <= burst.column + 2; column++) {
+        if (column < state.window.first || column > state.window.last) continue;
+        for (let row = burst.row - 1; row <= burst.row + 2; row++) {
+          const cell = dayByPosition.get(`${column}:${row}`);
+          if (!cell || glowing.has(cell)) continue;
+          const core = column >= burst.column && column <= burst.column + 1 && row >= burst.row && row <= burst.row + 1;
+          const strength = (core ? 1 : .72) * (1 - burst.age / BURST_SECONDS);
+          blast.set(cell, Math.max(blast.get(cell) || 0, strength));
+        }
+      }
+    }
+    for (const day of new Set([...blasted, ...blast.keys()])) {
+      day.classList.toggle('is-burst', blast.has(day));
+      if (blast.has(day)) day.style.setProperty('--burst', blast.get(day));
+      else day.style.removeProperty('--burst');
+    }
+    blasted = new Set(blast.keys());
     if (active && state.stage !== lastStage) {
       say(state.mode === 'keyboard' ? 'Press 1, 2 or 3 to hit the matching group.' : STAGES[state.stage].name + '. Shoot the glowing groups of four squares.');
       lastStage = state.stage;

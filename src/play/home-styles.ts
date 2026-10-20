@@ -40,6 +40,7 @@ h1,h2,h3,p { margin:0; } a { color:inherit; text-underline-offset:4px; } button,
 .range-grid[data-boot=dark] .range-day,.aim-range[data-status=running] .range-day { background:#233130; box-shadow:none; }
 .aim-range[data-status=running] .range-day.is-target { background:#c4ee96; box-shadow:0 0 10px #b6eb8e45; }
 .aim-range[data-status=running] .range-day.is-urgent { background:#eac286; box-shadow:0 0 8px #eac28635; }
+.aim-range[data-status=running] .range-day.is-burst { background:color-mix(in srgb,#ff626b calc(var(--burst) * 100%),#233130); box-shadow:0 0 calc(var(--burst) * 12px) #ff626b70; transition:none; }
 .range-targets { display:contents; }
 .aim-target { position:relative; align-self:stretch; justify-self:stretch; z-index:2; min-width:0; min-height:0; padding:0; background:transparent; color:#17251b; border:0; border-radius:4px; cursor:crosshair; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
 .aim-target::after { content:''; position:absolute; bottom:-2px; left:0; height:2px; width:100%; background:#e6ffd0; transform:scaleX(var(--life,1)); transform-origin:left; pointer-events:none; }
@@ -55,4 +56,5 @@ h1,h2,h3,p { margin:0; } a { color:inherit; text-underline-offset:4px; } button,
 @media(max-width:600px) { .lobby-wrap { padding:0 14px 24px; }.lobby-header { gap:14px; padding:18px 0; }.lobby-intro { padding:20px 0 16px; }.lobby-card { padding:12px; gap:9px; min-height:82px; }.lobby-card b { font-size:14px; }.lobby-card small { font-size:11px; }.menu-arrow { display:none; }.menu-icon { width:28px; }.aim-range { margin-top:22px; }.range-caption { font-size:10px; }.range-caption>span { flex-basis:100%; }.range-grid { --cell-min:22px; }.range-launch { gap:10px 20px; }.range-metrics { gap:12px; }.range-metrics>div { gap:5px; }.range-metrics b { font-size:14px; }.range-metrics span { font-size:9px; }.range-toolbar p { font-size:12px; }.range-note span { display:block; margin-left:0; } }
 @media(pointer:coarse) { .range-grid { --cell-min:22px; } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; } }
+@media(prefers-reduced-motion:reduce) { .aim-range[data-status=running] .range-day.is-burst { background:#a65055; box-shadow:none; } }
 `;

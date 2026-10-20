@@ -1,6 +1,7 @@
 // The play field is the calendar: every target occupies four existing day cells.
 export const ROUND_SECONDS = 30;
 export const INTRO_SECONDS = 1.2;
+export const BURST_SECONDS = .28;
 export const STAGES = [
   { name: '01 / WARM UP', lifetime: 2.8 },
   { name: '02 / QUICK', lifetime: 1.9 },
@@ -25,7 +26,7 @@ export function createAimRound({ random = Math.random, columns = 53, cells } = {
   }
   function reset() {
     state = { status: 'ready', elapsed: 0, intro: 0, score: 0, hits: 0, shots: 0, escaped: 0,
-      combo: 0, bestCombo: 0, reactionTotal: 0, mode: 'pointer', targets: [],
+      combo: 0, bestCombo: 0, reactionTotal: 0, mode: 'pointer', targets: [], bursts: [],
       cooldowns: [0, 0, 0], previous: [null, null, null], window: { first: 0, last: columns - 1 }, resumeStatus: 'running' };
     return snapshot();
   }
@@ -55,7 +56,7 @@ export function createAimRound({ random = Math.random, columns = 53, cells } = {
       canPlay: groups.some(inWindow), window: { ...state.window },
       accuracy: state.shots ? Math.round(100 * state.hits / state.shots) : null,
       reaction: state.hits ? Math.round(1000 * state.reactionTotal / state.hits) : null,
-      targets: state.targets.map(target => ({ ...target })) };
+      targets: state.targets.map(target => ({ ...target })), bursts: state.bursts.map(burst => ({ ...burst })) };
   }
   function start({ mode = 'pointer', skipIntro = false, window } = {}) {
     reset(); state.mode = mode === 'keyboard' ? 'keyboard' : 'pointer'; setWindow(window);
@@ -74,12 +75,16 @@ export function createAimRound({ random = Math.random, columns = 53, cells } = {
     }
     const previousStage = stageIndex();
     state.elapsed = Math.min(ROUND_SECONDS, state.elapsed + seconds);
-    if (state.elapsed >= ROUND_SECONDS) { state.status = 'finished'; state.targets = []; return snapshot(); }
-    if (stageIndex() !== previousStage) { state.targets = []; state.cooldowns.fill(0); fill(); return snapshot(); }
+    if (state.elapsed >= ROUND_SECONDS) { state.status = 'finished'; state.targets = []; state.bursts = []; return snapshot(); }
+    if (stageIndex() !== previousStage) { state.targets = []; state.bursts = []; state.cooldowns.fill(0); fill(); return snapshot(); }
+    state.bursts = state.bursts.map(burst => ({ ...burst, age: burst.age + seconds })).filter(burst => burst.age < BURST_SECONDS);
     state.cooldowns = state.cooldowns.map(value => Math.max(0, value - seconds));
     for (const target of state.targets) {
       target.age += seconds;
-      if (target.age >= target.lifetime) { state.escaped++; state.combo = 0; state.cooldowns[target.slot] = .15; }
+      if (target.age >= target.lifetime) {
+        state.escaped++; state.combo = 0; state.cooldowns[target.slot] = .15;
+        state.bursts.push({ id: target.id, column: target.column, row: target.row, age: 0 });
+      }
     }
     state.targets = state.targets.filter(target => target.age < target.lifetime);
     fill(); return snapshot();
@@ -99,7 +104,7 @@ export function createAimRound({ random = Math.random, columns = 53, cells } = {
   }
   reset();
   return { start, step, shoot, snapshot, reset,
-    pause() { if (['starting', 'running'].includes(state.status)) { state.resumeStatus = state.status; state.status = 'paused'; } return snapshot(); },
+    pause() { if (['starting', 'running'].includes(state.status)) { state.resumeStatus = state.status; state.status = 'paused'; state.bursts = []; } return snapshot(); },
     resume({ window = state.window, skipIntro = false } = {}) {
       if (state.status === 'paused') {
         setWindow(window);
