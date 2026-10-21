@@ -44,7 +44,7 @@ ${FAVICON}${FONTS_LINK}<title>${SITE.name} · Arcade</title><meta name="descript
 <style>${arcadeHomeStyles}${appearanceStyles}${navigationStyles}</style></head><body data-view="arcade" class="arcade-home">
 <a class="skip-link" href="#main">Skip to content</a><div class="lobby-wrap">
 ${portfolioNavigation('arcade', 'home')}
-<main id="main"><div class="lobby-intro"><div><h1>Engineer based in Madrid</h1><p>Pick a destination. Or warm up your aim.</p></div><span class="lobby-tag">ARCADE / LOBBY</span></div>
+<main id="main"><div class="lobby-intro"><div><h1>${SITE.role} based in Madrid</h1><p>Pick a destination. Or warm up your aim.</p></div><span class="lobby-tag">ARCADE / LOBBY</span></div>
 <div class="lobby-menu" aria-label="Explore the portfolio">
 <details class="lobby-panel" name="lobby" id="about"><summary class="lobby-card"><span class="menu-icon">${PLAYER}</span><span><b>About me</b><small>Meet the player</small></span><span class="menu-arrow" aria-hidden="true">+</span></summary><section class="lobby-panel-body"><h2>Player profile</h2><p>${esc(SITE.subtitle)}</p><dl>${OUTCOMES.map(outcome => `<div><dt>${esc(outcome.label)}</dt><dd>${esc(outcome.value)}</dd></div>`).join('')}</dl><a href="/timeline">Explore my experience →</a></section></details>
 <a class="lobby-card" href="/play"><span class="menu-icon">${icon('projects')}</span><span><b>Projects</b><small>Enter the game room</small></span><span class="menu-arrow" aria-hidden="true">↗</span></a>

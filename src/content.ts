@@ -5,10 +5,11 @@
 
 export const SITE = {
   name: "Alejandro Frank",
+  role: "AI Data Engineer",
   location: "Madrid",
   thesis: "The wall is never the code.",
   subtitle:
-    "Engineer. I take ambiguous problems and ship the ambitious version: live systems other people can depend on.",
+    "AI Data Engineer. I take ambiguous problems and ship the ambitious version: live systems other people can depend on.",
 };
 
 // Outcomes header — the two static credibility numbers. The header module

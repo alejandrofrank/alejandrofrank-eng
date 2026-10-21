@@ -100,19 +100,19 @@ export async function renderPage(env: Env, origin: string): Promise<string> {
 <meta name="theme-color" content="#192822" />
 ${FAVICON}
 ${FONTS_LINK}
-<title>${SITE.name} · Engineer based in Madrid</title>
-<meta name="description" content="Engineer based in Madrid" />
+<title>${SITE.name} · ${SITE.role} based in Madrid</title>
+<meta name="description" content="${SITE.role} based in Madrid" />
 <link rel="canonical" href="${origin}/" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="${SITE.name}" />
-<meta property="og:description" content="Engineer based in Madrid" />
+<meta property="og:description" content="${SITE.role} based in Madrid" />
 <meta property="og:url" content="${origin}/" />
 <meta property="og:image" content="${origin}/og-forest.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content="Alejandro Frank — Engineer based in Madrid, over a teal and warm orange gradient" />
 <meta name="twitter:title" content="Alejandro Frank" />
-<meta name="twitter:description" content="Engineer based in Madrid" />
+<meta name="twitter:description" content="${SITE.role} based in Madrid" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:image" content="${origin}/og-forest.png" />
 <style>${styles}${personalStyles}${appearanceStyles}${navigationStyles}</style>
@@ -124,7 +124,7 @@ ${FONTS_LINK}
     <main>
     <header class="human-hero">
       <p class="human-location">${SITE.name}</p>
-      <h1>Engineer based in Madrid</h1>
+      <h1>${SITE.role} based in Madrid</h1>
     </header>
     <div class="explore" aria-label="Explore more">
       <details class="reveal" name="explore" id="about">
