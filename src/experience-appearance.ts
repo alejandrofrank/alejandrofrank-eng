@@ -1,4 +1,5 @@
-import { appearanceStyles, appearanceSwitch, portfolioHome, type ExperiencePath, type PortfolioView } from './appearance';
+import { appearanceStyles, type ExperiencePath, type PortfolioView } from './appearance';
+import { navigationStyles, portfolioNavigation } from './navigation';
 import { gradientMarkup } from './gradient';
 import { personalStyles } from './personal-styles';
 
@@ -9,21 +10,18 @@ export function experienceAppearance(view: PortfolioView) {
     bodyClass: `${view === 'original' ? 'personal' : 'experience-themed'} experience-page`,
     color: { original: '#192822', tech: '#10151c', arcade: '#11121b' }[view],
     background: view === 'original' ? gradientMarkup : '',
-    styles: `${view === 'original' ? personalStyles : themedStyles}${appearanceStyles}${toolbarStyles}`,
+    styles: `${view === 'original' ? personalStyles : themedStyles}${appearanceStyles}${toolbarStyles}${navigationStyles}`,
   };
 }
 
 export function experienceNavigation(view: PortfolioView, path: ExperiencePath): string {
   const alternate = path === '/timeline' ? '/resume' : '/timeline';
-  return `<header class="experience-toolbar"><nav class="subnav" aria-label="Experience navigation"><a href="${portfolioHome(view)}">Home</a><a href="${alternate}">${alternate === '/resume' ? 'List view' : 'Timeline view'}</a></nav><div class="view-controls">${appearanceSwitch(view, '', path)}</div></header>`;
+  return `${portfolioNavigation(view, 'experience', '', path)}<nav class="experience-toolbar subnav" aria-label="Experience navigation"><a href="${alternate}">${alternate === '/resume' ? 'List view' : 'Timeline view'}</a></nav>`;
 }
 
 const toolbarStyles = `
-.experience-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px 24px; padding:22px 0; margin-bottom:22px; border-bottom:1px solid var(--line); }
-.experience-toolbar .subnav { margin:0; flex-wrap:wrap; align-items:center; gap:12px 22px; }
-.experience-toolbar .subnav a { display:inline-flex; align-items:center; min-height:44px; }
-@media(max-width:780px) { .experience-toolbar .view-controls { flex-basis:auto; } }
-@media(max-width:480px) { .experience-toolbar { padding:18px 0; }.experience-toolbar .view-controls { flex-basis:100%; margin-top:0; } }
+.experience-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:12px 24px; padding:8px 0; margin:0 0 16px; }
+.experience-toolbar a { display:inline-flex; align-items:center; min-height:44px; }
 @media print { .experience-toolbar { display:none; } }
 `;
 

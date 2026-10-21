@@ -4,7 +4,8 @@ import { FONTS_LINK } from '../ui';
 import { esc } from '../panels/helpers';
 import type { Env } from '../panels';
 import { getContributionCalendar, type Calendar } from '../panels/github';
-import { appearanceStyles, appearanceSwitch } from '../appearance';
+import { appearanceStyles } from '../appearance';
+import { navigationStyles, portfolioNavigation } from '../navigation';
 import { PLAYER } from './art';
 import { arcadeHomeStyles } from './home-styles';
 
@@ -40,9 +41,9 @@ export async function renderArcadeHome(env: Env, origin: string): Promise<string
   return `<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#11121b">
 ${FAVICON}${FONTS_LINK}<title>${SITE.name} · Arcade</title><meta name="description" content="Explore Alejandro Frank's projects and experience, or play a quick aim-training round on his GitHub contribution grid."><link rel="canonical" href="${esc(origin)}/">
-<style>${arcadeHomeStyles}${appearanceStyles}</style></head><body data-view="arcade" class="arcade-home">
+<style>${arcadeHomeStyles}${appearanceStyles}${navigationStyles}</style></head><body data-view="arcade" class="arcade-home">
 <a class="skip-link" href="#main">Skip to content</a><div class="lobby-wrap">
-<header class="lobby-header"><a class="lobby-name" href="/">${SITE.name}</a>${appearanceSwitch('arcade')}</header>
+${portfolioNavigation('arcade', 'home')}
 <main id="main"><div class="lobby-intro"><div><h1>Engineer based in Madrid</h1><p>Pick a destination. Or warm up your aim.</p></div><span class="lobby-tag">ARCADE / LOBBY</span></div>
 <div class="lobby-menu" aria-label="Explore the portfolio">
 <details class="lobby-panel" name="lobby" id="about"><summary class="lobby-card"><span class="menu-icon">${PLAYER}</span><span><b>About me</b><small>Meet the player</small></span><span class="menu-arrow" aria-hidden="true">+</span></summary><section class="lobby-panel-body"><h2>Player profile</h2><p>${esc(SITE.subtitle)}</p><dl>${OUTCOMES.map(outcome => `<div><dt>${esc(outcome.label)}</dt><dd>${esc(outcome.value)}</dd></div>`).join('')}</dl><a href="/timeline">Explore my experience →</a></section></details>

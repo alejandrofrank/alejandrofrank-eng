@@ -1,3 +1,7 @@
+import { initPortfolioNavigation } from './navigation.mjs';
+
+initPortfolioNavigation();
+
 // The server saves explicit picker choices. Project selection must preserve that
 // choice parameter instead of replacing the link with an ordinary navigation URL.
 export function setAppearanceProject(slug) {

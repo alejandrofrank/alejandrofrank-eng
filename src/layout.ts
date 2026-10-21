@@ -14,7 +14,8 @@ import { gradientMarkup } from "./gradient";
 import { personalStyles } from "./personal-styles";
 import { PANELS, type Env, type Slot } from "./panels";
 import { renderAmbientCalendar } from "./panels/github";
-import { appearanceSwitch, appearanceStyles } from "./appearance";
+import { appearanceStyles } from "./appearance";
+import { portfolioNavigation, navigationStyles } from "./navigation";
 import { PROJECTS, projectPath } from "./projects/catalog";
 
 /**
@@ -85,7 +86,7 @@ export async function renderPage(env: Env, origin: string): Promise<string> {
     const panelIndex = PANELS.findIndex(panel => panel.key === (project.slug === 'vesti' ? 'jev' : project.slug));
     const body = panelIndex >= 0 ? cards[panelIndex] : card({
       key: project.slug, title: project.title, n: index + 1, span2: true,
-      body: `<p class="project-eyebrow">${esc(project.status)}</p><p class="v-headline">${esc(project.question)}</p><p class="v-blurb">${esc(project.summary)}</p><div class="v-actions"><a class="v-action" href="${projectPath(project)}">Read in Tech view →</a>${project.links.map(link => `<a class="v-action" href="${esc(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)} ↗</a>`).join('')}</div>`,
+      body: `<p class="project-eyebrow">${esc(project.status)}</p><p class="v-headline">${esc(project.question)}</p><p class="v-blurb">${esc(project.summary)}</p><div class="v-actions"><a class="v-action" href="${projectPath(project)}">Read the project →</a>${project.links.map(link => `<a class="v-action" href="${esc(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)} ↗</a>`).join('')}</div>`,
       foot: `<span class="badge">${project.stack.map(esc).join(' · ')}</span>`,
     });
     return `<details class="project-dropdown" name="project" id="project-${project.slug}"><summary>${esc(project.title)}</summary><div class="project-details">${body}</div></details>`;
@@ -114,12 +115,12 @@ ${FONTS_LINK}
 <meta name="twitter:description" content="Engineer based in Madrid" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:image" content="${origin}/og-forest.png" />
-<style>${styles}${personalStyles}${appearanceStyles}</style>
+<style>${styles}${personalStyles}${appearanceStyles}${navigationStyles}</style>
 </head>
 <body class="personal" data-view="original">
   ${gradientMarkup}
   <div class="wrap">
-    <div class="original-appearance">${appearanceSwitch('original')}</div>
+    ${portfolioNavigation('original', 'home')}
     <main>
     <header class="human-hero">
       <p class="human-location">${SITE.name}</p>

@@ -89,7 +89,7 @@ ${FONTS_LINK}
     <div class="sec-label">${DIAMOND}<span>404</span><span class="leader"></span></div>
     <h1 class="page-h1">This route doesn't exist.</h1>
     <p class="page-lede">The wall is never the code — but this URL might be.</p>
-    <a class="btn secondary chamfer" href="/">← back to the dashboard</a>
+    <a class="btn secondary chamfer" href="/">← Back home</a>
   </div>
 </body>
 </html>`,

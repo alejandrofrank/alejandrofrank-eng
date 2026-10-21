@@ -46,6 +46,6 @@ ${PROJECTS.map((p, i) => `<article class="project-preview" id="preview-${p.slug}
 <div class="preview-heading reveal-part"><span class="preview-category">${esc(p.category)}</span><span class="preview-status">${esc(p.status)}</span></div><h3 class="reveal-part" id="preview-title-${p.slug}">${esc(p.title)}<span aria-hidden="true">${SYMBOLS[i]}</span></h3>
 <figure class="project-sketch reveal-part"><svg viewBox="0 0 640 235" aria-hidden="true" focusable="false">${sketches[p.slug].body}</svg><figcaption>${esc(sketches[p.slug].caption)}</figcaption></figure>
 <div class="preview-story reveal-part"><p class="preview-question">${esc(p.question)}</p><p>${esc(p.summary)}</p></div><ol class="preview-flow reveal-part" aria-label="System flow">${p.flow.map(step => `<li>${esc(step)}</li>`).join('')}</ol>
-<div class="preview-actions reveal-part"><a class="project-open" href="${projectPath(p)}">Read the project <span aria-hidden="true">↗</span></a><a class="project-play" href="/play#${p.slug}">${p.slug === 'catalog-match-lab' ? 'Play the matching game' : 'Explore the game concept'} <span aria-hidden="true">→</span></a></div>
+<div class="preview-actions reveal-part"><a class="project-open" href="${projectPath(p)}">Read the project <span aria-hidden="true">↗</span></a><a class="project-play" href="/play#concept-${p.slug}">Play the game <span aria-hidden="true">→</span></a></div>
 </article>`).join('')}<p class="explorer-announcement" id="explorer-announcement" role="status" aria-live="polite" aria-atomic="true"></p></div></div>`;
 }

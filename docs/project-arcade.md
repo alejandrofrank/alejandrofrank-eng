@@ -2,6 +2,12 @@
 
 Six compact games turn a project's engineering decisions into actions, constraints and visible outcomes. The default green homepage remains at `/`; selecting Arcade now renders an arcade lobby at the same path. Its Projects card opens the cabinet room at `/play`. Tap a cabinet or use arrow keys and Enter to open its screen. A native modal dialog keeps the working game near the top, contains focus, and makes the floor inert. Back to arcade, Escape and browser Back exit; progress stays in the same live DOM and focus returns to the selected cabinet. Direct `#concept-project-slug` links open a cabinet. The room supports mobile scrolling and reduced motion.
 
+## Navigation
+
+Home, Projects, Experience and Contact share one navigation bar across the portfolio, with the three appearance choices alongside them. The bar stays available when scrolling (except on very short screens), and anchor spacing follows its height. Ordinary links preserve the saved appearance. Home leads to the green homepage, Tech explorer or Arcade lobby as appropriate; Projects and Contact lead to that appearance's corresponding section. Case-study return links retain the project selection in the original accordion, Tech explorer or arcade floor. Each case study also links directly to its game, and the explorer's Play links open the game rather than just selecting its cabinet.
+
+Open cabinets offer a direct Home link as well as Back to arcade. Returning to the arcade floor preserves the live puzzle; Home is normal page navigation. Changing appearance while reading a role preserves its URL fragment, including after selecting another role. Clicking Contact again reopens its panel even if the URL already ends in `#contact`.
+
 ## Arcade homepage
 
 The lobby keeps About me and Say hello as expandable menu cards, with ordinary links to Projects and Experience. All four work without playing; the menu works without JavaScript. Appearance selection still persists across the whole site. Picking Arcade with a selected project keeps the cabinet destination; without a selected project it opens the lobby.

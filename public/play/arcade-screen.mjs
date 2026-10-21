@@ -5,6 +5,11 @@ export function mountCabinetScreen({ panels, onExit = () => {} }) {
   dialog.className = 'arcade-screen'; dialog.id = 'arcade-screen';
   dialog.setAttribute('aria-labelledby', 'arcade-screen-title');
   dialog.innerHTML = '<div class="screen-marquee"><div><span id="arcade-screen-project"></span><h2 id="arcade-screen-title"></h2></div><button type="button" class="screen-exit" aria-label="Back to arcade">← Back to arcade <kbd>Esc</kbd></button></div><div class="screen-viewport"><div class="station-panels"></div></div><div class="screen-rim" aria-hidden="true"><i></i><span>AF / PROJECT ARCADE</span><i></i></div>';
+  const actions = document.createElement('nav'); actions.className = 'screen-actions'; actions.setAttribute('aria-label', 'Leave game');
+  const home = document.createElement('a'); home.className = 'screen-home'; home.textContent = 'Home';
+  home.href = document.querySelector('[data-destination="home"]')?.getAttribute('href') || '/';
+  actions.append(home, dialog.querySelector('.screen-exit'));
+  dialog.querySelector('.screen-marquee').append(actions);
   document.body.append(dialog);
   const host = dialog.querySelector('.station-panels'), exit = dialog.querySelector('.screen-exit'), viewport = dialog.querySelector('.screen-viewport');
   panels.forEach(panel => { panel.hidden = true; host.append(panel); });

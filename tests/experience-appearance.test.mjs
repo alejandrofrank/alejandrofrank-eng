@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { Window } from 'happy-dom';
+import { initPortfolioNavigation } from '../public/navigation.mjs';
+import { mountCabinetScreen } from '../public/play/arcade-screen.mjs';
 
 // Actual routes and templates, with only unrelated external service calls stubbed.
 mock.method(globalThis, 'fetch', async () => new Response('', { status: 503 }));
@@ -20,7 +22,8 @@ function visitor(initialCookie = '') {
   return {
     get cookie() { return cookie; },
     async request(path) {
-      const response = await app.request(`https://portfolio.test${path}`, { headers: { Cookie: cookie } }, { GITHUB_USER: 'example' });
+      const url = new URL(path, 'https://portfolio.test'); url.hash = ''; // fragments stay in the browser
+      const response = await app.request(url.toString(), { headers: { Cookie: cookie } }, { GITHUB_USER: 'example' });
       const setCookie = response.headers.get('set-cookie');
       if (setCookie) cookie = setCookie.split(';')[0];
       return response;
@@ -30,7 +33,10 @@ function visitor(initialCookie = '') {
       for (let redirects = 0; redirects < 5; redirects++) {
         response = await this.request(path);
         if (response.status !== 302) break;
-        path = response.headers.get('location');
+        const next = new URL(response.headers.get('location'), `https://portfolio.test${path}`);
+        // Browsers inherit a fragment when the redirect doesn't replace it.
+        if (!response.headers.get('location').includes('#')) next.hash = new URL(`https://portfolio.test${path}`).hash;
+        path = next.pathname + next.search + next.hash;
       }
       assert.equal(response.status, 200, 'navigation must finish without a redirect loop');
       assert.equal(response.headers.get('cache-control'), 'private, no-store');
@@ -82,6 +88,102 @@ test('only an explicit picker choice changes the preference, including switching
     assertAppearance(win, view);
     assertAppearance(await browser.open('/resume'), view);
     assertAppearance(await browser.open('/'), view);
+  }
+});
+
+test('every page offers Home, Projects, Experience and Contact in the saved appearance', async () => {
+  for (const view of ['original', 'tech', 'arcade']) {
+    const browser = visitor(`portfolio_view=${view}`);
+    for (const path of ['/', '/tech', '/play', '/timeline', '/resume', '/projects/bakiano', '/projects/ascii-art']) {
+      const win = await browser.open(path), nav = win.document.querySelector('[aria-label="Main navigation"]');
+      assert.ok(nav, `${view} ${path} needs explicit site navigation`);
+      const links = [...nav.querySelectorAll('a')];
+      assert.deepEqual(links.map(link => link.dataset.destination), ['home', 'projects', 'experience', 'contact']);
+      assert.equal(links[0].getAttribute('aria-label'), 'Home');
+      assert.equal(win.getComputedStyle(nav.closest('header')).position, 'sticky');
+      for (const link of links) {
+        const destination = link.getAttribute('href');
+        assert.ok(!destination.includes('view='));
+        const next = await browser.open(destination); assertAppearance(next, view);
+        const hash = next.location.hash.slice(1);
+        if (hash) assert.ok(next.document.getElementById(hash), `${destination} must target an existing section`);
+        if (link.dataset.destination === 'home') {
+          assert.equal(next.location.pathname, view === 'tech' ? '/tech' : '/');
+          assert.equal(next.location.hash, '');
+          assert.equal(Boolean(next.document.querySelector('[data-aim-range]')), view === 'arcade');
+        }
+      }
+    }
+  }
+});
+
+test('project return paths select the same project in each appearance, and game links open the cabinet', async () => {
+  for (const view of ['original', 'tech', 'arcade']) {
+    const browser = visitor(`portfolio_view=${view}`);
+    const index = await browser.open('/tech');
+    for (const link of index.document.querySelectorAll('.project-play')) assert.match(link.getAttribute('href'), /^\/play#concept-/);
+    for (const slug of ['bakiano', 'gcp-ingestion-lab', 'catalog-match-lab', 'bigquery-query-guard', 'ascii-art', 'vesti']) {
+      const page = await browser.open('/projects/' + slug);
+      const returnLink = page.document.querySelector('.breadcrumb a').getAttribute('href');
+      assert.equal(returnLink, view === 'original' ? '/#project-' + slug : view === 'tech' ? '/tech#' + slug : '/play#' + slug);
+      const back = await browser.open(returnLink); assertAppearance(back, view);
+      if (view === 'original') {
+        for (const script of back.document.querySelectorAll('script:not([src]):not([type=module])')) back.eval(script.textContent);
+        assert.ok(back.document.getElementById('project-' + slug).open);
+        assert.ok(back.document.getElementById('projects').open);
+      } else if (view === 'arcade') assert.ok(back.document.getElementById('station-' + slug));
+      else assert.ok(back.document.querySelector(`[data-preview="${slug}"]`));
+      const playLink = page.document.querySelector('.next-project a[href^="/play#concept-"]');
+      assert.equal(playLink.getAttribute('href'), '/play#concept-' + slug);
+      const game = await browser.open(playLink.getAttribute('href'));
+      assert.ok(game.document.getElementById('concept-' + slug)); assertAppearance(game, view);
+    }
+  }
+});
+
+test('an open game has a direct Home exit as well as its existing arcade exit', async () => {
+  for (const view of ['original', 'tech', 'arcade']) {
+    const browser = visitor(`portfolio_view=${view}`), win = await browser.open('/play');
+    globalThis.document = win.document;
+    try {
+      const screen = mountCabinetScreen({ panels: [...win.document.querySelectorAll('[data-station-panel]')] });
+      screen.open('bakiano', win.document.getElementById('station-bakiano'));
+      const home = win.document.querySelector('dialog[open] .screen-home');
+      assert.equal(home.textContent, 'Home');
+      assert.equal(home.getAttribute('href'), view === 'tech' ? '/tech' : '/');
+      assertAppearance(await browser.open(home.getAttribute('href')), view);
+      win.document.querySelector('.screen-exit').click();
+      assert.equal(screen.isOpen, false);
+    } finally { delete globalThis.document; }
+  }
+});
+
+test('appearance changes keep the selected experience role, including after history replacement', async () => {
+  const browser = visitor('portfolio_view=arcade'), win = await browser.open('/resume#sanofi');
+  initPortfolioNavigation(win.document);
+  for (const script of win.document.querySelectorAll('script:not([src]):not([type=module])')) win.eval(script.textContent);
+  win.document.querySelectorAll('.tab')[1].click();
+  const selectedRole = win.location.hash;
+  assert.notEqual(selectedRole, '#sanofi');
+  const picker = win.document.querySelector('.view-choice[data-view=tech]');
+  picker.addEventListener('click', event => event.preventDefault()); picker.click();
+  assert.equal(picker.hash, selectedRole);
+  const next = await browser.open(picker.getAttribute('href'));
+  assert.equal(next.location.pathname, '/resume'); assert.equal(next.location.hash, selectedRole);
+  assertAppearance(next, 'tech');
+  for (const script of next.document.querySelectorAll('script:not([src]):not([type=module])')) next.eval(script.textContent);
+  assert.equal(next.document.querySelector('.tab[aria-pressed=true]').textContent, win.document.querySelector('.tab[aria-pressed=true]').textContent);
+});
+
+test('home section navigation reopens a closed section even when its hash is unchanged', async () => {
+  for (const view of ['original', 'arcade']) {
+    const win = await visitor(`portfolio_view=${view}`).open('/#contact');
+    initPortfolioNavigation(win.document);
+    const contact = win.document.getElementById('contact'), link = win.document.querySelector('[data-destination=contact]');
+    contact.open = false;
+    link.addEventListener('click', event => event.preventDefault()); link.click();
+    assert.equal(contact.open, true);
+    assert.equal(link.getAttribute('aria-current'), 'page');
   }
 });
 

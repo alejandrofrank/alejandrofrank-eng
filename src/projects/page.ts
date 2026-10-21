@@ -5,7 +5,8 @@ import { esc } from '../panels/helpers';
 import { bakianoTechnical, vestiTechnical } from '../panels/technical';
 import { PROJECTS, projectPath, type Project } from './catalog';
 import { readingStyles } from './styles';
-import { appearanceSwitch, appearanceStyles, portfolioHome, type PortfolioView } from '../appearance';
+import { appearanceStyles, type PortfolioView } from '../appearance';
+import { navigationStyles, portfolioNavigation, portfolioProjects } from '../navigation';
 import { readingAppearance } from './appearance';
 import { renderProjectExplorer } from './explorer';
 import { explorerStyles } from './explorer-styles';
@@ -26,12 +27,10 @@ export function readingShell(title: string, description: string, path: string, o
 <meta property="og:type" content="website"><meta property="og:title" content="${esc(title)} · ${SITE.name}">
 <meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${esc(origin + path)}">
 <meta property="og:image" content="${esc(origin)}/og-forest.png"><meta name="twitter:card" content="summary_large_image">
-<style>${readingStyles}${appearanceStyles}${extraStyles}${appearance.styles}</style></head><body class="${appearance.bodyClass}" data-view="${view}">
+<style>${readingStyles}${appearanceStyles}${extraStyles}${appearance.styles}${navigationStyles}</style></head><body class="${appearance.bodyClass}" data-view="${view}">
 ${appearance.background}
 <a class="skip-link" href="#main">Skip to content</a><div class="site-wrap">
-<header class="site-nav"><a class="site-name" href="${portfolioHome(view)}">${SITE.name}</a><nav class="nav-links" aria-label="Main navigation">
-<a href="${view === 'arcade' ? '/play' : '/tech#projects'}"${path === '/tech' || path === '/play' || path.startsWith('/projects/') ? ' aria-current="page"' : ''}>Projects</a><a href="/timeline">Experience</a><a href="${view === 'arcade' ? '/#contact' : '/tech#contact'}">Contact</a>
-</nav><div class="view-controls">${appearanceSwitch(view, currentProject?.slug, currentProject ? path : undefined)}</div></header><main id="main">${body}</main>
+${portfolioNavigation(view, path === '/tech' ? 'home' : 'projects', currentProject?.slug, currentProject ? path : undefined)}<main id="main">${body}</main>
 <footer class="site-footer" id="contact"><p>Have a problem worth working on? Get in touch.</p><nav class="footer-links" aria-label="Contact">${LINKS.filter(l => ['Email', 'GitHub', 'LinkedIn'].includes(l.label)).map(l => `<a href="${esc(l.href)}"${l.href.startsWith('https:') ? ' target="_blank" rel="noopener noreferrer"' : ''}>${esc(l.label)}${l.href.startsWith('https:') ? ' ↗' : ''}</a>`).join('')}</nav></footer>
 </div><script type="module" src="/appearance.mjs"></script>${script ? `<script type="module">${script}</script>` : ''}</body></html>`;
 }
@@ -55,9 +54,9 @@ export function renderProjectPage(slug: string, origin: string, view: PortfolioV
 cd ${esc(project.repo)}
 npm run dev</code></pre><p class="run-note">Then open <code>http://127.0.0.1:${project.port}</code>. Follow the repository for optional integrations and verification commands.</p></section>` : '';
   return readingShell(project.title, project.summary, projectPath(project), origin, `
-<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/tech#${project.slug}">← All projects</a> / ${String(index + 1).padStart(2, '0')}</nav>
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="${portfolioProjects(view, project.slug)}">← All projects</a> / ${String(index + 1).padStart(2, '0')}</nav>
 <header class="case-head"><div class="entry-meta"><span class="eyebrow">${esc(project.category)}</span>${projectState(project)}</div><h1>${esc(project.title)}</h1><p class="question">${esc(project.question)}</p><p class="summary">${esc(project.summary)}</p>${project.links.length ? `<div class="actions">${project.links.map((link, i) => `<a class="action${i === 0 ? ' primary' : ''}" href="${esc(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)} ↗</a>`).join('')}</div>` : ''}</header>
 <div class="case-grid"><div class="case-copy"><section><h2>The problem</h2><p>${esc(project.problem)}</p></section><section><h2>The approach</h2><ul>${project.approach.map(p => `<li>${esc(p)}</li>`).join('')}</ul></section><section><h2>What you can inspect</h2><p>${esc(project.evidence)}</p></section><section class="case-note"><h2>Scope & limitations</h2><p>${esc(project.boundary)}</p></section>${run}${technical}</div>
 <aside class="case-aside" aria-label="Project at a glance"><h2>System at a glance</h2><ol class="flow">${project.flow.map(p => `<li>${esc(p)}</li>`).join('')}</ol><h2>Working with</h2><p>${project.stack.map(esc).join(' · ')}</p></aside></div>
-<nav class="next-project" aria-label="Continue reading"><a href="/tech#projects">Back to project index</a>${next ? `<a href="${projectPath(next)}"><span>Next in the reading path</span>${esc(next.title)} →</a>` : '<a href="/timeline">Explore my experience →</a>'}</nav>`, '', '', view);
+<nav class="next-project" aria-label="Continue reading"><a href="${portfolioProjects(view, project.slug)}">Back to projects</a><a href="/play#concept-${project.slug}">Play this project →</a>${next ? `<a href="${projectPath(next)}"><span>Next in the reading path</span>${esc(next.title)} →</a>` : '<a href="/timeline">Explore my experience →</a>'}</nav>`, '', '', view);
 }
