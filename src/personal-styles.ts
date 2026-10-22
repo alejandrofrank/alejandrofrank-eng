@@ -320,8 +320,13 @@ body.personal { background:#192822; color:#201c32; --fg:#201c32; }
  .personal :is(a,button,summary):focus-visible { outline-color:#e8b286; }
 }
 
-/* One centered, consistent set of contact actions. */
-#contact .reveal-body { text-align:center; padding-block:38px; }
+/* Contact opens directly under the controls, ahead of the activity graph. */
+#contact .reveal-body { grid-row:2; text-align:center; padding-block:38px; }
+.explore:has(#contact[open]) > .ambient-calendar { grid-row:3; }
+@media(max-width:760px) {
+ #contact .reveal-body { grid-row:3; }
+ .explore:has(#contact[open]) > .ambient-calendar { grid-row:4; }
+}
 #contact .reveal-body h2 { margin-bottom:26px; }
 .personal .contact-links { position:relative; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; max-width:640px; margin:0 auto; align-items:start; }
 .personal .contact-links .contact-button {
