@@ -4,9 +4,9 @@ Six compact games turn a project's engineering decisions into actions, constrain
 
 ## Navigation
 
-The default green appearance has no navigation banner on any page. Its homepage keeps the original appearance picker and About me, Projects, Experience and Say hello controls; inner pages offer a plain Home link and the appearance picker over the existing background. Tech and Arcade share a Home, Projects, Experience and Contact navigation bar, with the three appearance choices alongside them. That bar stays available when scrolling (except on very short screens), and anchor spacing follows its height. Ordinary links preserve the saved appearance. Home leads to the green homepage, Tech explorer or Arcade lobby as appropriate; Projects and Contact lead to that appearance's corresponding section. Case-study return links retain the project selection in the original accordion, Tech explorer or arcade floor. Each case study also links directly to its game, and the explorer's Play links open the game rather than just selecting its cabinet.
+No appearance uses a navigation banner. The default green homepage keeps its original appearance picker and About me, Projects, Experience and Say hello controls. Other pages offer just a plain Home link and the appearance picker over the existing background, without a full-width background, menu bar or sticky header. Ordinary links preserve the saved appearance. Home leads to the green homepage, Tech explorer or Arcade lobby as appropriate. Case-study return links retain the project selection in the original accordion, Tech explorer or arcade floor. Each case study also links directly to its game, and the explorer's Play links open the game rather than just selecting its cabinet.
 
-Open cabinets offer a direct Home link as well as Back to arcade. Returning to the arcade floor preserves the live puzzle; Home is normal page navigation. Changing appearance while reading a role preserves its URL fragment, including after selecting another role. Clicking Contact again reopens its panel even if the URL already ends in `#contact`.
+Open cabinets offer a direct Home link as well as Back to arcade. Returning to the arcade floor preserves the live puzzle; Home is normal page navigation. Changing appearance while reading a role preserves its URL fragment, including after selecting another role.
 
 ## Arcade homepage
 

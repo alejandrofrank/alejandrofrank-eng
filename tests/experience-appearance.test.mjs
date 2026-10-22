@@ -91,14 +91,14 @@ test('only an explicit picker choice changes the preference, including switching
   }
 });
 
-test('Original stays banner-free with a Home return; Tech and Arcade retain shared navigation', async () => {
+test('all appearances stay banner-free and retain a Home return and appearance picker', async () => {
   for (const view of ['original', 'tech', 'arcade']) {
     const browser = visitor(`portfolio_view=${view}`);
     for (const path of ['/', '/tech', '/play', '/timeline', '/resume', '/projects/bakiano', '/projects/ascii-art']) {
       const win = await browser.open(path), nav = win.document.querySelector('[aria-label="Main navigation"]');
+      assert.equal(nav, null, `${view} ${path} must not show a navigation banner`);
+      assert.equal(win.document.querySelector('.portfolio-nav'), null);
       if (view === 'original' && path === '/') {
-        assert.equal(nav, null, 'the default homepage must not gain a navigation banner');
-        assert.equal(win.document.querySelector('.portfolio-nav'), null);
         assert.equal(win.document.querySelectorAll('.original-appearance .view-choice').length, 3);
         assert.ok(win.document.querySelector('.color-world'));
         assert.equal(win.document.querySelector('.human-hero h1').textContent, 'AI Data Engineer based in Madrid');
@@ -106,35 +106,18 @@ test('Original stays banner-free with a Home return; Tech and Arcade retain shar
         assert.equal(win.document.querySelectorAll('.project-dropdown').length, 6);
         continue;
       }
-      if (view === 'original') {
-        assert.equal(nav, null, `${path} must not show the full navigation banner in Original`);
-        assert.equal(win.document.querySelector('.portfolio-nav'), null);
-        const controls = win.document.querySelector('.original-page-controls');
-        assert.ok(controls);
-        assert.equal(win.getComputedStyle(controls).position, 'relative');
-        assert.equal(controls.querySelectorAll('.view-choice').length, 3);
-        const home = controls.querySelector('[aria-label=Home]');
-        assert.equal(home.getAttribute('href'), '/');
-        assertAppearance(await browser.open(home.getAttribute('href')), 'original');
-        continue;
-      }
-      assert.ok(nav, `${view} ${path} needs explicit site navigation`);
-      const links = [...nav.querySelectorAll('a')];
-      assert.deepEqual(links.map(link => link.dataset.destination), ['home', 'projects', 'experience', 'contact']);
-      assert.equal(links[0].getAttribute('aria-label'), 'Home');
-      assert.equal(win.getComputedStyle(nav.closest('header')).position, 'sticky');
-      for (const link of links) {
-        const destination = link.getAttribute('href');
-        assert.ok(!destination.includes('view='));
-        const next = await browser.open(destination); assertAppearance(next, view);
-        const hash = next.location.hash.slice(1);
-        if (hash) assert.ok(next.document.getElementById(hash), `${destination} must target an existing section`);
-        if (link.dataset.destination === 'home') {
-          assert.equal(next.location.pathname, view === 'tech' ? '/tech' : '/');
-          assert.equal(next.location.hash, '');
-          assert.equal(Boolean(next.document.querySelector('[data-aim-range]')), view === 'arcade');
-        }
-      }
+      const controls = win.document.querySelector('.page-controls');
+      assert.ok(controls);
+      assert.equal(win.getComputedStyle(controls).position, 'relative');
+      assert.equal(controls.querySelectorAll('.view-choice').length, 3);
+      assert.equal(controls.querySelectorAll('[data-destination]').length, 1);
+      const home = controls.querySelector('[aria-label=Home]');
+      assert.equal(home.getAttribute('href'), view === 'tech' ? '/tech' : '/');
+      const next = await browser.open(home.getAttribute('href'));
+      assertAppearance(next, view);
+      assert.equal(next.location.pathname, view === 'tech' ? '/tech' : '/');
+      assert.equal(next.location.hash, '');
+      assert.equal(Boolean(next.document.querySelector('[data-aim-range]')), view === 'arcade');
     }
   }
 });
@@ -199,16 +182,6 @@ test('appearance changes keep the selected experience role, including after hist
   }
 });
 
-test('arcade home navigation reopens a closed section even when its hash is unchanged', async () => {
-  const win = await visitor('portfolio_view=arcade').open('/#contact');
-  initPortfolioNavigation(win.document);
-  const contact = win.document.getElementById('contact'), link = win.document.querySelector('[data-destination=contact]');
-  contact.open = false;
-  link.addEventListener('click', event => event.preventDefault()); link.click();
-  assert.equal(contact.open, true);
-  assert.equal(link.getAttribute('aria-current'), 'page');
-});
-
 test('choosing Arcade from Home opens the lobby; project and Experience links keep the appearance', async () => {
   const browser = visitor();
   const original = await browser.open('/');
@@ -218,7 +191,7 @@ test('choosing Arcade from Home opens the lobby; project and Experience links ke
   assert.equal(lobby.document.querySelector('[data-start]').disabled, true, 'start waits for its game module');
   const projects = await browser.open(lobby.document.querySelector('.lobby-menu>a[href="/play"]').getAttribute('href'));
   assert.ok(projects.document.querySelector('.cabinet')); assertAppearance(projects, 'arcade');
-  assert.equal(projects.document.querySelector('.site-name').getAttribute('href'), '/');
+  assert.equal(projects.document.querySelector('[data-destination=home]').getAttribute('href'), '/');
   const timeline = await browser.open('/timeline'); assertAppearance(timeline, 'arcade');
   const home = await browser.open('/'); assert.ok(home.document.querySelector('[data-aim-range]'));
   const restored = await browser.open(home.document.querySelector('.view-choice[data-view=original]').getAttribute('href'));
