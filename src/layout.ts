@@ -122,8 +122,9 @@ ${FONTS_LINK}
     <div class="original-appearance">${appearanceSwitch('original')}</div>
     <main>
     <header class="human-hero">
-      <p class="human-location">${SITE.name}</p>
-      <h1>${SITE.role} based in Madrid</h1>
+      <h1>${SITE.name}</h1>
+      <p class="human-role">${SITE.role}</p>
+      <p class="human-location">Based in ${SITE.location}</p>
     </header>
     <div class="explore" aria-label="Explore more">
       <details class="reveal" name="explore" id="about">

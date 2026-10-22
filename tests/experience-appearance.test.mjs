@@ -101,7 +101,9 @@ test('all appearances stay banner-free and retain a Home return and appearance p
       if (view === 'original' && path === '/') {
         assert.equal(win.document.querySelectorAll('.original-appearance .view-choice').length, 3);
         assert.ok(win.document.querySelector('.color-world'));
-        assert.equal(win.document.querySelector('.human-hero h1').textContent, 'AI Data Engineer based in Madrid');
+        assert.equal(win.document.querySelector('.human-hero h1').textContent, 'Alejandro Frank');
+        assert.equal(win.document.querySelector('.human-role').textContent, 'AI Data Engineer');
+        assert.equal(win.document.querySelector('.human-location').textContent, 'Based in Madrid');
         assert.deepEqual([...win.document.querySelectorAll('.explore > details > summary,.explore > .explore-link')].map(node => node.textContent.trim()), ['About me', 'Projects', 'Experience', 'Say hello']);
         assert.equal(win.document.querySelectorAll('.project-dropdown').length, 6);
         continue;

@@ -132,10 +132,10 @@ body.personal { background:#192822; color:#201c32; --fg:#201c32; }
  100% { transform:translate(-16%,12%) scale(1.1); }
 }
 @media(prefers-reduced-motion:reduce) { .color-band,.color-band i:nth-child(n) { animation:none; } }
-.human-hero { padding:clamp(90px,16vh,160px) 0 20px; text-align:center; }
-.human-location { margin:0 0 20px; font-size:16px; font-weight:500; letter-spacing:-.015em; }
-.human-hero h1 { font-size:clamp(22px,3vw,30px); line-height:1.35; font-weight:400; letter-spacing:-.025em; margin:0 0 30px; color:#211b31; }
-.human-hero h1 span { color:#e24938; }
+.human-hero { padding:clamp(64px,11vh,112px) 0 40px; text-align:center; }
+.human-hero h1 { font-size:32px; line-height:1.2; font-weight:550; letter-spacing:-.025em; margin:0 0 8px; }
+.human-role { margin:0; font-size:22px; line-height:1.4; font-weight:400; letter-spacing:-.015em; }
+.human-location { margin:6px 0 0; font-size:15px; line-height:1.5; font-weight:400; }
 .explore { display:grid; grid-template-columns:repeat(4,max-content); justify-content:center; gap:12px; padding-bottom:70px; }
 .reveal { display:contents; }
 .reveal::details-content { display:contents; }
@@ -165,9 +165,10 @@ body.personal { background:#192822; color:#201c32; --fg:#201c32; }
 .personal .reveal-body .vset { background:#f2eadcb8; }
 @media(min-width:761px) { .explore:has(.reveal[open]) { grid-template-columns:repeat(4,1fr); } }
 @media(max-width:760px) {
- .human-hero { padding-top:110px; }
+ .human-hero { padding:72px 0 32px; }
+ .human-hero h1 { font-size:30px; }
+ .human-role { font-size:20px; }
  .human-location { font-size:14px; }
- .human-hero h1 { margin-bottom:20px; }
  .explore { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
  .reveal > summary,.explore-link { grid-row:auto; padding:14px 18px; font-size:13px; }
  .reveal:nth-child(1) > summary,.reveal:nth-child(2) > summary { grid-row:1; }
@@ -268,7 +269,8 @@ body.personal { background:#192822; color:#201c32; --fg:#201c32; }
 @media print { .color-world { display:none; } .personal.experience-page { background:white; } .personal.experience-page .resume { background:white; padding:0; } }
 @media(prefers-reduced-motion:reduce) { .color-band { animation:none; } .reveal > summary,.explore-link,.ambient-calendar { transition:none; } .reveal > summary:hover,.explore-link:hover,.reveal > summary:focus-visible,.explore-link:focus-visible { transform:none; } }
 /* Light lettering over the deep forest and umber background. */
-.human-location,.human-hero h1 { color:#fff7e9; text-shadow:0 1px 12px #142b24,0 1px 3px #142b24; }
+.human-hero h1,.human-role,.human-location { color:#fff7e9; text-shadow:0 1px 4px #142b244d; }
+.human-location { color:#ece6d8; }
 .personal footer.site,.personal footer.site a { color:#f2eadc; text-shadow:0 1px 5px #192822; }
 .ambient-calendar { color:#24372c; --hm0:#24372c24; --hm1:#9cc9ae; --hm2:#71ad94; --hm3:#418f79; --hm4:#155b4c; }
 .ambient-calendar:hover,.ambient-calendar:focus-visible { color:#24372c; --hm0:#dcdacb; }
