@@ -1,5 +1,5 @@
 export function initPortfolioNavigation(doc = document) {
-  const header = doc.querySelector('.portfolio-nav');
+  const header = doc.querySelector('.portfolio-nav,.original-page-controls');
   if (!header || header.dataset.initialized) return;
   header.dataset.initialized = 'true';
   const win = doc.defaultView;
@@ -42,7 +42,7 @@ export function initPortfolioNavigation(doc = document) {
   }, true);
   win.addEventListener('hashchange', update);
   win.addEventListener('pageshow', update);
-  if (win.ResizeObserver) new win.ResizeObserver(() => {
+  if (header.classList.contains('portfolio-nav') && win.ResizeObserver) new win.ResizeObserver(() => {
     doc.documentElement.style.setProperty('--navigation-height', header.getBoundingClientRect().height + 'px');
   }).observe(header);
   update();

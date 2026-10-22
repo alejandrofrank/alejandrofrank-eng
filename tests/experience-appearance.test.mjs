@@ -91,7 +91,7 @@ test('only an explicit picker choice changes the preference, including switching
   }
 });
 
-test('the default homepage keeps its original controls; other pages provide shared navigation', async () => {
+test('Original stays banner-free with a Home return; Tech and Arcade retain shared navigation', async () => {
   for (const view of ['original', 'tech', 'arcade']) {
     const browser = visitor(`portfolio_view=${view}`);
     for (const path of ['/', '/tech', '/play', '/timeline', '/resume', '/projects/bakiano', '/projects/ascii-art']) {
@@ -104,6 +104,18 @@ test('the default homepage keeps its original controls; other pages provide shar
         assert.equal(win.document.querySelector('.human-hero h1').textContent, 'AI Data Engineer based in Madrid');
         assert.deepEqual([...win.document.querySelectorAll('.explore > details > summary,.explore > .explore-link')].map(node => node.textContent.trim()), ['About me', 'Projects', 'Experience', 'Say hello']);
         assert.equal(win.document.querySelectorAll('.project-dropdown').length, 6);
+        continue;
+      }
+      if (view === 'original') {
+        assert.equal(nav, null, `${path} must not show the full navigation banner in Original`);
+        assert.equal(win.document.querySelector('.portfolio-nav'), null);
+        const controls = win.document.querySelector('.original-page-controls');
+        assert.ok(controls);
+        assert.equal(win.getComputedStyle(controls).position, 'relative');
+        assert.equal(controls.querySelectorAll('.view-choice').length, 3);
+        const home = controls.querySelector('[aria-label=Home]');
+        assert.equal(home.getAttribute('href'), '/');
+        assertAppearance(await browser.open(home.getAttribute('href')), 'original');
         continue;
       }
       assert.ok(nav, `${view} ${path} needs explicit site navigation`);
@@ -169,20 +181,22 @@ test('an open game has a direct Home exit as well as its existing arcade exit', 
 });
 
 test('appearance changes keep the selected experience role, including after history replacement', async () => {
-  const browser = visitor('portfolio_view=arcade'), win = await browser.open('/resume#sanofi');
-  initPortfolioNavigation(win.document);
-  for (const script of win.document.querySelectorAll('script:not([src]):not([type=module])')) win.eval(script.textContent);
-  win.document.querySelectorAll('.tab')[1].click();
-  const selectedRole = win.location.hash;
-  assert.notEqual(selectedRole, '#sanofi');
-  const picker = win.document.querySelector('.view-choice[data-view=tech]');
-  picker.addEventListener('click', event => event.preventDefault()); picker.click();
-  assert.equal(picker.hash, selectedRole);
-  const next = await browser.open(picker.getAttribute('href'));
-  assert.equal(next.location.pathname, '/resume'); assert.equal(next.location.hash, selectedRole);
-  assertAppearance(next, 'tech');
-  for (const script of next.document.querySelectorAll('script:not([src]):not([type=module])')) next.eval(script.textContent);
-  assert.equal(next.document.querySelector('.tab[aria-pressed=true]').textContent, win.document.querySelector('.tab[aria-pressed=true]').textContent);
+  for (const view of ['original', 'arcade']) {
+    const browser = visitor(`portfolio_view=${view}`), win = await browser.open('/resume#sanofi');
+    initPortfolioNavigation(win.document);
+    for (const script of win.document.querySelectorAll('script:not([src]):not([type=module])')) win.eval(script.textContent);
+    win.document.querySelectorAll('.tab')[1].click();
+    const selectedRole = win.location.hash;
+    assert.notEqual(selectedRole, '#sanofi');
+    const picker = win.document.querySelector('.view-choice[data-view=tech]');
+    picker.addEventListener('click', event => event.preventDefault()); picker.click();
+    assert.equal(picker.hash, selectedRole);
+    const next = await browser.open(picker.getAttribute('href'));
+    assert.equal(next.location.pathname, '/resume'); assert.equal(next.location.hash, selectedRole);
+    assertAppearance(next, 'tech');
+    for (const script of next.document.querySelectorAll('script:not([src]):not([type=module])')) next.eval(script.textContent);
+    assert.equal(next.document.querySelector('.tab[aria-pressed=true]').textContent, win.document.querySelector('.tab[aria-pressed=true]').textContent);
+  }
 });
 
 test('arcade home navigation reopens a closed section even when its hash is unchanged', async () => {

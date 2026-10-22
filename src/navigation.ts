@@ -9,6 +9,9 @@ export function portfolioProjects(view: PortfolioView, slug = ''): string {
 
 export function portfolioNavigation(view: PortfolioView, section: 'home' | 'projects' | 'experience', projectSlug = '', currentPage?: string): string {
   const home = portfolioHome(view);
+  if (view === 'original') {
+    return `<div class="original-page-controls" data-section="${section}"><a class="original-home" href="${home}" data-destination="home" aria-label="Home">← Home</a><div class="view-controls">${appearanceSwitch(view, projectSlug, currentPage)}</div></div>`;
+  }
   const links = [
     ['home', 'Home', home],
     ['projects', 'Projects', portfolioProjects(view)],
@@ -22,7 +25,12 @@ export const navigationStyles = `
 :root { --navigation-height:78px; }
 html { scroll-padding-top:calc(var(--navigation-height) + 16px); }
 .portfolio-nav { position:sticky; top:0; z-index:20; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 18px; padding:12px 0; border-bottom:1px solid var(--line); background:var(--bg); }
-body[data-view=original] .portfolio-nav { background:color-mix(in srgb,var(--bg) 94%,transparent); backdrop-filter:blur(12px); }
+html:has(body[data-view=original]) { --navigation-height:0px; }
+.original-page-controls { position:relative; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px 24px; padding:22px 0; }
+.original-home { display:inline-flex; align-items:center; min-height:44px; color:var(--fg); font:500 14px var(--sans); text-decoration:underline; text-underline-offset:4px; }
+.original-home:hover { color:var(--accent); }
+.original-home:focus-visible { outline:2px solid var(--fg); outline-offset:4px; }
+.original-page-controls .view-controls { flex-basis:auto; margin:0; width:auto; max-width:100%; }
 .portfolio-links { display:flex; align-items:center; gap:4px; }
 .portfolio-links a { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:44px; padding:0 12px; border-radius:6px; color:var(--muted); text-decoration:none; font:500 13px/1.2 var(--sans); }
 .portfolio-links svg { width:17px; height:17px; flex:none; }
@@ -45,5 +53,5 @@ body[data-view=original] .portfolio-nav { background:color-mix(in srgb,var(--bg)
   .portfolio-nav .view-choice { flex:1; }
 }
 @media(max-height:500px) { .portfolio-nav { position:relative; } html { scroll-padding-top:16px; } .reading-guide { top:16px; } }
-@media print { .portfolio-nav { display:none; } }
+@media print { .portfolio-nav,.original-page-controls { display:none; } }
 `;
