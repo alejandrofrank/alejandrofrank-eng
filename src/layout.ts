@@ -14,8 +14,7 @@ import { gradientMarkup } from "./gradient";
 import { personalStyles } from "./personal-styles";
 import { PANELS, type Env, type Slot } from "./panels";
 import { renderAmbientCalendar } from "./panels/github";
-import { appearanceStyles } from "./appearance";
-import { portfolioNavigation, navigationStyles } from "./navigation";
+import { appearanceSwitch, appearanceStyles } from "./appearance";
 import { PROJECTS, projectPath } from "./projects/catalog";
 
 /**
@@ -115,12 +114,12 @@ ${FONTS_LINK}
 <meta name="twitter:description" content="${SITE.role} based in Madrid" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:image" content="${origin}/og-forest.png" />
-<style>${styles}${personalStyles}${appearanceStyles}${navigationStyles}</style>
+<style>${styles}${personalStyles}${appearanceStyles}</style>
 </head>
 <body class="personal" data-view="original">
   ${gradientMarkup}
   <div class="wrap">
-    ${portfolioNavigation('original', 'home')}
+    <div class="original-appearance">${appearanceSwitch('original')}</div>
     <main>
     <header class="human-hero">
       <p class="human-location">${SITE.name}</p>

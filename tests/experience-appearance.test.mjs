@@ -91,11 +91,21 @@ test('only an explicit picker choice changes the preference, including switching
   }
 });
 
-test('every page offers Home, Projects, Experience and Contact in the saved appearance', async () => {
+test('the default homepage keeps its original controls; other pages provide shared navigation', async () => {
   for (const view of ['original', 'tech', 'arcade']) {
     const browser = visitor(`portfolio_view=${view}`);
     for (const path of ['/', '/tech', '/play', '/timeline', '/resume', '/projects/bakiano', '/projects/ascii-art']) {
       const win = await browser.open(path), nav = win.document.querySelector('[aria-label="Main navigation"]');
+      if (view === 'original' && path === '/') {
+        assert.equal(nav, null, 'the default homepage must not gain a navigation banner');
+        assert.equal(win.document.querySelector('.portfolio-nav'), null);
+        assert.equal(win.document.querySelectorAll('.original-appearance .view-choice').length, 3);
+        assert.ok(win.document.querySelector('.color-world'));
+        assert.equal(win.document.querySelector('.human-hero h1').textContent, 'AI Data Engineer based in Madrid');
+        assert.deepEqual([...win.document.querySelectorAll('.explore > details > summary,.explore > .explore-link')].map(node => node.textContent.trim()), ['About me', 'Projects', 'Experience', 'Say hello']);
+        assert.equal(win.document.querySelectorAll('.project-dropdown').length, 6);
+        continue;
+      }
       assert.ok(nav, `${view} ${path} needs explicit site navigation`);
       const links = [...nav.querySelectorAll('a')];
       assert.deepEqual(links.map(link => link.dataset.destination), ['home', 'projects', 'experience', 'contact']);
@@ -175,16 +185,14 @@ test('appearance changes keep the selected experience role, including after hist
   assert.equal(next.document.querySelector('.tab[aria-pressed=true]').textContent, win.document.querySelector('.tab[aria-pressed=true]').textContent);
 });
 
-test('home section navigation reopens a closed section even when its hash is unchanged', async () => {
-  for (const view of ['original', 'arcade']) {
-    const win = await visitor(`portfolio_view=${view}`).open('/#contact');
-    initPortfolioNavigation(win.document);
-    const contact = win.document.getElementById('contact'), link = win.document.querySelector('[data-destination=contact]');
-    contact.open = false;
-    link.addEventListener('click', event => event.preventDefault()); link.click();
-    assert.equal(contact.open, true);
-    assert.equal(link.getAttribute('aria-current'), 'page');
-  }
+test('arcade home navigation reopens a closed section even when its hash is unchanged', async () => {
+  const win = await visitor('portfolio_view=arcade').open('/#contact');
+  initPortfolioNavigation(win.document);
+  const contact = win.document.getElementById('contact'), link = win.document.querySelector('[data-destination=contact]');
+  contact.open = false;
+  link.addEventListener('click', event => event.preventDefault()); link.click();
+  assert.equal(contact.open, true);
+  assert.equal(link.getAttribute('aria-current'), 'page');
 });
 
 test('choosing Arcade from Home opens the lobby; project and Experience links keep the appearance', async () => {
