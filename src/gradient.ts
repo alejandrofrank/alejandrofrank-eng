@@ -7,6 +7,8 @@ export const gradientMarkup = `<div class="color-world" aria-hidden="true">
 (() => {
  const surface=document.querySelector('.color-motion'),map=document.getElementById('wave-map');
  if(!surface||!map)return;
+ const background=surface.closest('.color-world');
+ try{if(localStorage.getItem('portfolio-effects')==='light')background.dataset.effects='light';}catch{}
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
  if(!ctx)return;
@@ -14,7 +16,7 @@ export const gradientMarkup = `<div class="color-world" aria-hidden="true">
  function stop(){cancelAnimationFrame(frame);frame=0;waves=[];previous=null;surface.classList.remove('is-rippling');}
  function paint(now){
    frame=0;
-   if(reduced.matches||document.hidden){stop();return;}
+   if(reduced.matches||document.hidden||background.dataset.effects==='light'){stop();return;}
    waves=waves.filter(w=>now-w.t<6000);
    if(!waves.length){stop();return;}
    if(now-lastPaint>40){
@@ -39,7 +41,7 @@ export const gradientMarkup = `<div class="color-world" aria-hidden="true">
    frame=requestAnimationFrame(paint);
  }
  window.addEventListener('pointermove',e=>{
-   if(reduced.matches||document.hidden||e.pointerType==='touch')return;
+   if(reduced.matches||document.hidden||background.dataset.effects==='light'||e.pointerType==='touch')return;
    const now=performance.now(),x=e.clientX/innerWidth,y=e.clientY/innerHeight,aspect=innerWidth/innerHeight;
    if(now-lastPointer<70)return;
    const distance=previous?Math.hypot(x-previous.x,y-previous.y):.025;
@@ -49,5 +51,7 @@ export const gradientMarkup = `<div class="color-world" aria-hidden="true">
    if(!frame)frame=requestAnimationFrame(paint);
  },{passive:true});
  reduced.addEventListener('change',stop);document.addEventListener('visibilitychange',stop);
+ window.addEventListener('portfolio:effectschange',stop);
 })();
-</script>`;
+</script>
+<script type="module">import { initPerformanceHint } from '/performance-hint.mjs'; initPerformanceHint();</script>`;

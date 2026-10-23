@@ -8,6 +8,12 @@ No appearance uses a navigation banner. The default green homepage keeps its ori
 
 Open cabinets offer a direct Home link as well as Back to arcade. Returning to the arcade floor preserves the live puzzle; Home is normal page navigation. Changing appearance while reading a role preserves its URL fragment, including after selecting another role.
 
+## Green appearance performance
+
+The green appearance keeps its full animated background by default. A bounded frame-timing check can show a small, dismissible notice after two consecutive two-second windows of sustained stuttering. It waits for page load and a settling period, ignores suspended/background tabs, respects reduced motion and runs at most three sampling periods per page. This observes a rendering symptom; it does not inspect GPU identifiers or claim to read Chrome's graphics-acceleration setting.
+
+The notice offers lighter effects, dismissal and desktop Chrome instructions (Settings → System → Use graphics acceleration when available). Lighter effects preserve the green gradients while stopping the cursor distortion, blur and background animation. The choice is saved locally, with a Restore button; dismissal lasts for the tab session. Storage restrictions do not break the current-page controls. No performance measurements leave the browser.
+
 ## Arcade homepage
 
 The lobby keeps About me and Say hello as expandable menu cards, with ordinary links to Projects and Experience. All four work without playing; the menu works without JavaScript. Appearance selection still persists across the whole site. Picking Arcade with a selected project keeps the cabinet destination; without a selected project it opens the lobby.
