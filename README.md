@@ -15,7 +15,7 @@ An engineering portfolio with a direct **Original / Tech / Arcade** view picker.
 - **Experience:** a career timeline with role-by-role system diagrams and written explanations.
 - **Live activity:** a GitHub contribution calendar fetched at the edge, with a profile link available if the API is unavailable.
 - **Reading interface:** compact titles, direct project links, keyboard navigation, responsive layouts and print styles. Reading the projects requires no JavaScript.
-- **Optional Arcade view:** `/play` uses six illustrated cabinets to navigate short engineering demonstrations. Edit product names and inspect the real identity matcher, or compare nearest-color mapping with dithering using the actual Image to Pixels renderer. Four other experiments are clearly labeled proposals. Choose Tech or Original to continue with the same project. Keyboard, touch and reduced-motion support are included. [Experiment designs and evidence](docs/project-arcade.md).
+- **Optional Arcade view:** `/play` has seven illustrated cabinets and 33 authored stages. Play Basket Run, Packet Factory, Catalog Customs, Partition Sweep, Pixel Shuffle, Complete the rack and Bot Workshop. The seventh game opens at `/play#concept-madrid-delivery-sim`: equip three robots, run a shift and repair tools, communication, memory and reasoning across five rounds with enforced safety gates. Its browser-only model uses synthetic orders and game credits, with no live AI or GCP calls or real billing. The real product matcher and Image to Pixels renderer remain inspectable. Keyboard, touch and reduced-motion controls are included. [Arcade designs and evidence](docs/project-arcade.md) · [Bot Workshop controls and walkthrough](docs/bot-workshop.md).
 
 The appearance choices are ordinary links, so they work without JavaScript. The full project list is the fallback when scripts are unavailable and is used for printing. Motion follows the system's reduced-motion preference; animations are finite and run on selection. `/` always opens the original homepage. Neither visiting a project nor playing a game changes the default for later visits.
 
@@ -53,7 +53,8 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 | `src/appearance.ts`, `public/appearance.mjs` | Original / Tech / Arcade navigation and selected-project links |
 | `src/projects/page.ts`, `src/projects/styles.ts` | Project index and individual reading pages |
 | `src/projects/explorer.ts`, `src/projects/explorer-styles.ts`, `public/projects/` | Project picker, system sketches and interruptible native browser animations |
-| `src/play/`, `public/play/` | Illustrated navigation, real-code matching/image demonstrations and pinned engine sources |
+| `src/play/`, `public/play/` | Seven-game arcade, real-code matching/image demonstrations and pinned engine sources |
+| `src/play/games/bots.ts`, `public/play/games/bots.mjs`, `public/play/games/bot-model.mjs` | Bot Workshop markup/styles, authored SVG scene and controls, deterministic rounds and enforced safety gates |
 | `src/index.ts` | Routes: homepage, `/tech`, `/projects/:slug`, `/play`, `/timeline`, `/resume`, and `/health` |
 | `src/layout.ts` | Original green homepage and expandable project panels |
 | `src/panels/` | Project panels, technical explanations, and GitHub data |
