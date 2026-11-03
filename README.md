@@ -71,6 +71,8 @@ Projects described inside the portfolio have their own status. Bakiano is live, 
 
 The isolated static bundle lives in `public/projects/agents-demo/`. The city loads first; the shared Three.js runtime, SimReady models and recordings load when a visitor opens Store or Agent parts. Pause, seek and reduced-motion settings apply to recorded time, with no catch-up jumps after a hidden tab. WebGL failure leaves a recorded floor plan or the agent’s accessible part inspector.
 
+Couriers, agent roles and robot parts share a searchable selector in `picker.mjs` and `picker.css`. Courier names are grouped by their recorded fleet, with vehicle icons; search also accepts district names and original IDs. The native select remains the value source and fallback. Arrow keys explore, Enter selects, Escape cancels, and Tab leaves the control. Menus fit the visible viewport, including the space above a mobile keyboard. Selector behavior and positioning are covered by `tests/agents-picker.test.mjs`.
+
 To refresh the committed public inputs from a verified source checkout:
 
 ```bash

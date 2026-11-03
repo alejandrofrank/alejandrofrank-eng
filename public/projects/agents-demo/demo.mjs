@@ -1,9 +1,11 @@
 import {createClock,formatTime,escapeHTML as esc,storeFrame,syncMotionButton} from './state.mjs';
 import {frameAt} from './story-playback.js';
 import {createCity} from './city.mjs';
+import {createPicker,courierChoices} from './picker.mjs';
 const el=id=>document.getElementById(id),reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const repo='https://github.com/alejandrofrank/madrid-delivery-sim/blob/main/';
 const cache=new Map(),clocks={city:createClock(7200,120,!reduced.matches),store:createClock(600,10,!reduced.matches)};
+const pickers={};
 let view='city',city,cityScene,store,storeScene,agents,agentScene,selected=-1,partId='mission';
 let visible=true,lastUI=-1,lastStoreFrame=null,lastStoreRate=null,agentPaused=reduced.matches,loadRequest=0;
 const events={heavy_rain:'Heavy rain',metro_strike:'Metro strike',restaurant_outage:'Kitchen outage',courier_offline:'Courier offline',demand_surge:'Demand surge'};
@@ -13,13 +15,14 @@ async function data(name){if(!cache.has(name))cache.set(name,fetch(name+'.json')
 function loading(message){el('loading').hidden=false;el('loading-text').textContent=message;el('retry').hidden=true;}
 function done(){el('loading').hidden=true;}
 function syncPlayback(){const clock=clocks[view];el('playback').hidden=!clock;if(!clock)return;el('timeline').max=view==='city'?7200:600;el('timeline').value=clock.time;el('elapsed').textContent=formatTime(clock.time)+' / '+formatTime(+el('timeline').max);el('play').textContent=clock.playing?'Pause':'Play';el('play').setAttribute('aria-label',clock.playing?'Pause replay':'Play replay');}
-function selectCourier(index){selected=index;el('courier').value=index<0?'':String(index);lastUI=-1;if(cityScene)renderCity();}
+function selectCourier(index){selected=index;el('courier').value=index<0?'':String(index);pickers.courier?.sync();lastUI=-1;if(cityScene)renderCity();}
 function renderCity(){const time=clocks.city.time;cityScene.render(time,selected);const second=Math.floor(time);if(lastUI===second)return;lastUI=second;
  const frame=frameAt(city.frames,time),delivered=city.orders.filter(o=>o.delivered!=null&&o.delivered<=time).length;
  el('courier-info').innerHTML=selected<0?'<p>'+city.couriers.length+' couriers · '+delivered+' of '+city.orders.length+' orders delivered so far.</p><p class="muted">Click a dot on the map, or choose a courier above. Click a store square to open the store example.</p>':rows([['Fleet',city.couriers[selected].fleet],['Vehicle',city.couriers[selected].mode],['Current task',statusNames[city.statuses[frame.couriers[selected][2]]]],['Delivered so far',city.orders.filter(o=>o.courier===selected&&o.delivered!=null&&o.delivered<=time).length]])+'<p class="muted">Orange: travelled route. Dashed: route ahead.</p>';
 }
 async function initCity(){if(cityScene)return;city=await data('city');cityScene=createCity(el('city-canvas'),city,selectCourier,()=>show('store'));
  el('courier').innerHTML='<option value="">All couriers</option>'+city.couriers.map((c,i)=>'<option value="'+i+'">'+esc(c.id)+'</option>').join('');
+ pickers.courier=createPicker(el('courier'),{label:'Follow a courier',placeholder:'Name, fleet or district',summary:'Choose a courier to follow on the map',items:courierChoices(city.couriers)});
  el('disruptions').innerHTML=city.disruptions.map((e,i)=>'<button data-event="'+i+'">'+esc(events[e.kind]||e.kind)+'<small>At '+formatTime(e.start_sim)+(e.district?' · '+esc(e.district):'')+'</small></button>').join('');
  el('city-results').innerHTML=rows([['Delivered on time',city.outcomes.on_time+' / '+city.outcomes.orders],['Recovered disruptions',city.outcomes.resolved_disruptions+' / '+city.outcomes.disruptions],['Estimated fleet cost / delivery','€'+city.outcomes.cost_per_delivery_eur.toFixed(2)]])+'<p class="muted">Outcomes of this synthetic run. Fleet operating cost, not a Google Cloud or model bill.</p>';
  clocks.city.seek(300);renderCity();
@@ -35,11 +38,20 @@ function updateStore(force=false){if(!store)return;const clock=clocks.store,fram
 }
 function agentFallback(){el('agent-scene').innerHTML='<p class="fallback-note">3D is unavailable in this browser. Choose an agent and a part to explore the same configuration and test results.</p>';agentScene=null;}
 async function initAgents(){if(agents)return;agents=await data('agents');el('agent').innerHTML=agents.agents.map(a=>'<option value="'+esc(a.id)+'">'+esc(a.name)+'</option>').join('');el('agent').value='fulfillment';try{const {createAgentScene}=await import('./agent-anatomy-3d.js');agentScene=createAgentScene(el('agent-scene'),{onPart:id=>{partId=id;renderPart();},onFailure:agentFallback,buttons:{}});agentScene.pause(agentPaused);}catch{agentFallback();}chooseAgent();}
-function chooseAgent(){const agent=agents.agents.find(a=>a.id===el('agent').value);el('part').innerHTML=agent.panels.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.label)+'</option>').join('');partId='mission';agentScene?.agent(agent);renderPart();}
-function renderPart(){const agent=agents.agents.find(a=>a.id===el('agent').value),part=agent.panels.find(p=>p.id===partId);if(!part)return;el('part').value=part.id;agentScene?.focus(part.id);
+function chooseAgent(){
+ const agent=agents.agents.find(a=>a.id===el('agent').value);
+ if(!pickers.agent)pickers.agent=createPicker(el('agent'),{label:'Choose an agent',placeholder:'Role or responsibility',summary:'Nine roles, different responsibilities',items:agents.agents.map(a=>({value:a.id,label:a.name,description:a.mission,shortDescription:a.visual.label,icon:()=>window.AgentRoleSymbols.icon(a.visual)}))});
+ pickers.agent.sync();
+ el('part').innerHTML=agent.panels.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.label)+'</option>').join('');
+ const parts=agent.panels.map(p=>({value:p.id,label:p.label,description:p.technical_label,shortDescription:p.part+' · '+p.technical_label,icon:p.id,search:p.part}));
+ if(pickers.part)pickers.part.setItems(parts);else pickers.part=createPicker(el('part'),{label:'Explore a part',placeholder:'Tools, memory or rules',summary:'Eleven parts of this agent',items:parts});
+ partId='mission';agentScene?.agent(agent);renderPart();
+}
+function renderPart(){const agent=agents.agents.find(a=>a.id===el('agent').value),part=agent.panels.find(p=>p.id===partId);if(!part)return;el('part').value=part.id;pickers.part?.sync();agentScene?.focus(part.id);
  el('part-info').innerHTML='<h2>'+esc(part.label)+'</h2><p class="muted">'+esc(part.technical_label)+' · '+esc(part.part)+'</p><p>'+esc(part.summary)+'</p><p class="headline">'+esc(part.headline.text)+'</p>'+rows((part.number_rows||[]).map(r=>[r.label,r.value]))+'<ul>'+part.headline.bullets.map(b=>'<li>'+esc(b)+'</li>').join('')+'</ul><details><summary>Details &amp; source</summary>'+part.details.map(d=>'<p>'+esc(d)+'</p>').join('')+'<div class="sources">'+part.sources.map(p=>'<a target="_blank" rel="noopener" href="'+repo+encodeURI(p)+'">'+esc(p)+'</a>').join('')+'</div></details>';
 }
 async function show(next){view=next;const request=++loadRequest;lastUI=-1;document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===view)));for(const id of ['city','store','agents']){el(id+'-view').hidden=id!==view;el(id+'-info').hidden=id!==view;}
+ Object.values(pickers).forEach(picker=>picker.close());
  // Reset the timestamp before resuming a view; hidden time must never advance its recording.
  for(const clock of Object.values(clocks))clock.tick(performance.now(),false);
  updateStore(true);agentScene?.pause(agentPaused||view!=='agents'||!visible);syncPlayback();
