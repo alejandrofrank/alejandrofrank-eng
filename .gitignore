@@ -28,3 +28,6 @@ env.*
 Thumbs.db
 .idea/
 .vscode/
+
+# Local design-review screenshots
+.impeccable/review/

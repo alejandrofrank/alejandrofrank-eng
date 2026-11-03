@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Explore a recorded Madrid delivery simulation: moving couriers, a 3D store and configurable agents. No live models or cloud services.">
+<title>Agents in GCP · Interactive example</title>
+<link rel="stylesheet" href="demo.css">
+<script src="courier_motion.js" defer></script><script src="agent-role-symbols.js" defer></script><script type="module" src="demo.mjs"></script>
+</head>
+<body>
+<main>
+<header><div><h1>Agents in GCP</h1><p>Interactive example · Recorded, synthetic data</p></div><a href="/projects/madrid-delivery-sim#gcp" target="_top">How it’s built</a></header>
+<nav aria-label="Explore the demo"><button data-view="city" aria-pressed="true">Madrid city</button><button data-view="store" aria-pressed="false">Inside the store</button><button data-view="agents" aria-pressed="false">Agent parts</button></nav>
+<div class="workspace">
+<section class="visual" aria-label="Demo scene">
+<div id="city-view" class="stage"><canvas id="city-canvas" aria-label="Recorded courier routes across Madrid. Use the courier menu to select a courier." role="img"></canvas><div class="map-key"><span class="key-courier">Courier</span><span class="key-store">Store</span><span class="key-route">Selected route</span></div></div>
+<div id="store-view" class="stage dark" hidden><div id="store-scene" class="scene"></div><canvas id="store-fallback" hidden aria-label="Store floor plan: shelves, pickers and loading dock"></canvas><div class="scene-actions"><button id="store-fit">Fit store</button><button id="store-follow" aria-pressed="false">Follow picker</button></div></div>
+<div id="agents-view" class="stage dark" hidden><div id="agent-scene" class="scene"></div><div class="scene-actions"><span>Click a part · Drag to rotate</span><button id="agent-reset">Reset view</button><button id="agent-motion" aria-pressed="false">Pause motion</button></div></div>
+<div id="loading" class="loading" role="status"><span class="loading-track" aria-hidden="true"></span><span id="loading-text">Loading the recorded city…</span><button id="retry" hidden>Try again</button></div>
+<div class="playback" id="playback"><button id="play" aria-label="Pause replay">Pause</button><label class="sr-only" for="timeline">Recording position</label><input id="timeline" type="range" min="0" max="7200" step="0.1" value="0"><output id="elapsed" for="timeline">0:00 / 120:00</output></div>
+<p id="scene-caption" class="caption">Click a courier to follow its recorded route.</p>
+</section>
+<aside aria-label="Explore the recording">
+<section id="city-info"><label for="courier">Follow a courier</label><select id="courier"><option value="">All couriers</option></select><div id="courier-info"></div><h2>When plans change</h2><p class="muted">Jump to a disruption in the recording.</p><div id="disruptions" class="event-list"></div><div id="event-info" aria-live="polite"></div><details><summary>How this run ended</summary><div id="city-results"></div></details></section>
+<section id="store-info" hidden><h2>Shelf to doorstep</h2><p>A picker breaks down. Another robot takes over the basket and brings it to the courier dock.</p><div class="event-list"><button data-store-time="0">Start picking</button><button data-store-time="60">Picker breakdown</button><button data-store-time="190">Packed &amp; heading to dock</button><button data-store-time="490">Delivery complete</button></div><div id="basket"></div><p class="muted">A separate 10-minute store recording. Highlighted shelves hold this order’s items.</p></section>
+<section id="agents-info" hidden><label for="agent">Choose an agent</label><select id="agent"></select><label for="part">Explore a part</label><select id="part"></select><div id="part-info" aria-live="polite"></div></section>
+</aside>
+</div>
+<footer><p>Your clicks explore recordings. No live AI, cloud queries or paid model calls.</p><details><summary>Data, code &amp; credits</summary><p>Built from the agents’ real configuration files and recorded seeded runs. <a href="https://github.com/alejandrofrank/madrid-delivery-sim" target="_blank" rel="noopener">MIT source &amp; GCP documentation</a> · <a href="provenance.json">Bundle provenance</a>.</p><p>Map data <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a>. 3D store assets: NVIDIA SimReady, converted by codepawl and simplified for this demo, <a href="vendor/simready/NOTICE.txt">CC BY 4.0</a>. <a href="THIRD-PARTY-NOTICES.md">All licenses</a>.</p></details></footer>
+<noscript><p>This interactive demo needs JavaScript. <a href="/projects/madrid-delivery-sim#gcp" target="_top">Read the project and GCP guide</a>.</p></noscript>
+</main>
+</body></html>
