@@ -11,7 +11,7 @@ const sketches: Record<string, { caption: string; body: string }> = {
     wire('M164 48H202V115H250M164 115H250M164 182H202V115M390 115H448') +
     box(20, 16, 144, 'Retail', 'source snapshots') + box(20, 83, 144, 'Real estate', 'source snapshots') + box(20, 150, 144, 'Telecom', 'source snapshots') +
     box(250, 83, 140, 'Market data', 'identity + history') + box(448, 83, 172, 'AI analyst', 'traceable answers') },
-  'madrid-delivery-sim': { caption: 'Google ADK decisions. Scoped effects. On-demand Google Cloud deployment.', body:
+  'madrid-delivery-sim': { caption: 'Different tools, memory and rules for each role. Connected agents on Google Cloud.', body:
     wire('M180 115H240M400 115H460') +
     box(20, 83, 160, 'Google ADK', 'scoped tools + A2A') +
     box(240, 83, 160, 'Cloud Run', 'role IAM + WIF') +
