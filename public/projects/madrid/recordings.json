@@ -1,0 +1,18 @@
+[
+  {
+    "source": "product-flow.gif",
+    "source_sha256": "a1bb19ce8ad73bf66665856c2813cb81e48ce1b4ed782ddcae199fcc0e71fd94",
+    "video": "city-demo.mp4",
+    "video_sha256": "8ff4664fe148edea45a82d19fd3a1f211d516428df1060afd37fe09afa3fe96f",
+    "bytes": 406578,
+    "operation": "H.264 MP4 transcode of the existing GIF; original timing, no added frames or sound"
+  },
+  {
+    "source": "store-journey.gif",
+    "source_sha256": "33669e6d09af0b457f44d3b09c715e53c23a47b313366b2906a856c822349060",
+    "video": "store-demo.mp4",
+    "video_sha256": "a3de91a30728f3eb2ce5fa150d54586def5a6ebbfac3bfe85055146ff04c7cd3",
+    "bytes": 540978,
+    "operation": "H.264 MP4 transcode of the existing GIF; original timing, no added frames or sound"
+  }
+]
