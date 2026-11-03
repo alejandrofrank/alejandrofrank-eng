@@ -1,8 +1,8 @@
 import { PROJECTS, projectPath } from './catalog';
 import { esc } from '../panels/helpers';
 
-const COLORS = ['#abedac', '#8ccfff', '#c3abff', '#f2c47b', '#f2a9bf', '#93e3d6'];
-const SYMBOLS = ['↗', '⇣', '≍', '⌁', '@', '◇'];
+const COLORS = ['#abedac', '#9cc8ff', '#8ccfff', '#c3abff', '#f2c47b', '#f2a9bf', '#93e3d6'];
+const SYMBOLS = ['↗', '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 18h12a4 4 0 0 0 0-8 6 6 0 0 0-11-2 5 5 0 0 0-1 10Z"/></svg>', '⇣', '≍', '⌁', '@', '◇'];
 
 const box = (x: number, y: number, width: number, title: string, detail: string) => `<g class="sketch-node"><rect x="${x}" y="${y}" width="${width}" height="64" rx="8"/><text x="${x + 14}" y="${y + 27}" class="sketch-label">${title}</text><text x="${x + 14}" y="${y + 46}" class="sketch-small">${detail}</text></g>`;
 const wire = (d: string) => `<path class="sketch-wire" d="${d}"/>`;
@@ -11,6 +11,11 @@ const sketches: Record<string, { caption: string; body: string }> = {
     wire('M164 48H202V115H250M164 115H250M164 182H202V115M390 115H448') +
     box(20, 16, 144, 'Retail', 'source snapshots') + box(20, 83, 144, 'Real estate', 'source snapshots') + box(20, 150, 144, 'Telecom', 'source snapshots') +
     box(250, 83, 140, 'Market data', 'identity + history') + box(448, 83, 172, 'AI analyst', 'traceable answers') },
+  'madrid-delivery-sim': { caption: 'Google ADK decisions. Scoped effects. On-demand Google Cloud deployment.', body:
+    wire('M180 115H240M400 115H460') +
+    box(20, 83, 160, 'Google ADK', 'scoped tools + A2A') +
+    box(240, 83, 160, 'Cloud Run', 'role IAM + WIF') +
+    box(460, 83, 160, 'Evidence', 'Trace + BigQuery') },
   'gcp-ingestion-lab': { caption: 'Repeated delivery. One completed receipt.', body:
     wire('M158 65H205V115H260M158 165H205V115M406 115H465') +
     box(20, 33, 138, 'event / 01', 'first delivery') + box(20, 133, 138, 'event / 01', 'delivered again') +
@@ -46,6 +51,6 @@ ${PROJECTS.map((p, i) => `<article class="project-preview" id="preview-${p.slug}
 <div class="preview-heading reveal-part"><span class="preview-category">${esc(p.category)}</span><span class="preview-status">${esc(p.status)}</span></div><h3 class="reveal-part" id="preview-title-${p.slug}">${esc(p.title)}<span aria-hidden="true">${SYMBOLS[i]}</span></h3>
 <figure class="project-sketch reveal-part"><svg viewBox="0 0 640 235" aria-hidden="true" focusable="false">${sketches[p.slug].body}</svg><figcaption>${esc(sketches[p.slug].caption)}</figcaption></figure>
 <div class="preview-story reveal-part"><p class="preview-question">${esc(p.question)}</p><p>${esc(p.summary)}</p></div><ol class="preview-flow reveal-part" aria-label="System flow">${p.flow.map(step => `<li>${esc(step)}</li>`).join('')}</ol>
-<div class="preview-actions reveal-part"><a class="project-open" href="${projectPath(p)}">Read the project <span aria-hidden="true">↗</span></a><a class="project-play" href="/play#concept-${p.slug}">Play the game <span aria-hidden="true">→</span></a></div>
+<div class="preview-actions reveal-part"><a class="project-open" href="${projectPath(p)}">Read the project <span aria-hidden="true">↗</span></a>${p.arcade === false ? `<a class="project-play" href="${projectPath(p)}#demo">Watch the demo <span aria-hidden="true">→</span></a>` : `<a class="project-play" href="/play#concept-${p.slug}">Play the game <span aria-hidden="true">→</span></a>`}</div>
 </article>`).join('')}<p class="explorer-announcement" id="explorer-announcement" role="status" aria-live="polite" aria-atomic="true"></p></div></div>`;
 }

@@ -16,6 +16,7 @@ export interface Project {
   links: { label: string; href: string }[];
   repo?: string;
   port?: number;
+  arcade?: boolean;
 }
 
 // Order tells a story: product, engineering boundaries, creative work, next steps.
@@ -40,6 +41,28 @@ export const PROJECTS: Project[] = [
       { label: BAKIANO.access.label, href: BAKIANO.access.href },
       { label: 'Read the public case study', href: 'https://github.com/alejandrofrank/bakiano-showcase' },
     ],
+  },
+  {
+    slug: 'madrid-delivery-sim', title: 'Madrid Delivery Sim', category: 'Engineering lab', status: 'Recorded demo · MIT source',
+    question: 'How do agents keep a delivery network working when plans break?',
+    summary: 'Nine agent roles coordinate a Madrid grocery network. Built with Google ADK and A2A, with verified Cloud Run and Vertex AI experiments on Google Cloud.',
+    problem: 'A delivery crosses stock, picking, kitchen, courier and customer-service boundaries. One delay can invalidate several decisions. The challenge is letting agents replan while keeping stock, custody, refunds and spending correct.',
+    approach: [
+      'Google ADK agents propose actions through scoped tools. SQL enforces ownership, inventory, delivery custody, budgets and policy.',
+      'A2A Agent Cards and typed messages connect the roles. A read-only MCP server exposes approved simulation facts to external agents.',
+      'Terraform defines Google Cloud resources; separate role identities, audience-bound ID tokens and GitHub Workload Identity Federation define the trust boundary.',
+      'Seeded rain, strikes, outages and store failures make recovery reproducible. Tests and evals preserve receipts of decisions and outcomes.',
+    ],
+    evidence: 'Watch the recorded map and store journeys, inspect the GCP architecture, then clone the source. Cloud Run deployment and native ADK calls to Vertex AI have dated verification receipts.',
+    boundary: 'The videos show synthetic, seeded local runs. Offline evals test contracts and policies, not live-model intelligence. Cloud Run was verified and torn down. The optional Cloud SQL/Vertex Vector Search private tier still needs qualification; there is no public live service.',
+    stack: ['Google Cloud', 'Google ADK', 'Vertex AI', 'Cloud Run', 'A2A', 'BigQuery', 'Terraform'],
+    flow: ['Reserve stock', 'Pick & pack', 'Dispatch', 'Deliver & review'],
+    links: [
+      { label: 'Watch the demo', href: '#demo' },
+      { label: 'Read the GCP guide', href: 'https://github.com/alejandrofrank/madrid-delivery-sim/blob/main/docs/GCP-CASE-STUDY.md' },
+      { label: 'Explore the MIT source', href: 'https://github.com/alejandrofrank/madrid-delivery-sim' },
+    ],
+    arcade: false,
   },
   {
     slug: 'gcp-ingestion-lab', title: 'GCP Ingestion Lab', category: 'Engineering lab', status: 'Runnable locally',
