@@ -4,10 +4,12 @@ An engineering portfolio with a direct **Original / Tech / Arcade** view picker.
 
 **[Explore the live site](https://me.alejandrofranks.workers.dev)** · **[Career timeline](https://me.alejandrofranks.workers.dev/timeline)** · **[Bakiano case study](https://github.com/alejandrofrank/bakiano-showcase)**
 
+**[Madrid Delivery Sim — Google Cloud agent systems](https://me.alejandrofranks.workers.dev/projects/madrid-delivery-sim)** includes the existing city/store recordings, a GCP architecture guide, evidence boundaries and MIT source. The website serves only media and documentation; it does not run the simulation.
+
 ## What you can explore
 
-- **Original homepage:** green gradients, expandable About me and Projects sections, experience and contact links. All six projects remain accessible here.
-- **Tech project explorer:** `/tech` has six selectable projects, each with its own system sketch, color and animated entrance. Use the project rail, arrow keys or previous/next controls; the selected project stays in the URL and carries into the arcade. “Read as a list” restores the complete reading index.
+- **Original homepage:** green gradients, expandable About me and Projects sections, experience and contact links. All seven projects remain accessible here.
+- **Tech project explorer:** `/tech` has seven selectable projects, each with its own system sketch, color and animated entrance. Use the project rail, arrow keys or previous/next controls; the selected project stays in the URL and carries into the arcade. “Read as a list” restores the complete reading index.
 - **View picker:** three visible links with distinct icons and a highlighted current view. One click switches between Original, Tech and Arcade; the selected project carries across all three. The control expands to the available width on phones.
 - **Project pages:** `/projects/:slug` explains the problem, approach, inspectable evidence and limitations. Three runnable labs include local setup instructions. Bakiano and Vesti retain their technical walkthroughs.
 - **Experience:** a career timeline with role-by-role system diagrams and written explanations.

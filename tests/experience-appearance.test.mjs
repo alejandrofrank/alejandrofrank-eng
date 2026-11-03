@@ -105,7 +105,7 @@ test('all appearances stay banner-free and retain a Home return and appearance p
         assert.equal(win.document.querySelector('.human-role').textContent, 'AI Data Engineer');
         assert.equal(win.document.querySelector('.human-location').textContent, 'Based in Madrid');
         assert.deepEqual([...win.document.querySelectorAll('.explore > details > summary,.explore > .explore-link')].map(node => node.textContent.trim()), ['About me', 'Projects', 'Experience', 'Say hello']);
-        assert.equal(win.document.querySelectorAll('.project-dropdown').length, 6);
+        assert.equal(win.document.querySelectorAll('.project-dropdown').length, 7);
         continue;
       }
       const controls = win.document.querySelector('.page-controls');
@@ -128,7 +128,11 @@ test('project return paths select the same project in each appearance, and game 
   for (const view of ['original', 'tech', 'arcade']) {
     const browser = visitor(`portfolio_view=${view}`);
     const index = await browser.open('/tech');
-    for (const link of index.document.querySelectorAll('.project-play')) assert.match(link.getAttribute('href'), /^\/play#concept-/);
+    for (const link of index.document.querySelectorAll('.project-play')) {
+      const href = link.getAttribute('href');
+      if (href.includes('madrid-delivery-sim')) assert.equal(href, '/projects/madrid-delivery-sim#demo');
+      else assert.match(href, /^\/play#concept-/);
+    }
     for (const slug of ['bakiano', 'gcp-ingestion-lab', 'catalog-match-lab', 'bigquery-query-guard', 'ascii-art', 'vesti']) {
       const page = await browser.open('/projects/' + slug);
       const returnLink = page.document.querySelector('.breadcrumb a').getAttribute('href');

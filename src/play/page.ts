@@ -10,6 +10,8 @@ import { renderIdentityGame, renderGarmentGame, identityStyles } from './games/i
 import { renderPaletteGame, miniStyles } from './games/palette';
 import { renderBasketGame, basketStyles } from './games/basket';
 
+const ARCADE_PROJECTS = PROJECTS.filter(project => project.arcade !== false);
+
 const GAMES: Record<string, { name: string; task: string; lesson: string; evidence: string; render: () => string }> = {
   bakiano: { name: 'Basket Run', task: 'Move groceries into a limited basket. Solve four markets with pack sizes, stock, delivery fees and dated prices.', lesson: 'Comparable prices depend on units, dates and traceable conversion.', evidence: 'Fictional market puzzle', render: renderBasketGame },
   'gcp-ingestion-lab': { name: 'Packet Factory', task: 'Build a working conveyor line. Place machines, branch duplicate packets and keep every delivery safe through five shifts.', lesson: 'Receipt placement and observation time decide whether retries are safe.', evidence: 'Executable pipeline simulation', render: renderIngestionGame },
@@ -25,13 +27,13 @@ export function renderPlayPage(origin: string, view: PortfolioView = 'arcade'): 
 <section class="arcade-room" aria-label="Project demo floor" id="arcade-room" hidden>
   <div class="room-topline"><div class="room-sign"><b aria-hidden="true">AF</b> INSIDE THE WORK</div><div class="room-status"><span>6 PLAYABLE</span></div></div>
   <fieldset id="station-controls"><legend class="sr-only">Choose a project station</legend><div class="room-scroll"><div class="arcade-floor">
-    <div class="stations">${PROJECTS.map((p, i) => `<div class="station" style="--station:${STATION_ART[p.slug].color}"><input type="radio" name="station" id="station-${p.slug}" value="${p.slug}"${p.slug === 'catalog-match-lab' ? ' checked' : ''} aria-controls="concept-${p.slug}" aria-label="${esc(p.title)} — ${esc(GAMES[p.slug].name)}"><label for="station-${p.slug}">${cabinetArt(p.slug, String(i + 1).padStart(2, '0'))}<strong>${esc(p.title)}</strong><small data-playable>● PLAY</small></label></div>`).join('')}</div>
+    <div class="stations">${ARCADE_PROJECTS.map((p, i) => `<div class="station" style="--station:${STATION_ART[p.slug].color}"><input type="radio" name="station" id="station-${p.slug}" value="${p.slug}"${p.slug === 'catalog-match-lab' ? ' checked' : ''} aria-controls="concept-${p.slug}" aria-label="${esc(p.title)} — ${esc(GAMES[p.slug].name)}"><label for="station-${p.slug}">${cabinetArt(p.slug, String(i + 1).padStart(2, '0'))}<strong>${esc(p.title)}</strong><small data-playable>● PLAY</small></label></div>`).join('')}</div>
     <div class="room-player" id="room-player" aria-hidden="true"><span class="player-tag">YOU</span>${PLAYER}</div>
   </div></div></fieldset>
   <div class="room-bottomline"><span><span class="desktop-tip"><kbd>←</kbd> <kbd>→</kbd> Choose · <kbd>Enter</kbd> Play · </span><span class="phone-tip">Tap a cabinet to play · </span><span class="room-position" id="room-position">03 / 06</span></span><a class="room-enter" id="room-enter" href="#concept-catalog-match-lab">Enter cabinet ↗</a></div>
 </section>
 <noscript><p class="arcade-note">The interactive examples need JavaScript. All project descriptions and reading links are available below.</p></noscript>
-<div class="station-panels">${PROJECTS.map((p, i) => {
+<div class="station-panels">${ARCADE_PROJECTS.map((p, i) => {
     const experiment = GAMES[p.slug];
     return `<section class="station-panel" id="concept-${p.slug}" data-station-panel="${p.slug}" style="--station:${STATION_ART[p.slug].color}" aria-labelledby="concept-title-${p.slug}">
       <div class="console-header"><span class="console-slot">${String(i + 1).padStart(2, '0')} / ${esc(p.title.toUpperCase())}</span><span class="console-lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
