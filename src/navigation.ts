@@ -2,7 +2,6 @@ import { appearanceSwitch, portfolioHome, type PortfolioView } from './appearanc
 
 export function portfolioProjects(view: PortfolioView, slug = ''): string {
   const hash = slug ? encodeURIComponent(slug) : 'projects';
-  if (view === 'arcade' && slug === 'madrid-delivery-sim') return '/tech#' + hash;
   if (view === 'arcade') return '/play' + (slug ? '#' + hash : '');
   return view === 'original' ? '/#' + (slug ? 'project-' + hash : hash) : '/tech#' + hash;
 }

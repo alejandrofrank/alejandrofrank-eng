@@ -130,10 +130,9 @@ test('project return paths select the same project in each appearance, and game 
     const index = await browser.open('/tech');
     for (const link of index.document.querySelectorAll('.project-play')) {
       const href = link.getAttribute('href');
-      if (href.includes('madrid-delivery-sim')) assert.equal(href, '/projects/madrid-delivery-sim#demo');
-      else assert.match(href, /^\/play#concept-/);
+      assert.match(href, /^\/play#concept-/);
     }
-    for (const slug of ['bakiano', 'gcp-ingestion-lab', 'catalog-match-lab', 'bigquery-query-guard', 'ascii-art', 'vesti']) {
+    for (const slug of ['bakiano', 'gcp-ingestion-lab', 'catalog-match-lab', 'bigquery-query-guard', 'ascii-art', 'vesti', 'madrid-delivery-sim']) {
       const page = await browser.open('/projects/' + slug);
       const returnLink = page.document.querySelector('.breadcrumb a').getAttribute('href');
       assert.equal(returnLink, view === 'original' ? '/#project-' + slug : view === 'tech' ? '/tech#' + slug : '/play#' + slug);
