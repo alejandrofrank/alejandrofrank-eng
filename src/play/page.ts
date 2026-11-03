@@ -9,10 +9,12 @@ import { renderQueryGame, queryStyles } from './games/query';
 import { renderIdentityGame, renderGarmentGame, identityStyles } from './games/identity';
 import { renderPaletteGame, miniStyles } from './games/palette';
 import { renderBasketGame, basketStyles } from './games/basket';
+import { renderBotGame, botStyles } from './games/bots';
 
 const ARCADE_PROJECTS = PROJECTS.filter(project => project.arcade !== false);
 
 const GAMES: Record<string, { name: string; task: string; lesson: string; evidence: string; render: () => string }> = {
+  'madrid-delivery-sim': {name:'Bot Workshop',task:'Equip three robots, run a delivery shift and repair what breaks. Five rounds introduce tools, communication, memory, spending and chaos.',lesson:'Reliable agents need the right capabilities and boundaries, not just a prompt.',evidence:'Deterministic agent-design game',render:renderBotGame},
   bakiano: { name: 'Basket Run', task: 'Move groceries into a limited basket. Solve four markets with pack sizes, stock, delivery fees and dated prices.', lesson: 'Comparable prices depend on units, dates and traceable conversion.', evidence: 'Fictional market puzzle', render: renderBasketGame },
   'gcp-ingestion-lab': { name: 'Packet Factory', task: 'Build a working conveyor line. Place machines, branch duplicate packets and keep every delivery safe through five shifts.', lesson: 'Receipt placement and observation time decide whether retries are safe.', evidence: 'Executable pipeline simulation', render: renderIngestionGame },
   'catalog-match-lab': { name: 'Catalog Customs', task: 'Find the verified match in increasingly crowded product lineups. Sometimes none qualifies. Three mistakes close the desk.', lesson: 'Shared words do not establish product identity. Missing evidence deserves a hold.', evidence: 'Runs the repository’s matcher', render: renderIdentityGame },
@@ -22,15 +24,15 @@ const GAMES: Record<string, { name: string; task: string; lesson: string; eviden
 };
 
 export function renderPlayPage(origin: string, view: PortfolioView = 'arcade'): string {
-  return readingShell('Project arcade', 'Six compact games about the engineering behind the projects: solve a problem, inspect the result and follow the code.', '/play', origin, `
-<header class="arcade-intro"><div><p class="eyebrow">Play the problem. Inspect the result.</p><h1>Project arcade</h1></div><p>Six small games.<br>Each built around a real engineering decision.</p></header>
+  return readingShell('Project arcade', 'Seven compact games about the engineering behind the projects: solve a problem, inspect the result and follow the code.', '/play', origin, `
+<header class="arcade-intro"><div><h1>Project arcade</h1></div><p>Seven small games.<br>Each built around a real engineering decision.</p></header>
 <section class="arcade-room" aria-label="Project demo floor" id="arcade-room" hidden>
-  <div class="room-topline"><div class="room-sign"><b aria-hidden="true">AF</b> INSIDE THE WORK</div><div class="room-status"><span>6 PLAYABLE</span></div></div>
+  <div class="room-topline"><div class="room-sign"><b aria-hidden="true">AF</b> INSIDE THE WORK</div><div class="room-status"><span>${ARCADE_PROJECTS.length} PLAYABLE</span></div></div>
   <fieldset id="station-controls"><legend class="sr-only">Choose a project station</legend><div class="room-scroll"><div class="arcade-floor">
     <div class="stations">${ARCADE_PROJECTS.map((p, i) => `<div class="station" style="--station:${STATION_ART[p.slug].color}"><input type="radio" name="station" id="station-${p.slug}" value="${p.slug}"${p.slug === 'catalog-match-lab' ? ' checked' : ''} aria-controls="concept-${p.slug}" aria-label="${esc(p.title)} — ${esc(GAMES[p.slug].name)}"><label for="station-${p.slug}">${cabinetArt(p.slug, String(i + 1).padStart(2, '0'))}<strong>${esc(p.title)}</strong><small data-playable>● PLAY</small></label></div>`).join('')}</div>
     <div class="room-player" id="room-player" aria-hidden="true"><span class="player-tag">YOU</span>${PLAYER}</div>
   </div></div></fieldset>
-  <div class="room-bottomline"><span><span class="desktop-tip"><kbd>←</kbd> <kbd>→</kbd> Choose · <kbd>Enter</kbd> Play · </span><span class="phone-tip">Tap a cabinet to play · </span><span class="room-position" id="room-position">03 / 06</span></span><a class="room-enter" id="room-enter" href="#concept-catalog-match-lab">Enter cabinet ↗</a></div>
+  <div class="room-bottomline"><span><span class="desktop-tip"><kbd>←</kbd> <kbd>→</kbd> Choose · <kbd>Enter</kbd> Play · </span><span class="phone-tip">Tap a cabinet to play · </span><span class="room-position" id="room-position">04 / 07</span></span><a class="room-enter" id="room-enter" href="#concept-catalog-match-lab">Enter cabinet ↗</a></div>
 </section>
 <noscript><p class="arcade-note">The interactive examples need JavaScript. All project descriptions and reading links are available below.</p></noscript>
 <div class="station-panels">${ARCADE_PROJECTS.map((p, i) => {
@@ -41,7 +43,7 @@ export function renderPlayPage(origin: string, view: PortfolioView = 'arcade'): 
       <div class="game-content">${experiment.render()}${p.slug === 'catalog-match-lab' ? `<details class="game-inspector"><summary>Free inspection: try your own product names</summary>${matchMarkup()}</details>` : p.slug === 'ascii-art' ? `<details class="game-inspector" id="image-inspector"><summary>Free inspection: compare rendering methods</summary>${imageMarkup()}</details>` : ''}</div></div>
     </section>`;
   }).join('')}</div>
-<div class="arcade-colophon"><span>PLAY → INSPECT → READ THE CODE</span><span><a href="/tech#projects">Read all projects →</a></span></div>`, playStyles + miniStyles + basketStyles + ingestionStyles + queryStyles + identityStyles, `import { initArcade } from '/play/arcade.mjs'; initArcade();`, view);
+<div class="arcade-colophon"><span>PLAY → INSPECT → READ THE CODE</span><span><a href="/tech#projects">Read all projects →</a></span></div>`, playStyles + miniStyles + basketStyles + ingestionStyles + queryStyles + identityStyles + botStyles, `import { initArcade } from '/play/arcade.mjs'; initArcade();`, view);
 }
 
 function matchMarkup(): string {

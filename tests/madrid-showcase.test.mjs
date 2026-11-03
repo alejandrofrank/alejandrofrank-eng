@@ -31,27 +31,27 @@ for (const view of ['original', 'tech', 'arcade']) {
       assert.match(doc.body.textContent, /Built for Google Cloud/);
       assert.match(doc.body.textContent, /make setup/);
       assert.match(doc.body.textContent, /still needs qualification/);
-      assert.ok(!doc.querySelector('a[href*="/play#concept-madrid"]'));
+      assert.ok(doc.querySelector('a[href*="/play#concept-madrid"]'));
       assert.match(doc.body.textContent, /No live models or cloud queries/);
     } finally { await win.happyDOM.close(); }
   });
 }
 
-test('adding an interactive replay project preserves the six playable games', async () => {
+test('Bot Workshop joins the six existing playable games', async () => {
   const response = await app.request('https://portfolio.test/play');
   assert.equal(response.status, 200);
   const html = await response.text();
-  assert.equal((html.match(/data-station-panel=/g) || []).length, 6);
-  assert.ok(!html.includes('id="station-madrid-delivery-sim"'));
+  assert.equal((html.match(/data-station-panel=/g) || []).length, 7);
+  assert.ok(html.includes('id="station-madrid-delivery-sim"'));
 });
 
-test('tech explorer offers the replay instead of a nonexistent game', async () => {
+test('tech explorer opens Bot Workshop while the case study retains its replay', async () => {
   const response = await app.request('https://portfolio.test/tech', {}, { GITHUB_USER: 'example' });
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.ok(html.includes('id="preview-madrid-delivery-sim"'));
-  assert.ok(html.includes('href="/projects/madrid-delivery-sim#demo"'));
-  assert.ok(!html.includes('/play#concept-madrid-delivery-sim'));
+  assert.ok(html.includes('href="/projects/madrid-delivery-sim"'));
+  assert.ok(html.includes('/play#concept-madrid-delivery-sim'));
   assert.ok(!html.includes('--project-color:undefined'));
 });
 

@@ -63,7 +63,7 @@ export const PROJECTS: Project[] = [
       { label: 'Read the GCP guide', href: 'https://github.com/alejandrofrank/madrid-delivery-sim/blob/main/docs/GCP-CASE-STUDY.md' },
       { label: 'Explore the MIT source', href: 'https://github.com/alejandrofrank/madrid-delivery-sim' },
     ],
-    arcade: false,
+    arcade: true,
   },
   {
     slug: 'gcp-ingestion-lab', title: 'GCP Ingestion Lab', category: 'Engineering lab', status: 'Runnable locally',
