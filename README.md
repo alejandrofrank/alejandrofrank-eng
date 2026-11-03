@@ -4,7 +4,7 @@ An engineering portfolio with a direct **Original / Tech / Arcade** view picker.
 
 **[Explore the live site](https://me.alejandrofranks.workers.dev)** · **[Career timeline](https://me.alejandrofranks.workers.dev/timeline)** · **[Bakiano case study](https://github.com/alejandrofrank/bakiano-showcase)**
 
-**[Madrid Delivery Sim — Google Cloud agent systems](https://me.alejandrofranks.workers.dev/projects/madrid-delivery-sim)** includes the existing city/store recordings, a GCP architecture guide, evidence boundaries and MIT source. The website serves only media and documentation; it does not run the simulation.
+**[Agents in GCP](https://me.alejandrofranks.workers.dev/projects/madrid-delivery-sim)** explains how agents with different tools, memory, permissions and decision rules work together. A delivery simulation in Madrid is the example, with city/store recordings, a GCP architecture guide, evidence boundaries and MIT source. The website serves only media and documentation; it does not run the simulation. The existing project URL and source repository name remain stable.
 
 ## What you can explore
 

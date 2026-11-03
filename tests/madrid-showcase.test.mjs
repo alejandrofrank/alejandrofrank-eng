@@ -11,7 +11,7 @@ const { outputFiles } = await build({ entryPoints: [fileURLToPath(new URL('../sr
 const { default: app } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].contents).toString('base64'));
 
 for (const view of ['original', 'tech', 'arcade']) {
-  test('Madrid case study works without JavaScript in ' + view, async () => {
+  test('Agents in GCP case study works without JavaScript in ' + view, async () => {
     const response = await app.request('https://portfolio.test/projects/madrid-delivery-sim', { headers: { Cookie: 'portfolio_view=' + view } });
     assert.equal(response.status, 200);
     const win = new Window({ settings: { disableJavaScriptFileLoading: true, disableCSSFileLoading: true } });
@@ -19,7 +19,7 @@ for (const view of ['original', 'tech', 'arcade']) {
       win.document.documentElement.innerHTML = await response.text();
       const doc = win.document;
       assert.equal(doc.body.dataset.view, view);
-      assert.equal(doc.querySelector('h1').textContent, 'Madrid Delivery Sim');
+      assert.equal(doc.querySelector('h1').textContent, 'Agents in GCP');
       assert.equal(doc.querySelectorAll('video').length, 2);
       for (const video of doc.querySelectorAll('video')) {
         assert.ok(video.hasAttribute('controls'));
