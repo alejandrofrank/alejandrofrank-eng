@@ -4,7 +4,7 @@ An engineering portfolio with a direct **Original / Tech / Arcade** view picker.
 
 **[Explore the live site](https://me.alejandrofranks.workers.dev)** · **[Career timeline](https://me.alejandrofranks.workers.dev/timeline)** · **[Bakiano case study](https://github.com/alejandrofrank/bakiano-showcase)**
 
-**[Agents in GCP](https://me.alejandrofranks.workers.dev/projects/madrid-delivery-sim)** explains how agents with different tools, memory, permissions and decision rules work together. A delivery simulation in Madrid is the example, with city/store recordings, a GCP architecture guide, evidence boundaries and MIT source. The website serves only media and documentation; it does not run the simulation. The existing project URL and source repository name remain stable.
+**[Agents in GCP](https://me.alejandrofranks.workers.dev/projects/madrid-delivery-sim)** explains how agents with different tools, memory, permissions and decision rules work together. A delivery simulation in Madrid is the example, with a clickable city replay, 3D store, agent anatomy, a GCP architecture guide, evidence boundaries and MIT source. The demo runs entirely in the browser from recorded synthetic data. It makes no live model calls or Google Cloud queries; the existing portfolio hosts its static files. The existing project URL and source repository name remain stable.
 
 ## What you can explore
 
@@ -66,3 +66,17 @@ Deployment requires your own Cloudflare account and Worker configuration. Set th
 ## Status
 
 Projects described inside the portfolio have their own status. Bakiano is live, the three engineering labs run locally, Image to Pixels is a live browser tool for pixels, dithering and ASCII, and Vesti is in development. Branch changes can be reviewed locally before deployment.
+
+### Updating the interactive agent demo
+
+The isolated static bundle lives in `public/projects/agents-demo/`. The city loads first; the shared Three.js runtime, SimReady models and recordings load when a visitor opens Store or Agent parts. Pause, seek and reduced-motion settings apply to recorded time, with no catch-up jumps after a hidden tab. WebGL failure leaves a recorded floor plan or the agent’s accessible part inspector.
+
+To refresh the committed public inputs from a verified source checkout:
+
+```bash
+python3 scripts/sync-agents-demo.py /path/to/madrid-delivery-sim
+npm test
+npm run typecheck
+```
+
+`provenance.json` records the source revision, input hashes and transformations. The city preserves its measured road trajectories; the separate store example retains the first ten simulation minutes through completed delivery. Source MIT, Three.js and SimReady / OpenStreetMap credits ship with the bundle. Re-run the browser checks after refreshing renderer modules. Do not add live API or model endpoints to this public example.

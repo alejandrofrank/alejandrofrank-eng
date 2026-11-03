@@ -1,0 +1,63 @@
+import {createClock,formatTime,escapeHTML as esc,storeFrame,syncMotionButton} from './state.mjs';
+import {frameAt} from './story-playback.js';
+import {createCity} from './city.mjs';
+const el=id=>document.getElementById(id),reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const repo='https://github.com/alejandrofrank/madrid-delivery-sim/blob/main/';
+const cache=new Map(),clocks={city:createClock(7200,120,!reduced.matches),store:createClock(600,10,!reduced.matches)};
+let view='city',city,cityScene,store,storeScene,agents,agentScene,selected=-1,partId='mission';
+let visible=true,lastUI=-1,lastStoreFrame=null,lastStoreRate=null,agentPaused=reduced.matches,loadRequest=0;
+const events={heavy_rain:'Heavy rain',metro_strike:'Metro strike',restaurant_outage:'Kitchen outage',courier_offline:'Courier offline',demand_surge:'Demand surge'};
+const statusNames={idle:'Available',to_pickup:'On the way to pickup',delivering:'Delivering',repositioning:'Moving to a new area',offline:'Offline',off_shift:'Off shift'};
+function rows(values){return '<dl class="number-list">'+values.map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd></div>').join('')+'</dl>';}
+async function data(name){if(!cache.has(name))cache.set(name,fetch(name+'.json').then(r=>{if(!r.ok)throw new Error('Recording unavailable');return r.json();}).catch(e=>{cache.delete(name);throw e;}));return cache.get(name);}
+function loading(message){el('loading').hidden=false;el('loading-text').textContent=message;el('retry').hidden=true;}
+function done(){el('loading').hidden=true;}
+function syncPlayback(){const clock=clocks[view];el('playback').hidden=!clock;if(!clock)return;el('timeline').max=view==='city'?7200:600;el('timeline').value=clock.time;el('elapsed').textContent=formatTime(clock.time)+' / '+formatTime(+el('timeline').max);el('play').textContent=clock.playing?'Pause':'Play';el('play').setAttribute('aria-label',clock.playing?'Pause replay':'Play replay');}
+function selectCourier(index){selected=index;el('courier').value=index<0?'':String(index);lastUI=-1;if(cityScene)renderCity();}
+function renderCity(){const time=clocks.city.time;cityScene.render(time,selected);const second=Math.floor(time);if(lastUI===second)return;lastUI=second;
+ const frame=frameAt(city.frames,time),delivered=city.orders.filter(o=>o.delivered!=null&&o.delivered<=time).length;
+ el('courier-info').innerHTML=selected<0?'<p>'+city.couriers.length+' couriers · '+delivered+' of '+city.orders.length+' orders delivered so far.</p><p class="muted">Click a dot on the map, or choose a courier above. Click a store square to open the store example.</p>':rows([['Fleet',city.couriers[selected].fleet],['Vehicle',city.couriers[selected].mode],['Current task',statusNames[city.statuses[frame.couriers[selected][2]]]],['Delivered so far',city.orders.filter(o=>o.courier===selected&&o.delivered!=null&&o.delivered<=time).length]])+'<p class="muted">Orange: travelled route. Dashed: route ahead.</p>';
+}
+async function initCity(){if(cityScene)return;city=await data('city');cityScene=createCity(el('city-canvas'),city,selectCourier,()=>show('store'));
+ el('courier').innerHTML='<option value="">All couriers</option>'+city.couriers.map((c,i)=>'<option value="'+i+'">'+esc(c.id)+'</option>').join('');
+ el('disruptions').innerHTML=city.disruptions.map((e,i)=>'<button data-event="'+i+'">'+esc(events[e.kind]||e.kind)+'<small>At '+formatTime(e.start_sim)+(e.district?' · '+esc(e.district):'')+'</small></button>').join('');
+ el('city-results').innerHTML=rows([['Delivered on time',city.outcomes.on_time+' / '+city.outcomes.orders],['Recovered disruptions',city.outcomes.resolved_disruptions+' / '+city.outcomes.disruptions],['Estimated fleet cost / delivery','€'+city.outcomes.cost_per_delivery_eur.toFixed(2)]])+'<p class="muted">Outcomes of this synthetic run. Fleet operating cost, not a Google Cloud or model bill.</p>';
+ clocks.city.seek(300);renderCity();
+}
+function storeFallback(){if(storeScene){storeScene.dispose();storeScene=null;}el('store-scene').hidden=true;el('store-fallback').hidden=false;el('store-fit').hidden=true;el('store-follow').hidden=true;el('scene-caption').textContent='3D is unavailable here. The recorded floor plan and order details still work.';drawFloor();}
+function drawFloor(){if(!store||el('store-fallback').hidden)return;const canvas=el('store-fallback'),ctx=canvas.getContext('2d'),layout=store.definition.layout,frame=frameAt(store.frames,clocks.store.time),r=canvas.getBoundingClientRect();canvas.width=r.width*devicePixelRatio;canvas.height=r.height*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);const s=Math.min((r.width-70)/layout.width,(r.height-90)/layout.depth),ox=(r.width-layout.width*s)/2,oy=25;ctx.fillStyle='#0c151c';ctx.fillRect(0,0,r.width,r.height);ctx.fillStyle='#385562';for(const slot of layout.slots)ctx.fillRect(ox+slot.x*s-3,oy+slot.z*s-3,6,6);ctx.font='12px system-ui';for(const w of frame.state.workers){ctx.fillStyle=w.available?'#52e5d5':'#e98f85';ctx.beginPath();ctx.arc(ox+w.position[0]*s,oy+w.position[1]*s,6,0,Math.PI*2);ctx.fill();ctx.fillText(w.id,ox+w.position[0]*s+8,oy+w.position[1]*s);}ctx.fillStyle='#e8ae63';ctx.fillText('Courier dock',ox+layout.dock.x*s-60,oy+layout.dock.z*s+24);}
+async function initStore(){if(store)return;store=await data('store');try{const {createStoreScene}=await import('./store-3d.js');storeScene=await createStoreScene(el('store-scene'),storeFrame(store,store.frames[0]),message=>{el('loading-text').textContent=message;},storeFallback,()=>{el('store-follow').setAttribute('aria-pressed','true');});}catch{storeFallback();}updateStore(true);}
+function updateStore(force=false){if(!store)return;const clock=clocks.store,frame=frameAt(store.frames,clock.time),rate=clock.playing&&visible&&!document.hidden&&view==='store'?clock.rate:0;
+ if(!force&&frame===lastStoreFrame&&rate===lastStoreRate)return;lastStoreFrame=frame;lastStoreRate=rate;
+ const state=storeFrame(store,frame),order=state.orders.find(o=>o.order_id===store.order);storeScene?.update(state,order,{sim:clock.time,rate});drawFloor();
+ const names=new Map(store.definition.catalogue.map(item=>[item.sku,item.name]));
+ el('basket').innerHTML='<h3>'+ (order?.delivered_sim!=null?'Delivered':order?.packed_sim!=null?'Packed for the courier':order?'Picking this basket':'Order being prepared')+'</h3>'+(order?rows(Object.entries(order.lines).map(([sku,n])=>[names.get(sku)||sku,(order.picked[sku]||0)+' / '+n])):'')+'<p class="muted">'+(state.conditions.broken.length?'Robot 1 is offline. Robot 2 takes over the order.':'Both picker robots are available.')+'</p>';
+}
+function agentFallback(){el('agent-scene').innerHTML='<p class="fallback-note">3D is unavailable in this browser. Choose an agent and a part to explore the same configuration and test results.</p>';agentScene=null;}
+async function initAgents(){if(agents)return;agents=await data('agents');el('agent').innerHTML=agents.agents.map(a=>'<option value="'+esc(a.id)+'">'+esc(a.name)+'</option>').join('');el('agent').value='fulfillment';try{const {createAgentScene}=await import('./agent-anatomy-3d.js');agentScene=createAgentScene(el('agent-scene'),{onPart:id=>{partId=id;renderPart();},onFailure:agentFallback,buttons:{}});agentScene.pause(agentPaused);}catch{agentFallback();}chooseAgent();}
+function chooseAgent(){const agent=agents.agents.find(a=>a.id===el('agent').value);el('part').innerHTML=agent.panels.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.label)+'</option>').join('');partId='mission';agentScene?.agent(agent);renderPart();}
+function renderPart(){const agent=agents.agents.find(a=>a.id===el('agent').value),part=agent.panels.find(p=>p.id===partId);if(!part)return;el('part').value=part.id;agentScene?.focus(part.id);
+ el('part-info').innerHTML='<h2>'+esc(part.label)+'</h2><p class="muted">'+esc(part.technical_label)+' · '+esc(part.part)+'</p><p>'+esc(part.summary)+'</p><p class="headline">'+esc(part.headline.text)+'</p>'+rows((part.number_rows||[]).map(r=>[r.label,r.value]))+'<ul>'+part.headline.bullets.map(b=>'<li>'+esc(b)+'</li>').join('')+'</ul><details><summary>Details &amp; source</summary>'+part.details.map(d=>'<p>'+esc(d)+'</p>').join('')+'<div class="sources">'+part.sources.map(p=>'<a target="_blank" rel="noopener" href="'+repo+encodeURI(p)+'">'+esc(p)+'</a>').join('')+'</div></details>';
+}
+async function show(next){view=next;const request=++loadRequest;lastUI=-1;document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===view)));for(const id of ['city','store','agents']){el(id+'-view').hidden=id!==view;el(id+'-info').hidden=id!==view;}
+ // Reset the timestamp before resuming a view; hidden time must never advance its recording.
+ for(const clock of Object.values(clocks))clock.tick(performance.now(),false);
+ updateStore(true);agentScene?.pause(agentPaused||view!=='agents'||!visible);syncPlayback();
+ el('scene-caption').textContent={city:'Click a courier to follow its recorded route.',store:'Drag to orbit · Scroll to zoom · Click a robot to follow it.',agents:'Each part explains this agent’s real tools, memory, rules and test results.'}[view];
+ loading({city:'Loading the recorded city…',store:'Loading the 3D store and its recorded shift…',agents:'Building the robot from its real configuration…'}[view]);
+ try{await({city:initCity,store:initStore,agents:initAgents}[view])();if(request!==loadRequest)return;done();if(view==='city')renderCity();if(view==='store')updateStore(true);if(view==='agents'){agentScene?.pause(agentPaused);agentScene?.wake();}}catch(e){if(request!==loadRequest)return;el('loading-text').textContent='The demo could not load. Check your connection and try again.';el('retry').hidden=false;console.error('Demo loading failed:',e);}syncPlayback();
+}
+function seek(time){clocks[view]?.seek(time);lastUI=-1;if(view==='city'&&cityScene)renderCity();if(view==='store')updateStore(true);syncPlayback();}
+el('retry').onclick=()=>show(view);document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view));
+el('play').onclick=()=>{const clock=clocks[view];if(clock.time>=Number(el('timeline').max))clock.seek(0);clock.play(!clock.playing);updateStore(true);syncPlayback();};
+el('timeline').oninput=e=>seek(e.target.value);el('courier').onchange=e=>selectCourier(e.target.value===''?-1:Number(e.target.value));
+el('disruptions').onclick=e=>{const button=e.target.closest('[data-event]');if(!button)return;const event=city.disruptions[Number(button.dataset.event)];seek(event.start_sim);el('event-info').innerHTML='<h3>'+esc(events[event.kind])+'</h3><p class="muted">Final outcome for the affected orders in this recording.</p>'+rows([['Orders saved',event.metrics.orders_saved],['Orders lost',event.metrics.orders_lost],['Recovery (simulation time)',formatTime(event.metrics.time_to_recover_seconds)],['Refunds','€'+event.metrics.refund_cost_eur.toFixed(2)]]);};
+document.querySelectorAll('[data-store-time]').forEach(b=>b.onclick=()=>seek(Number(b.dataset.storeTime)));
+el('store-fit').onclick=()=>{storeScene?.fit();el('store-follow').setAttribute('aria-pressed','false');};el('store-follow').onclick=()=>{const value=el('store-follow').getAttribute('aria-pressed')!=='true';storeScene?.track(value);el('store-follow').setAttribute('aria-pressed',String(value));};
+el('agent').onchange=chooseAgent;el('part').onchange=e=>{partId=e.target.value;renderPart();};el('agent-reset').onclick=()=>agentScene?.reset();el('agent-motion').onclick=()=>{agentPaused=!agentPaused;agentScene?.pause(agentPaused);syncMotionButton(el('agent-motion'),agentPaused,reduced.matches);};
+function visibility(){for(const clock of Object.values(clocks))clock.tick(performance.now(),false);updateStore(true);agentScene?.pause(agentPaused||view!=='agents'||!visible||document.hidden);}
+new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;visibility();}).observe(document.querySelector('.workspace'));
+document.addEventListener('visibilitychange',visibility);reduced.addEventListener('change',()=>{if(reduced.matches){Object.values(clocks).forEach(c=>c.play(false));agentPaused=true;visibility();syncPlayback();}syncMotionButton(el('agent-motion'),agentPaused,reduced.matches);});
+window.addEventListener('resize',drawFloor);
+function animate(now){const clock=clocks[view];if(clock){clock.tick(now,visible&&!document.hidden&&el('loading').hidden);if(visible&&!document.hidden){if(view==='city'&&cityScene)renderCity();if(view==='store')updateStore();syncPlayback();}}requestAnimationFrame(animate);}
+syncMotionButton(el('agent-motion'),agentPaused,reduced.matches);show('city');requestAnimationFrame(animate);

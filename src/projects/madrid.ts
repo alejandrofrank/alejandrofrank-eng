@@ -3,12 +3,10 @@ const doc = (path: string) => repo + '/blob/main/' + path;
 
 export function madridDemo(): string {
   return '<section class="madrid-demo" id="demo" aria-labelledby="demo-title">'
-    + '<h2 id="demo-title">The example: a delivery simulation in Madrid</h2><p>Nine agent roles put these building blocks to work: checking stock, picking orders, coordinating couriers and handling problems. Watch the recorded city and store journeys. No cloud services run when you press play.</p>'
-    + '<figure><video controls playsinline preload="none" poster="/projects/madrid/city-poster.jpg" aria-label="Recorded Madrid delivery map and order flow" aria-describedby="city-description"><source src="/projects/madrid/city-demo.mp4" type="video/mp4">Your browser cannot play this video. <a href="/projects/madrid/city-demo.mp4">Download the city recording</a>.</video>'
-    + '<figcaption id="city-description">City recording · Couriers move across Madrid while the page explains stock checks, picking and delivery. Synthetic data; recorded playback, not a live fleet.</figcaption></figure>'
-    + '<details class="store-recording"><summary>Watch the shelf-to-doorstep recording</summary><figure><video controls playsinline preload="none" poster="/projects/madrid/store-poster.jpg" aria-label="Recorded 3D store picking and courier handoff" aria-describedby="store-description"><source src="/projects/madrid/store-demo.mp4" type="video/mp4">Your browser cannot play this video. <a href="/projects/madrid/store-demo.mp4">Download the store recording</a>.</video>'
-    + '<figcaption id="store-description">Store recording · A reserved basket is picked from shelves, packed and moved to the loading dock for courier pickup. A picker failure tests physical handover and recovery.</figcaption></figure></details>'
-    + '<p class="madrid-credit">Map data © OpenStreetMap contributors; OpenFreeMap / OpenMapTiles. Store assets: NVIDIA SimReady, converted by codepawl, simplified for the browser, CC BY 4.0. <a href="' + doc('THIRD-PARTY-NOTICES.md') + '">Asset credits and licenses</a>.</p></section>';
+    + '<h2 id="demo-title">Try the example: a delivery simulation in Madrid</h2><p>Follow a courier, step inside the store, or click a robot’s parts. This interactive replay runs in your browser with recorded synthetic data. No live models or cloud queries.</p>'
+    + '<p><a href="/projects/agents-demo/index.html" target="_blank" rel="noopener">Open the full demo ↗</a></p>'
+    + '<iframe class="madrid-interactive" src="/projects/agents-demo/index.html" title="Agents in GCP: interactive city, store and agent anatomy demo" loading="lazy" referrerpolicy="same-origin"></iframe>'
+    + '<p class="madrid-credit">The city and store are separate seeded recordings. The agent explorer uses real configuration files and test results. <a href="' + doc('THIRD-PARTY-NOTICES.md') + '">Asset credits and licenses</a>.</p></section>';
 }
 
 export function madridGuide(): string {
@@ -28,7 +26,7 @@ export function madridGuide(): string {
   ];
   return '<section id="agent-parts" aria-labelledby="agent-parts-title"><h2 id="agent-parts-title">What goes into each agent</h2><p>I combine these parts around the job an agent needs to do. The Madrid simulation makes the differences visible within one working project.</p>'
     + '<dl class="madrid-layers">' + parts.map(([name, detail]) => '<div><dt>' + name + '</dt><dd>' + detail + '</dd></div>').join('') + '</dl><a href="' + doc('docs/AGENT-ANATOMY.md') + '">Inspect the agent anatomy and configuration</a></section>'
-    + '<section id="gcp" aria-labelledby="gcp-title"><h2 id="gcp-title">Built for Google Cloud</h2><p>Google ADK provides the agent framework, with Vertex AI for optional model calls and Cloud Run for deployment. The portfolio itself only serves this page and its recordings.</p>'
+    + '<section id="gcp" aria-labelledby="gcp-title"><h2 id="gcp-title">Built for Google Cloud</h2><p>Google ADK provides the agent framework, with Vertex AI for optional model calls and Cloud Run for deployment. The portfolio serves this guide and an interactive browser replay. It makes no calls to Google Cloud.</p>'
     + '<ol class="madrid-cloud-flow" aria-label="Google Cloud release flow"><li>Verified GitHub revision</li><li>Workload Identity Federation</li><li>Artifact Registry</li><li>Cloud Run</li></ol>'
     + '<dl class="madrid-layers">' + layers.map(([name, detail, path]) => '<div><dt>' + name + '</dt><dd>' + detail + ' <a href="' + doc(path) + '">Inspect the implementation</a>.</dd></div>').join('') + '</dl></section>'
     + '<section><h2>Different jobs in the Madrid example</h2><p>The household requests a meal. A restaurant checks recipes and sources ingredients from the market. Inventory reserves store stock, fulfillment picks and packs it, and the dispatcher assigns a courier. Customer service handles problems; the recovery judge reviews failed delivery attempts.</p><p>These roles use different combinations of tools, context and decision rules. A2A carries their requests, while durable queues and SQL tools enforce the effects. The same approach to designing roles can be applied to a different project by changing its tools, data and policies.</p></section>'
@@ -43,11 +41,7 @@ export const madridStyles = `
 .madrid-demo { padding:30px 0; border-bottom:1px solid var(--line); }
 .madrid-demo h2 { font-size:23px; margin-bottom:12px; }
 .madrid-demo>p { max-width:70ch; color:var(--muted); }
-.madrid-demo figure { margin:22px 0 0; }
-.madrid-demo video { display:block; width:100%; max-height:65vh; background:var(--surface); border:1px solid var(--line); border-radius:8px; }
-.madrid-demo figcaption { max-width:75ch; font-size:14px; color:var(--muted); margin-top:12px; }
-.store-recording { margin-top:24px; }
-.store-recording>summary { cursor:pointer; min-height:44px; padding:10px 0; }
+.madrid-interactive { display:block; width:100%; height:850px; border:1px solid var(--line); border-radius:8px; background:#f5f2e9; }
 .madrid-demo .madrid-credit { font-size:12px; margin-top:20px; }
 .madrid-layers { margin:24px 0; }
 .madrid-layers>div { border-top:1px solid var(--line); padding:18px 0; }
@@ -56,5 +50,6 @@ export const madridStyles = `
 .madrid-cloud-flow { padding:0; margin:22px 0; list-style:none; display:flex; flex-wrap:wrap; gap:10px; }
 .madrid-cloud-flow li { border:1px solid var(--line); border-radius:6px; padding:8px 12px; font-size:14px; }
 .madrid-cloud-flow li+li { margin-top:0; }
-@media print { .madrid-demo video { max-height:220px; }.store-recording { display:none; } }
+@media(max-width:700px) { .madrid-interactive { height:1000px; } }
+@media print { .madrid-interactive { display:none; } }
 `;

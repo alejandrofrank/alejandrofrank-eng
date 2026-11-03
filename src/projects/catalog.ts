@@ -43,7 +43,7 @@ export const PROJECTS: Project[] = [
     ],
   },
   {
-    slug: 'madrid-delivery-sim', title: 'Agents in GCP', category: 'Engineering lab', status: 'Recorded demo · MIT source',
+    slug: 'madrid-delivery-sim', title: 'Agents in GCP', category: 'Engineering lab', status: 'Interactive demo · MIT source',
     question: 'Build agents around the problems they need to solve.',
     summary: 'I build agents with different tools, memory and rules, then connect them to work together on Google Cloud. For this example, I use a delivery simulation set in Madrid.',
     problem: 'Different jobs need different capabilities and boundaries. An agent that chooses a route should not have the same tools, memory or permissions as one that handles a refund. Each role needs the right parts, and the team needs a reliable way to work together.',
@@ -54,8 +54,8 @@ export const PROJECTS: Project[] = [
       'Terraform defines Google Cloud resources; separate role identities, audience-bound ID tokens and GitHub Workload Identity Federation define the trust boundary.',
       'Test each role and the team together. In the Madrid example, seeded disruptions show how agents replan while stock, custody and refund rules remain enforced.',
     ],
-    evidence: 'Inspect the parts of each agent and how different configurations support different jobs. The Madrid recordings show nine roles working in one project; Cloud Run deployment and native ADK calls to Vertex AI have dated verification receipts.',
-    boundary: 'The videos show synthetic, seeded local runs. Offline evals test contracts and policies, not live-model intelligence. Cloud Run was verified and torn down. The optional Cloud SQL/Vertex Vector Search private tier still needs qualification; there is no public live service.',
+    evidence: 'Inspect the parts of each agent and how different configurations support different jobs. The interactive Madrid replay and agent explorer show nine roles working in one project; Cloud Run deployment and native ADK calls to Vertex AI have dated verification receipts.',
+    boundary: 'The interactive demo replays synthetic, seeded local runs. Offline evals test contracts and policies, not live-model intelligence. Cloud Run was verified and torn down. The optional Cloud SQL/Vertex Vector Search private tier still needs qualification; there is no public live service.',
     stack: ['Google Cloud', 'Google ADK', 'Vertex AI', 'Cloud Run', 'A2A', 'BigQuery', 'Terraform'],
     flow: ['Define the role', 'Choose tools & memory', 'Connect agents', 'Evaluate decisions'],
     links: [

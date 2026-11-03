@@ -20,27 +20,24 @@ for (const view of ['original', 'tech', 'arcade']) {
       const doc = win.document;
       assert.equal(doc.body.dataset.view, view);
       assert.equal(doc.querySelector('h1').textContent, 'Agents in GCP');
-      assert.equal(doc.querySelectorAll('video').length, 2);
-      for (const video of doc.querySelectorAll('video')) {
-        assert.ok(video.hasAttribute('controls'));
-        assert.equal(video.getAttribute('preload'), 'none');
-        assert.ok(!video.hasAttribute('autoplay'));
-        assert.ok(doc.getElementById(video.getAttribute('aria-describedby')));
-        for (const src of [video.getAttribute('poster'), video.querySelector('source').getAttribute('src')]) {
-          assert.ok(existsSync(new URL('../public' + src, import.meta.url)), src);
-        }
-      }
+      assert.equal(doc.querySelectorAll('video').length, 0);
+      const demo = doc.querySelector('iframe');
+      assert.equal(demo.getAttribute('src'), '/projects/agents-demo/index.html');
+      assert.equal(demo.getAttribute('loading'), 'lazy');
+      assert.match(demo.title, /interactive city, store and agent anatomy/);
+      assert.ok(existsSync(new URL('../public' + demo.getAttribute('src'), import.meta.url)));
+      assert.ok(doc.querySelector('a[href="/projects/agents-demo/index.html"]'));
       assert.equal(doc.querySelector('a[href="#demo"]').getAttribute('target'), null);
       assert.match(doc.body.textContent, /Built for Google Cloud/);
       assert.match(doc.body.textContent, /make setup/);
       assert.match(doc.body.textContent, /still needs qualification/);
       assert.ok(!doc.querySelector('a[href*="/play#concept-madrid"]'));
-      assert.ok(!doc.querySelector('iframe'));
+      assert.match(doc.body.textContent, /No live models or cloud queries/);
     } finally { await win.happyDOM.close(); }
   });
 }
 
-test('adding a recorded project preserves the six playable games', async () => {
+test('adding an interactive replay project preserves the six playable games', async () => {
   const response = await app.request('https://portfolio.test/play');
   assert.equal(response.status, 200);
   const html = await response.text();
@@ -48,7 +45,7 @@ test('adding a recorded project preserves the six playable games', async () => {
   assert.ok(!html.includes('id="station-madrid-delivery-sim"'));
 });
 
-test('tech explorer offers a recording instead of a nonexistent game', async () => {
+test('tech explorer offers the replay instead of a nonexistent game', async () => {
   const response = await app.request('https://portfolio.test/tech', {}, { GITHUB_USER: 'example' });
   assert.equal(response.status, 200);
   const html = await response.text();
