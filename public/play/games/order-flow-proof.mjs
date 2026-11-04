@@ -1,6 +1,6 @@
 import {PROOFS} from './order-flow-proof-data.mjs';
 import {positionKey,levelSignature} from './order-flow-position.mjs';
-import {SKILLS,lossInfo} from './order-flow-model.mjs';
+import {SKILLS} from './order-flow-model.mjs';
 
 export function inspectPosition(level,state){
  const certificate=PROOFS[level.index],left=level.budget-state.moves;
@@ -12,8 +12,9 @@ export function inspectPosition(level,state){
  return {kind:minimum<0?'deadend':minimum>left?'budget':minimum===0?'won':'solvable',minimum:minimum<0?null:minimum,left,next:row.slice(1),positions:certificate.states};
 }
 export function riskExplanation(level,state,proof=inspectPosition(level,state)){
- if(proof.kind==='budget')return proof.minimum===null?lossInfo(level,state).text:'This plan needs '+proof.minimum+' more moves, but would leave only '+Math.max(0,proof.left)+'. Keep planning or Retry.';
- if(state.status==='lost')return lossInfo(level,state).text;
+ if(proof.kind==='budget')return proof.minimum===null?'This move would exceed the '+level.budget+'-move budget. Retry with a shorter plan.':'This plan needs '+proof.minimum+' more moves, but would leave only '+Math.max(0,proof.left)+'. Keep planning or Retry.';
+ if(state.cause==='overflow')return 'This would add a fifth bag. Send a Courier before this Picker.';
+ if(state.cause==='slots')return 'This would fill the bay with no worker for the front order. Free the needed skill first.';
  return 'This move leaves no winning path: the remaining bots cannot clear the work. Keep planning and choose a different bot.';
 }
 export function nextMoveHint(level,state,proof=inspectPosition(level,state)){

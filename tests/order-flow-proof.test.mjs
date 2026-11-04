@@ -8,7 +8,7 @@ import {buildProofs,serializeProofs} from '../scripts/build-order-flow-proof.mjs
 
 test('shipped certificates exactly match a complete graph regeneration',()=>{
  const proofs=buildProofs();
- assert.equal(readFileSync(new URL('../public/play/games/order-flow-proof-data.mjs',import.meta.url),'utf8'),serializeProofs(proofs));
+ assert.equal(readFileSync(new URL('../public/play/games/order-flow-proof-data.mjs',import.meta.url),'utf8').replace(/\r\n/g,'\n'),serializeProofs(proofs));
  assert.equal(proofs.reduce((n,p)=>n+p.states,0),903);
  assert.equal(proofs.reduce((n,p)=>n+p.transitions,0),1636);
 });
