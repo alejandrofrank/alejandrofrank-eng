@@ -38,6 +38,10 @@ Repeated Memory IDs mean enter, then release. The baseline greedy policy picks a
 
 ## Controls and progress
 
+Before committing a legal tap, the game checks whether the resulting position can still finish within the remaining moves. A dead-end warning offers **Keep planning** or **Play anyway**. Cancelling spends no move or Undo and clears queued intentions. The warning is advisory: deliberately continuing still permits the original losses. **Next move?** highlights one verified continuation on request; it does not play the move. Hints are optional and do not affect stars.
+
+The position reported in the 5 November play-test was level 6 after bots 2 and 3: Memory and Support occupy the bay. It remains solvable in three moves: release Memory (2), send Picker (4), then Courier (1). Parked Memory now visibly says **Release**, with the one-move cost in the status and accessible label.
+
 Use click/tap or Tab then Enter/Space. Taps during serving enter a visible FIFO queue. One animation loop displays one order hop per 150ms; input never waits for it. Hold **Hold to speed up** (pointer or keyboard) for 6× playback. Reduced motion settles immediately. There are no gameplay timers.
 
 The label, belt accessibility description, capacities and lock state are derived together from each displayed state. Departed bot elements are hidden and transient hop markers are cleared.
@@ -45,6 +49,32 @@ The label, belt accessibility description, capacities and lock state are derived
 Local storage keeps the current level, completed stars and a validated action history, including Undo. Reload reconstructs the board through the same reducer. The numbered level button opens earned levels. Corrupt saves reset safely; denied storage does not prevent play. Saving is local to this browser/device. The previous six-level campaign's different boards are not imported.
 
 The win-card explanation opens in a new tab with opener isolation. It is separated from Next level by the explanation block. Sound starts off. Other arcade games are unchanged.
+
+## Proof of solvability
+
+The certificate is generated from the actual transition rules, not hand-written solutions. Treat every reachable settled position as a graph node, and each legal bot tap as a directed edge. The current ten levels contain **903 nodes and 1,636 edges**, including losing branches. Reverse breadth-first search from all winning nodes calculates the shortest remaining distance:
+
+```text
+d(s) = 0                                      if s is a win
+d(s) = 1 + min(d(next(s, a)))                  over legal taps a
+d(s) = infinity                               if no win is reachable
+can_finish(s) = d(s) <= move_budget - moves_spent
+```
+
+The key includes yard occupancy, bay capacities, ordered tokens and retry flags, bags, departed skills, and terminal status. Spent moves are checked separately, so Undo cannot refund the budget in the proof. All edges are enumerated; exceeding the generation safety limit fails instead of certifying a partial search.
+
+The browser reads the generated table, avoiding a live search during input. A test regenerates it to catch drift and compares **every reachable position** with the independent forward BFS solver. Another verifies the reported Memory position. Signature mismatches or absent positions are reported as unverified, never silently declared solvable. The claim applies to this deterministic puzzle's encoded rules, not to real AI-agent reliability.
+
+Regenerate after changing puzzle mechanics or layouts:
+
+```bash
+node scripts/build-order-flow-proof.mjs
+npm test
+```
+
+## Larger board
+
+The yard and bay are measured independently; a short bay no longer shrinks every yard bot. Roomy boards allow 132px yard bots and 112px parked bots, and order discs are 40px instead of 24px. Wide screens place the bay beside the yard below the belt; portrait retains the stacked sequence. Unused bottom rows are omitted without changing authored bot coordinates or blockers. Phone controls combine the Back action with the level header. At very short heights, scrolling preserves usable controls and the result stays in view.
 
 ## Connection to the real system
 
@@ -66,6 +96,8 @@ The real memory scope includes run, store, role and context; the game only demon
 | --- | --- |
 | public/play/games/order-flow-model.mjs | Ten boards, immutable rules, BFS, greedy baseline and rating |
 | public/play/games/order-flow-progress.mjs | Attempt history, limited Undo and validated save/restore |
+| public/play/games/order-flow-proof.mjs, order-flow-proof-data.mjs, order-flow-position.mjs | Position certificate, exact distance lookup and pre-move advice |
+| scripts/build-order-flow-proof.mjs, tests/order-flow-proof.test.mjs | Complete graph generation, drift gate and independent verification |
 | public/play/games/order-flow.mjs | Input queue, 150ms trace, accessibility, sound and rendering |
 | src/play/games/order-flow.ts | Cabinet-scoped board, outcomes and responsive CSS |
 | tests/order-flow-model.test.mjs | Solvability, greedy failures, handoffs, locks, retries, budgets and saves |
@@ -79,4 +111,6 @@ On 4 November 2026, all **158 repository tests** and TypeScript checking passed.
 
 All ten levels were completed through browser controls. Level 3 was deliberately lost and retried; reload restored both that loss and a mid-level handoff. Level 6 was played on a phone-sized viewport. Level 10, its nine bot targets and final win card fit at 390×700; desktop captures use 1280×800. Bot rectangles measured at least 44×44px without overlap in the final mobile yard. The captured browser console contained no errors. These checks do not claim a universal latency measurement across devices.
 
-One source-only Impeccable detector pass returned no findings. Rendered screenshots, rather than that source scan, provide the layout evidence.
+On 5 November 2026, the proof/enlargement update passed all **166 repository tests**, including **34 Order Flow tests**, and TypeScript checking. Browser play reproduced and completed the reported level 6 position, cancelled a prospective overflow in level 10 and finished it, and caught level 3's future dead end before the first move. Captures cover 1280×800, 753×947 and 390×700, including mobile warnings and the final win. Saved progress still restores. No console errors were captured. Independent layout review found no material clipping or overlap.
+
+One source-only Impeccable detector pass for this update returned no findings. Rendered screenshots, rather than that source scan, provide the layout evidence.

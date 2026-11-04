@@ -1,6 +1,6 @@
 import {SKILLS,LEVELS,copyState,inYard,blocker,locked,legalMoves,visibleOrders,memoryParked,lossInfo,rating} from './order-flow-model.mjs';
 import {SAVE_KEY,newAttempt,takeTurn,undoTurn,restoreProgress,serializeProgress} from './order-flow-progress.mjs';
-const NS='http://www.w3.org/2000/svg';
+import {inspectPosition,riskExplanation,nextMoveHint} from './order-flow-proof.mjs';
 const face='<svg class="of-face" viewBox="0 0 32 16" aria-hidden="true"><path d="M8 4v3m16-3v3M12 12q4 3 8 0"/></svg>';
 const arrow='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 17V3m-5 5 5-5 5 5"/></svg>';
 const lockIcon='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 8V5a4 4 0 0 1 8 0v3M4 8h12v10H4z"/></svg>';
@@ -11,7 +11,7 @@ export function initOrderFlowGame(){
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
  let saved;try{saved=window.localStorage.getItem(SAVE_KEY);}catch{}
  let {level:levelIndex,stars,attempt}=restoreProgress(saved),level=LEVELS[levelIndex],shown=attempt.state;
- let buttons=[],geometry={yard:[],bay:[],size:54,width:360,beltHeight:76},raf=0,frames=[],frameAt=0,lastTime=null,elapsed=0,pending=[],fast=false,blockedFocus=null,sound=false,audio,storageFailed=false,destroyed=false;
+ let buttons=[],geometry={yard:[],bay:[],size:72,width:360,beltHeight:92},raf=0,frames=[],frameAt=0,lastTime=null,elapsed=0,pending=[],fast=false,blockedFocus=null,hintId=null,riskId=null,sound=false,audio,storageFailed=false,destroyed=false;
  const on=(el,type,fn,options)=>{el.addEventListener(type,fn,options);cleanups.push(()=>el.removeEventListener(type,fn,options));};
  const cleanups=[];
  function announce(text){$('message').textContent=text;}
@@ -28,7 +28,25 @@ export function initOrderFlowGame(){
  function updateInput(){
   $('queued').textContent=pending.length?pending.length+' tap'+(pending.length===1?'':'s')+' queued':'';
   $('fast').disabled=!frames.length;
+  $('hint').disabled=!!frames.length||attempt.state.status!=='playing';
   buttons.forEach(b=>b.classList.toggle('is-queued',pending.includes(Number(b.dataset.bot))));
+ }
+ function updateProof(s){
+  const proof=inspectPosition(level,s);
+  $('proof').dataset.kind=frames.length?'working':proof.kind;
+  $('proof').textContent=frames.length?'Moving orders…':proof.kind==='solvable'?'Solvable · '+proof.minimum+' needed / '+proof.left+' left':proof.kind==='won'?'Both belts cleared':proof.kind==='budget'?'Too few moves left':proof.kind==='deadend'?'No winning path':'Position not verified';
+ }
+ function closeRisk(){
+  const id=riskId;riskId=null;$('risk').hidden=true;
+  for(const el of root.querySelectorAll('.of-heading,.of-toolbar,.of-feedback'))el.inert=false;
+  $('work').inert=attempt.state.status!=='playing';return id;
+ }
+ function warnRisk(id,state,proof){
+  riskId=id;pending=[];updateInput();
+  $('risk-title').textContent=proof.kind==='budget'?'Not enough moves to finish':'That move is a dead end';
+  $('risk-text').textContent=riskExplanation(level,state,proof);$('risk').hidden=false;$('work').inert=true;
+  for(const el of root.querySelectorAll('.of-heading,.of-toolbar,.of-feedback'))el.inert=true;
+  $('risk-cancel').focus({preventScroll:true});
  }
  function updateControls(){
   $('moves').textContent=attempt.state.moves+' / '+level.budget+' moves';
@@ -41,8 +59,8 @@ export function initOrderFlowGame(){
   updateInput();
  }
  function queuePoint(i,count){
-  const n=Math.ceil(count/2),spacing=Math.min(38,(geometry.width-72)/Math.max(1,n-1)),start=(geometry.width-(n-1)*spacing)/2;
-  return i<n?{x:start+i*spacing,y:geometry.beltHeight-16}:{x:start+(2*n-1-i)*spacing,y:16};
+  const n=Math.ceil(count/2),start=30,spacing=(geometry.width-92)/Math.max(1,n-1);
+  return i<n?{x:start+i*spacing,y:geometry.beltHeight-22}:{x:start+(2*n-1-i)*spacing,y:22};
  }
  function drawBelt(s){
   const visible=visibleOrders(level,s),display=visible.slice(0,12),hidden=s.queue.length-display.length;
@@ -51,10 +69,10 @@ export function initOrderFlowGame(){
   $('front').textContent=frontText;
   $('belt').setAttribute('aria-label',frontText+'. Next orders: '+(display.map(o=>SKILLS[o.skill].name+(o.retry?' retry':'')).join(', ')||'none')+(hidden?'. '+hidden+' hidden.':'.'));
   const first=queuePoint(0,Math.max(4,display.length)),last=queuePoint(Math.ceil(Math.max(4,display.length)/2)-1,Math.max(4,display.length));
-  const right=Math.min(geometry.width-18,last.x+15);
-  const bottom=geometry.beltHeight-16,middle=geometry.beltHeight/2;
-  let html='<defs><pattern id="of-stripes" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="2" height="6" fill="#fff" opacity=".65"/></pattern></defs><path d="M '+first.x+' 16 H '+right+' Q '+(right+18)+' 16 '+(right+18)+' '+middle+' Q '+(right+18)+' '+bottom+' '+right+' '+bottom+' H '+first.x+'" fill="none" stroke="#d4dccb" stroke-width="27" stroke-linecap="round"/>';
-  display.forEach((o,i)=>{const p=queuePoint(i,Math.max(4,display.length)),skill=SKILLS[o.skill];html+='<g transform="translate('+p.x+' '+p.y+')"><circle r="12" fill="'+skill.color+'" stroke="'+(i===0?'#233c32':'#fffdf4')+'" stroke-width="'+(i===0?3:2)+'"/>'+(o.retry?'<circle r="11" fill="url(#of-stripes)"/>':'')+'<text text-anchor="middle" y="5" fill="#fffdf4" font-size="14" font-weight="700" stroke="'+skill.color+'" stroke-width=".6">'+skill.letter+'</text></g>';});
+  const right=Math.min(geometry.width-44,last.x+6);
+  const bottom=geometry.beltHeight-22,middle=geometry.beltHeight/2;
+  let html='<defs><pattern id="of-stripes" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="3" height="8" fill="#fff" opacity=".65"/></pattern></defs><path d="M '+first.x+' 22 H '+right+' Q '+(right+24)+' 22 '+(right+24)+' '+middle+' Q '+(right+24)+' '+bottom+' '+right+' '+bottom+' H '+first.x+'" fill="none" stroke="#d4dccb" stroke-width="44" stroke-linecap="round"/>';
+  display.forEach((o,i)=>{const p=queuePoint(i,Math.max(4,display.length)),skill=SKILLS[o.skill];html+='<g transform="translate('+p.x+' '+p.y+')"><circle r="20" fill="'+skill.color+'" stroke="'+(i===0?'#233c32':'#fffdf4')+'" stroke-width="'+(i===0?4:2)+'"/>'+(o.retry?'<circle r="19" fill="url(#of-stripes)"/>':'')+'<text text-anchor="middle" y="7" fill="#fffdf4" font-size="20" font-weight="700" stroke="'+skill.color+'" stroke-width=".6">'+skill.letter+'</text></g>';});
   $('belt').innerHTML=html;
   $('memory-state').hidden=!level.limited;
   $('memory-state').textContent=memoryParked(level,s)?'Memory on · next 8 visible':'Next 4 visible · M reveals 8';
@@ -72,27 +90,30 @@ export function initOrderFlowGame(){
    const el=buttons[b.id-1],yard=inYard(s,b.id),slot=s.bay.findIndex(p=>p?.id===b.id),parked=slot>=0?s.bay[slot]:null;
    const p=yard?geometry.yard[b.y*level.cols+b.x]:geometry.bay[slot];
    // Departed bots really leave the DOM paint/hit-testing tree; no orphan markers.
-   el.hidden=!yard&&!parked;el.style.width=geometry.size+'px';el.style.height=geometry.size+'px';
+   const size=p?.size??geometry.size;
+   el.hidden=!yard&&!parked;el.style.width=size+'px';el.style.height=size+'px';el.style.setProperty('--piece-size',size+'px');
    if(p)el.style.transform='translate('+p.x+'px,'+p.y+'px)';
    const release=!!parked&&b.skill==='memory',by=blocker(level,s,b.id),isLocked=locked(level,s,b.id);
    const canTap=s.status==='playing'&&(yard||release);
    el.tabIndex=canTap?0:-1;el.style.pointerEvents=canTap?'auto':'none';el.dataset.bay=String(!!parked);
    el.setAttribute('aria-disabled',String(!canTap||yard&&(!!by||isLocked)));
    el.classList.toggle('is-blocker',yard&&b.id===blockedFocus);
+   el.classList.toggle('is-hint',b.id===hintId);
    el.querySelector('.of-arrow').hidden=!yard;el.querySelector('.of-lock').hidden=!yard||!isLocked;
    el.querySelector('.of-count strong').textContent=b.skill==='memory'?(release?'−':'+4'):String(parked?.remaining??b.capacity);
+   el.querySelector('.of-release').hidden=!release;
    const description=release?'Memory bot '+b.id+', reveal active. Tap to release for one move.':SKILLS[b.skill].name+' bot '+b.id+', '+(b.skill==='memory'?'reveals four more orders':(parked?.remaining??b.capacity)+' orders')+(yard?', exit '+b.dir+(by?', blocked by bot '+by:', clear path')+(isLocked?', locked until '+SKILLS[b.lock].name+' finishes':''):', parked');
    el.setAttribute('aria-label',description);
   }
   const hop=$('hop');hop.hidden=true;
   if(event?.kind==='serve'&&!reduced.matches&&geometry.bay[event.slot]){
-   const p=geometry.bay[event.slot];hop.style.left=(p.x+geometry.size/2-10)+'px';hop.style.top=(p.y-18)+'px';hop.style.animationName=s.served%2?'of-hop-a':'of-hop-b';
+   const p=geometry.bay[event.slot];hop.style.left=(p.x+p.size/2-10)+'px';hop.style.top=(p.y-18)+'px';hop.style.animationName=s.served%2?'of-hop-a':'of-hop-b';
    hop.style.setProperty('--bot',SKILLS[level.bots[event.id-1].skill].color);hop.textContent=event.source==='bags'?'C':event.retry?'R':SKILLS[level.bots[event.id-1].skill].letter;hop.hidden=false;
   }
-  updateInput();showOutcome(s);
+  updateInput();showOutcome(s);updateProof(s);
  }
  function showOutcome(s){
-  const ended=s.status!=='playing';$('work').inert=ended;$('result').hidden=s.status!=='won';$('loss').hidden=s.status!=='lost';
+  const ended=s.status!=='playing';$('work').inert=ended||riskId!==null;$('result').hidden=s.status!=='won';$('loss').hidden=s.status!=='lost';
   if(s.status==='won'){
    const score=rating(level,s.moves,attempt.undos);
    $('stars').innerHTML=Array.from({length:3},(_,i)=>star.replace('<svg ','<svg data-empty="'+(i>=score)+'" ')).join('');$('stars').setAttribute('aria-label',score+' of 3 stars');
@@ -110,7 +131,7 @@ export function initOrderFlowGame(){
   if(raf)cancelAnimationFrame(raf);raf=0;frames=[];draw(attempt.state);updateControls();
   if(attempt.state.status!=='playing'){pending=[];updateInput();announce(attempt.state.status==='won'?'Level cleared. Your stars are saved.':lossInfo(level,attempt.state).text);(attempt.state.status==='won'?$('next'):$('retry')).focus({preventScroll:true});return;}
   while(pending.length){const id=pending.shift();if(startTurn(id))return;}
-  const front=attempt.state.queue[0];announce(attempt.state.bags.length?attempt.state.bags.length+' bags waiting. Only Couriers collect them.':front?'Front needs '+SKILLS[front.skill].name+'. Choose the next clear arrow.':'Release Memory to finish.');
+  const front=attempt.state.queue[0];announce(memoryParked(level,attempt.state)?'Tap Memory to release its slot for 1 move.':attempt.state.bags.length?attempt.state.bags.length+' bags waiting. Only Couriers collect them.':front?'Front needs '+SKILLS[front.skill].name+'. Choose the next clear arrow.':'Release Memory to finish.');
   const id=legalMoves(level,attempt.state)[0];if(id&&(document.activeElement===document.body||document.activeElement?.classList.contains('of-bot')))buttons[id-1].focus({preventScroll:true});
  }
  function tick(now){
@@ -122,9 +143,12 @@ export function initOrderFlowGame(){
   if(at!==frameAt){frameAt=at;const event=frames[at];draw(event.state,event);}
   raf=requestAnimationFrame(tick);
  }
- function startTurn(id){
+ function startTurn(id,confirmed=false){
   const turn=takeTurn(level,attempt,id);blockedFocus=null;
   if(turn.error){blockedFocus=turn.blockedBy??null;draw(attempt.state);announce(turn.error);return false;}
+  const proof=inspectPosition(level,turn.state);
+  if(!confirmed&&['deadend','budget'].includes(proof.kind)){warnRisk(id,turn.state,proof);return true;}
+  hintId=null;
   attempt=turn.attempt;save();updateControls();tone();
   frames=turn.events.filter(e=>e.kind!=='settled');frameAt=0;elapsed=0;lastTime=null;
   if(reduced.matches||!frames.length||document.hidden){endTrace();}
@@ -132,6 +156,7 @@ export function initOrderFlowGame(){
   return true;
  }
  function tap(id){
+  if(riskId!==null)return;
   if(attempt.state.status!=='playing'&&!frames.length)return;
   if(frames.length){if(!pending.includes(id)||level.bots[id-1]?.skill==='memory'&&pending.filter(n=>n===id).length<2){pending.push(id);updateInput();announce('Bot '+id+' queued. '+pending.length+' waiting.');}return;}
   startTurn(id);
@@ -141,9 +166,10 @@ export function initOrderFlowGame(){
   const sx=base.width/($('work').clientWidth||base.width),sy=base.height/($('work').clientHeight||base.height);
   const rect=el=>{const r=el.getBoundingClientRect();return {x:(r.left-base.left)/sx,y:(r.top-base.top)/sy,width:r.width/sx,height:r.height/sy};};
   const cells=[...$('cells').children].map(rect),slots=[...$('slots').children].map(rect);
-  const size=Math.max(44,Math.min(62,...cells.map(r=>Math.min(r.width-10,r.height-6)),...slots.map(r=>Math.min(r.width-8,r.height-6))));
-  const center=r=>({x:r.x+(r.width-size)/2,y:r.y+(r.height-size)/2});
-  geometry={size,yard:cells.map(center),bay:slots.map(center),width:$('belt').clientWidth||360,beltHeight:$('belt').clientHeight||76};
+  const sizeFor=(rects,max,padding)=>Math.max(44,Math.min(max,...rects.map(r=>Math.min(r.width-18,r.height-padding))));
+  const yardSize=sizeFor(cells,132,6),baySize=sizeFor(slots,112,4);
+  const center=(r,size)=>({x:r.x+(r.width-size)/2,y:r.y+(r.height-size)/2,size});
+  geometry={size:yardSize,yard:cells.map(r=>center(r,yardSize)),bay:slots.map(r=>center(r,baySize)),width:$('belt').clientWidth||360,beltHeight:$('belt').clientHeight||96};
   $('belt').setAttribute('viewBox','0 0 '+geometry.width+' '+geometry.beltHeight);draw(shown);
  }
  function levelMenu(){
@@ -152,26 +178,32 @@ export function initOrderFlowGame(){
   $('levels').hidden=false;$('level-list').querySelector('[data-level="'+levelIndex+'"]').focus();
  }
  function loadLevel(index,resume){
-  stop();pending=[];levelIndex=index;level=LEVELS[index];attempt=resume??newAttempt(level);shown=attempt.state;blockedFocus=null;
+  stop();closeRisk();pending=[];levelIndex=index;level=LEVELS[index];attempt=resume??newAttempt(level);shown=attempt.state;blockedFocus=null;hintId=null;
   $('levels').hidden=true;$('title').textContent=level.title;$('caption').textContent=level.caption;$('level').textContent=(index+1)+' / 10';
   $('level').setAttribute('aria-label','Level '+(index+1)+' of 10. Choose an unlocked level.');
-  $('slots').style.gridTemplateColumns='repeat('+level.slots+',1fr)';$('slots').innerHTML=Array.from({length:level.slots},(_,i)=>'<div class="of-slot" aria-label="Bay slot '+(i+1)+'"></div>').join('');
-  $('cells').style.gridTemplateColumns='repeat('+level.cols+',1fr)';$('cells').style.gridTemplateRows='repeat('+level.rows+',1fr)';$('cells').innerHTML=Array.from({length:level.cols*level.rows},()=>'<div class="of-cell" aria-hidden="true"></div>').join('');
-  $('bots').innerHTML=level.bots.map(b=>'<button type="button" class="of-bot" data-bot="'+b.id+'" style="--bot:'+SKILLS[b.skill].color+'">'+face+'<span class="of-count"><span>'+SKILLS[b.skill].letter+'</span><strong>'+b.capacity+'</strong></span><span class="of-arrow" style="rotate:'+({up:0,right:90,down:180,left:270})[b.dir]+'deg">'+arrow+'</span><span class="of-lock" style="--lock:'+(b.lock?SKILLS[b.lock].color:'#243e35')+'" hidden>'+lockIcon+'</span></button>').join('');
+  $('slots').style.setProperty('--slot-count',level.slots);$('slots').innerHTML=Array.from({length:level.slots},(_,i)=>'<div class="of-slot" aria-label="Bay slot '+(i+1)+'"></div>').join('');
+  const visibleRows=Math.max(...level.bots.map(b=>b.y))+1;
+  $('cells').style.gridTemplateColumns='repeat('+level.cols+',1fr)';$('cells').style.gridTemplateRows='repeat('+visibleRows+',1fr)';$('cells').innerHTML=Array.from({length:level.cols*visibleRows},()=>'<div class="of-cell" aria-hidden="true"></div>').join('');
+  $('bots').innerHTML=level.bots.map(b=>'<button type="button" class="of-bot" data-bot="'+b.id+'" style="--bot:'+SKILLS[b.skill].color+'">'+face+'<span class="of-count"><span>'+SKILLS[b.skill].letter+'</span><strong>'+b.capacity+'</strong></span><span class="of-release" hidden>Release</span><span class="of-arrow" style="rotate:'+({up:0,right:90,down:180,left:270})[b.dir]+'deg">'+arrow+'</span><span class="of-lock" style="--lock:'+(b.lock?SKILLS[b.lock].color:'#243e35')+'" hidden>'+lockIcon+'</span></button>').join('');
   buttons=[...$('bots').children];buttons.forEach((b,i)=>b.addEventListener('click',()=>tap(i+1)));
   const skills=new Set(level.bots.map(b=>b.skill));
   $('legend').innerHTML=Object.entries(SKILLS).filter(([key])=>skills.has(key)).map(([,s])=>'<span><b style="--bot:'+s.color+'">'+s.letter+'</b>'+s.name+'</span>').join('');
   $('board').dataset.handoff=String(level.handoff);$('board').dataset.rows=String(level.rows);
   save();updateControls();draw(shown);measure();
-  announce(attempt.state.status==='playing'?'Tap clear arrows. Three undos; spent moves stay spent.':attempt.state.status==='won'?'This level is complete. Your stars are saved.':lossInfo(level,attempt.state).text);
+  announce(attempt.state.status==='playing'?(memoryParked(level,attempt.state)?'Tap Memory to release its slot for 1 move.':'Tap a bot with a clear arrow.'):attempt.state.status==='won'?'This level is complete. Your stars are saved.':lossInfo(level,attempt.state).text);
  }
  function undo(){
   const next=undoTurn(level,attempt);if(!next)return;
-  stop();pending=[];attempt=next;blockedFocus=null;save();updateControls();draw(attempt.state);
+  stop();closeRisk();pending=[];attempt=next;blockedFocus=null;hintId=null;save();updateControls();draw(attempt.state);
   announce('Undone. '+(3-attempt.undos)+' undos left; spent moves stay spent.');
   buttons[legalMoves(level,attempt.state)[0]-1]?.focus({preventScroll:true});
  }
  on($('undo'),'click',undo);on($('loss-undo'),'click',undo);
+ on($('exit'),'click',()=>root.closest('.arcade-screen')?.querySelector('.screen-exit')?.click());
+ on($('risk-cancel'),'click',()=>{const id=closeRisk();announce('Move cancelled. Your board is unchanged.');buttons[id-1]?.focus({preventScroll:true});});
+ on($('risk-play'),'click',()=>{const id=closeRisk();startTurn(id,true);});
+ on($('hint'),'click',()=>{const hint=nextMoveHint(level,attempt.state);if(hint){hintId=hint.id;draw(attempt.state);announce(hint.text);buttons[hint.id-1]?.focus({preventScroll:true});}else announce('This position has no verified finish. Undo or Retry to make a new plan.');});
+ on(root,'keydown',e=>{if(riskId===null)return;if(e.key==='Escape'){e.preventDefault();e.stopPropagation();$('risk-cancel').click();}else if(e.key==='Tab'){e.preventDefault();(document.activeElement===$('risk-cancel')?$('risk-play'):$('risk-cancel')).focus();}});
  for(const id of ['replay','again','retry'])on($(id),'click',()=>loadLevel(levelIndex));
  on($('next'),'click',()=>{loadLevel((levelIndex+1)%10);buttons[legalMoves(level,attempt.state)[0]-1]?.focus({preventScroll:true});});
  on($('level'),'click',levelMenu);on($('close-levels'),'click',()=>{$('levels').hidden=true;$('level').focus();});
