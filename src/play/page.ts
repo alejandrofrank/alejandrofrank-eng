@@ -9,12 +9,12 @@ import { renderQueryGame, queryStyles } from './games/query';
 import { renderIdentityGame, renderGarmentGame, identityStyles } from './games/identity';
 import { renderPaletteGame, miniStyles } from './games/palette';
 import { renderBasketGame, basketStyles } from './games/basket';
-import { renderBotGame, botStyles } from './games/bots';
+import { renderDispatchGame, dispatchStyles } from './games/dispatch';
 
 const ARCADE_PROJECTS = PROJECTS.filter(project => project.arcade !== false);
 
 const GAMES: Record<string, { name: string; task: string; lesson: string; evidence: string; render: () => string }> = {
-  'madrid-delivery-sim': {name:'Bot Workshop',task:'Equip three robots, run a delivery shift and repair what breaks. Five rounds introduce tools, communication, memory, spending and chaos.',lesson:'Reliable agents need the right capabilities and boundaries, not just a prompt.',evidence:'Deterministic agent-design game',render:renderBotGame},
+  'madrid-delivery-sim': {name:'Rush Hour Dispatch',task:'Set the supervisor rules and keep Madrid moving. Five short shifts reveal queues, capacity, duplicate work, shared memory and chaos.',lesson:'The hard part is coordination: the right work, the right owner and the same facts.',evidence:'Deterministic coordination game',render:renderDispatchGame},
   bakiano: { name: 'Basket Run', task: 'Move groceries into a limited basket. Solve four markets with pack sizes, stock, delivery fees and dated prices.', lesson: 'Comparable prices depend on units, dates and traceable conversion.', evidence: 'Fictional market puzzle', render: renderBasketGame },
   'gcp-ingestion-lab': { name: 'Packet Factory', task: 'Build a working conveyor line. Place machines, branch duplicate packets and keep every delivery safe through five shifts.', lesson: 'Receipt placement and observation time decide whether retries are safe.', evidence: 'Executable pipeline simulation', render: renderIngestionGame },
   'catalog-match-lab': { name: 'Catalog Customs', task: 'Find the verified match in increasingly crowded product lineups. Sometimes none qualifies. Three mistakes close the desk.', lesson: 'Shared words do not establish product identity. Missing evidence deserves a hold.', evidence: 'Runs the repository’s matcher', render: renderIdentityGame },
@@ -43,7 +43,7 @@ export function renderPlayPage(origin: string, view: PortfolioView = 'arcade'): 
       <div class="game-content">${experiment.render()}${p.slug === 'catalog-match-lab' ? `<details class="game-inspector"><summary>Free inspection: try your own product names</summary>${matchMarkup()}</details>` : p.slug === 'ascii-art' ? `<details class="game-inspector" id="image-inspector"><summary>Free inspection: compare rendering methods</summary>${imageMarkup()}</details>` : ''}</div></div>
     </section>`;
   }).join('')}</div>
-<div class="arcade-colophon"><span>PLAY → INSPECT → READ THE CODE</span><span><a href="/tech#projects">Read all projects →</a></span></div>`, playStyles + miniStyles + basketStyles + ingestionStyles + queryStyles + identityStyles + botStyles, `import { initArcade } from '/play/arcade.mjs'; initArcade();`, view);
+<div class="arcade-colophon"><span>PLAY → INSPECT → READ THE CODE</span><span><a href="/tech#projects">Read all projects →</a></span></div>`, playStyles + miniStyles + basketStyles + ingestionStyles + queryStyles + identityStyles + dispatchStyles, `import { initArcade } from '/play/arcade.mjs'; initArcade();`, view);
 }
 
 function matchMarkup(): string {
