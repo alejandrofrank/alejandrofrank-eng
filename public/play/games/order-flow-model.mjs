@@ -1,8 +1,8 @@
 // Original, deterministic browser puzzle. No network or agent runtime.
 export const SKILLS = {
- picker: {name:'Picker',letter:'P',color:'#35865e',ink:'#fffdf4'},
- courier: {name:'Courier',letter:'C',color:'#397db6',ink:'#fffdf4'},
- support: {name:'Support',letter:'S',color:'#bd6329',ink:'#fffdf4'},
+ picker: {name:'Picker',letter:'P',color:'#2f7c54',ink:'#fffdf4'},
+ courier: {name:'Courier',letter:'C',color:'#3275ac',ink:'#fffdf4'},
+ support: {name:'Support',letter:'S',color:'#af5822',ink:'#fffdf4'},
  inventory: {name:'Inventory',letter:'I',color:'#8059b3',ink:'#fffdf4'},
 };
 const bot=(skill,capacity,x,y,dir='up')=>({skill,capacity,x,y,dir});

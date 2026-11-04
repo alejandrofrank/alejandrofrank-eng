@@ -37,7 +37,7 @@ for (const view of ['original', 'tech', 'arcade']) {
   });
 }
 
-test('Rush Hour Dispatch joins the six existing playable games', async () => {
+test('Order Flow joins the six existing playable games', async () => {
   const response = await app.request('https://portfolio.test/play');
   assert.equal(response.status, 200);
   const html = await response.text();
@@ -45,12 +45,12 @@ test('Rush Hour Dispatch joins the six existing playable games', async () => {
   try {
     win.document.documentElement.innerHTML = html;
     assert.equal(win.document.querySelectorAll('[data-station-panel]').length, 7);
-    assert.match(win.document.querySelector('[data-station-panel="madrid-delivery-sim"]').textContent, /Rush Hour Dispatch/);
+    assert.match(win.document.querySelector('[data-station-panel="madrid-delivery-sim"]').textContent, /Order Flow/);
   } finally { await win.happyDOM.close(); }
   assert.ok(html.includes('id="station-madrid-delivery-sim"'));
 });
 
-test('tech explorer opens Rush Hour Dispatch while the case study retains its replay', async () => {
+test('tech explorer opens Order Flow while the case study retains its replay', async () => {
   const response = await app.request('https://portfolio.test/tech', {}, { GITHUB_USER: 'example' });
   assert.equal(response.status, 200);
   const html = await response.text();
