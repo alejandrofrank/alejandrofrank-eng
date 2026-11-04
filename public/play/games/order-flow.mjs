@@ -29,10 +29,10 @@ export function initOrderFlowGame(){
   if(state.status==='lost')announce('Out of slots: no parked bot can serve the front '+SKILLS[level.queue[state.front]].name+' order — Undo to make room.');
   else if(state.status==='won'){
    const stars=rating(level,moves,undos);$('stars').innerHTML=Array.from({length:3},(_,i)=>star.replace('<svg ','<svg data-empty="'+(i>=stars)+'" ')).join('');$('stars').setAttribute('aria-label',stars+' of 3 stars');
-   $('result-title').textContent=levelIndex===7?'All eight cleared!':'All clear!';
+   $('result-title').textContent=levelIndex===LEVELS.length-1?'All '+LEVELS.length+' cleared!':'All clear!';
    $('result-score').textContent=moves+' moves · '+undos+' undos · '+level.par+' moves for 3 stars';
    $('real-note').textContent=level.note;$('real').href='/projects/agents-demo/?view=agents&agent='+level.agent;
-   $('next').textContent=levelIndex===7?'Play from level 1':'Next level';
+   $('next').textContent=levelIndex===LEVELS.length-1?'Play from level 1':'Next level';
    announce('Level '+(levelIndex+1)+' cleared. '+stars+' stars.');
   }
  }
@@ -108,7 +108,7 @@ export function initOrderFlowGame(){
  }
  function loadLevel(index){
   stopFrames();levelIndex=index;level=LEVELS[index];state=initialState(level);shown=state;history=[];moves=0;undos=0;blockedFocus=null;
-  $('title').textContent=level.title;$('caption').textContent=level.caption;$('level').textContent=(index+1)+' / 8';
+  $('title').textContent=level.title;$('caption').textContent=level.caption;$('level').textContent=(index+1)+' / '+LEVELS.length;
   $('slots').style.gridTemplateColumns='repeat('+level.slots+',1fr)';$('slots').innerHTML=Array.from({length:level.slots},(_,i)=>'<div class="of-slot" aria-label="Bay slot '+(i+1)+'"></div>').join('');
   $('cells').style.gridTemplateColumns='repeat('+level.cols+',1fr)';$('cells').style.gridTemplateRows='repeat('+level.rows+',1fr)';$('cells').innerHTML=Array.from({length:level.cols*level.rows},()=>'<div class="of-cell" aria-hidden="true"></div>').join('');
   $('bots').innerHTML=level.bots.map(b=>'<button type="button" class="of-bot" data-bot="'+b.id+'" style="--bot:'+SKILLS[b.skill].color+'">'+face+'<span class="of-count"><span>'+SKILLS[b.skill].letter+'</span><strong>'+b.capacity+'</strong></span><span class="of-arrow" style="rotate:'+({up:0,right:90,down:180,left:270})[b.dir]+'deg">'+arrow+'</span></button>').join('');
@@ -116,7 +116,8 @@ export function initOrderFlowGame(){
   $('belt').replaceChildren();beltPath=document.createElementNS(svgNS,'path');beltPath.setAttribute('fill','none');beltPath.setAttribute('stroke','#d8dccd');beltPath.setAttribute('stroke-width','30');beltPath.setAttribute('stroke-linecap','round');$('belt').append(beltPath);
   tokens=level.queue.map(skill=>{const g=document.createElementNS(svgNS,'g');g.innerHTML='<circle r="13" fill="'+SKILLS[skill].color+'" stroke="#fffdf4" stroke-width="2"/><text text-anchor="middle" dy="5" fill="#fffdf4" font-size="14" font-weight="700">'+SKILLS[skill].letter+'</text>';g.style.transition='transform 100ms ease-out, opacity 100ms ease-out';$('belt').append(g);return g;});
   beltLabel=document.createElementNS(svgNS,'text');beltLabel.setAttribute('font-size','14');beltLabel.setAttribute('font-weight','700');beltLabel.setAttribute('fill','#243e35');$('belt').append(beltLabel);
-  $('legend').innerHTML=Object.entries(SKILLS).filter(([key])=>key!=='inventory'||index>=6).map(([,s])=>'<span><b style="--bot:'+s.color+'">'+s.letter+'</b>'+s.name+'</span>').join('');
+  const unlockedSkills=new Set(LEVELS.slice(0,index+1).flatMap(l=>l.bots.map(b=>b.skill)));
+  $('legend').innerHTML=Object.entries(SKILLS).filter(([key])=>unlockedSkills.has(key)).map(([,s])=>'<span><b style="--bot:'+s.color+'">'+s.letter+'</b>'+s.name+'</span>').join('');
   announce('Tap a bot with a clear arrow. Only the front order can be served.');stats();measure();draw(state);
  }
  $('undo').addEventListener('click',()=>{if(!history.length)return;stopFrames();state=history.pop();undos++;blockedFocus=null;stats();draw(state);announce('Move undone. Try a different clear arrow.');});
