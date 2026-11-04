@@ -2,60 +2,81 @@
 
 [Play Order Flow](https://me.alejandrofranks.workers.dev/play#concept-madrid-delivery-sim).
 
-This original browser puzzle replaces the Agents in GCP dispatch game in the same cabinet. It has six deterministic levels, no clock and no city or map. The mechanic is inspired by [Bus Traffic Fever](https://play.google.com/store/apps/details?id=jp.co.goodroid.hyper.busflow); all artwork is original. Orders are synthetic. The puzzle makes no AI or GCP calls and does not execute the project's Python agents.
+A deterministic, turn-based coordination puzzle in the Agents in GCP arcade cabinet. Original art; mechanic inspired by [Bus Traffic Fever](https://play.google.com/store/apps/details?id=jp.co.goodroid.hyper.busflow). Synthetic orders, no AI or GCP calls, no Python agents, map or real-time clock.
 
-## Playing
+## Rules
 
-The U-shaped belt holds an ordered queue. Only the front token at the pickup point can be served. Green **P** is Picker, blue **C** is Courier, orange **S** is Support and purple **I** is Inventory. Letters supplement color throughout.
+Tap a bot whose arrow has a clear path. It enters the first free bay slot. Only parked bots work, and only the front order can be served. A bot's number is its remaining capacity; it leaves at zero. Colors also have skill letters and accessible names.
 
-Tap a bot whose exit arrow has a clear path through the yard. It takes the first free bay slot. Its number is the number of matching orders it can serve. Matching orders at the front hop in one at a time; a full bot leaves and frees its slot. Parked bots can wait for a later matching group. Bots cannot skip orders, pass through other bots or work from the yard.
+- **Handoff:** a completed Picker order publishes one bag to the Courier belt. Only Couriers collect bags. That belt holds four bags; producing a fifth loses. A ready Courier collects before the next pick.
+- **Memory:** limited-view levels show the next four orders. Parking Memory reveals up to eight. It consumes a bay slot and serves nothing. Tap parked Memory again to release it for one move. The extra preview disappears.
+- **Locks:** a skill-colored lock opens after a bot of that skill finishes and departs, not merely when it parks.
+- **Retries:** a striped order returns to the back once. Its second handling uses capacity again. A retried Picker order publishes its bag only after the second handling, so the retry does not create two bags.
 
-If every slot is occupied and no parked bot can serve the front order, the bay turns red and explains **Out of slots**. Undo is unlimited and restores the exact previous turn. Replay resets the current level. Winning requires both an empty queue and a cleared yard. The result stays over the board and links to the relevant agent in Meet the agents.
+Finish both belts and clear all bots, including releasing Memory. A full bay with no usable worker and no Memory bot to release means **Out of slots**. A fifth bag means **Courier belt overflow**. Passing the move budget means **Out of moves**. Each has a separate cause, highlight and Retry control.
 
-Use Tab and Shift+Tab to choose a control, then Enter or Space to activate it. Bot labels include skill, capacity, exit direction and the blocking bot when applicable. Sound starts off. Reduced motion skips the visual transitions. No gameplay depends on animation or elapsed time; after the page and its modules have loaded, the puzzle needs no network connection.
+Three undos are available per attempt. Undo restores the board but does not refund spent moves; using it gives a one-star completion. It is unavailable after an **Out of moves** loss. Retry starts a fresh attempt. Three stars requires the BFS minimum with no Undo; other completions within budget earn two stars, or one if Undo was used. Invalid blocked/locked taps explain the issue without consuming a move.
 
-## Six levels
+## Ten levels
 
-The two introductory puzzles were removed after play-testing found them too easy. The game now opens with a blocked-bot dependency; the remaining puzzles keep their original boards and rules.
+The first two requested tutorials introduce the basic mechanic and blocking; planning traps start at level three. Bot numbers correspond to accessible button labels.
 
-The bot numbers below identify the accessible button labels, not an extra control. Each listed solution is found by breadth-first search over actual game states.
+| Level | Bay | Minimum | Budget | One BFS solution |
+| --- | ---: | ---: | ---: | --- |
+| 1 · Front first | 3 | 2 | 4 | 1, 2 |
+| 2 · After you | 3 | 3 | 5 | 2, 1, 3 |
+| 3 · One spare slot | 2 | 3 | 5 | 2, 3, 1 |
+| 4 · Pass the bag | 3 | 4 | 6 | 1, 3, 2, 4 |
+| 5 · A narrow handoff | 2 | 5 | 7 | 2, 3, 4, 1, 5 |
+| 6 · Room to remember | 2 | 5 | 7 | 2, 2, 3, 4, 1 |
+| 7 · Wait for the signal | 2 | 4 | 6 | 2, 3, 4, 1 |
+| 8 · Once more | 3 | 4 | 6 | 1, 3, 4, 2 |
+| 9 · Read, unlock, hand off | 3 | 8 | 10 | 1, 2, 2, 3, 4, 6, 5, 7 |
+| 10 · Every slot counts | 3 | 10 | 11 | 1, 2, 2, 3, 4, 5, 7, 6, 8, 9 |
 
-| Level | Idea | Bay slots | Minimum moves | One minimum solution |
-| --- | --- | --- | --- | --- |
-| 1 · After you | Clear a dependency | 4 | 3 | 2, 1, 3 |
-| 2 · Room for three | Preserve concurrency capacity | 3 | 5 | 1, 2, 3, 5, 4 |
-| 3 · Two can do it | Scale out with another worker | 4 | 5 | 1, 2, 3, 4, 5 |
-| 4 · Park ahead | Reserve capacity to unblock work | 4 | 5 | 2, 1, 3, 4, 5 |
-| 5 · Stock comes first | Inventory before Courier | 4 | 4 | 2, 1, 3, 4 |
-| 6 · All together | Combine ordering, capacity and dependencies | 5 | 10 | 3, 2, 1, 4, 5, 6, 8, 7, 9, 10 |
+Repeated Memory IDs mean enter, then release. The baseline greedy policy picks a free front-matching bot, otherwise the first free yard bot in authored order, and releases Memory only when no yard move remains. It loses levels 3–10. This is an explicit deterministic baseline, not a claim that every possible greedy tie-break loses.
 
-Three stars requires the minimum number of successful taps and no undos. Two stars allows up to two undos and two extra taps; every other completed solution earns one star. Blocked taps do not count. Undo restores the board, while the move and undo totals retain the attempt's history.
+## Controls and progress
 
-To reproduce a loss, start level 2 and tap bots **2, 3, 4**. All three slots hold Courier or Support while the front requires Picker. Undo the last tap, then use **1, 5, 4** to finish without restarting.
+Use click/tap or Tab then Enter/Space. Taps during serving enter a visible FIFO queue. One animation loop displays one order hop per 150ms; input never waits for it. Hold **Hold to speed up** (pointer or keyboard) for 6× playback. Reduced motion settles immediately. There are no gameplay timers.
 
-## Source and design
+The label, belt accessibility description, capacities and lock state are derived together from each displayed state. Departed bot elements are hidden and transient hop markers are cleared.
+
+Local storage keeps the current level, completed stars and a validated action history, including Undo. Reload reconstructs the board through the same reducer. The numbered level button opens earned levels. Corrupt saves reset safely; denied storage does not prevent play. Saving is local to this browser/device. The previous six-level campaign's different boards are not imported.
+
+The win-card explanation opens in a new tab with opener isolation. It is separated from Next level by the explanation block. Sound starts off. Other arcade games are unchanged.
+
+## Connection to the real system
+
+The puzzle is an analogy, not a cloud execution trace.
+
+| Puzzle | Real project behavior | Source |
+| --- | --- | --- |
+| Bounded belts and bay | Queue capacity/backpressure and bounded work | src/delivery/queue.py; role.json limits |
+| Picker to Courier | Fulfillment emits ready/handoff events before dispatch/custody | config/agents/fulfillment/role.json |
+| Memory bot | Scoped, bounded recall available to roles; **not** a separate production agent or a literal bay slot | src/delivery/memory_profiles.py |
+| Locks | Downstream work waits for a completed handoff | fulfillment and inventory manifests |
+| Striped retry | At-least-once queue delivery with idempotent transactional effects | src/delivery/queue.py |
+
+The real memory scope includes run, store, role and context; the game only demonstrates the information-versus-capacity trade-off. The real system prevents duplicate committed picking; the game repeats handling without publishing a duplicate bag. Every win links to the relevant real agent.
+
+## Source
 
 | File | Responsibility |
 | --- | --- |
-| `public/play/games/order-flow-model.mjs` | Authored boards, skill colors, immutable turn reducer, validation, star rating and BFS solver |
-| `public/play/games/order-flow.mjs` | Native button input, history, accessible feedback, sound and visual turn trace |
-| `src/play/games/order-flow.ts` | Server-rendered board and CSS scoped to this cabinet |
-| `src/play/art.ts` | Original belt-and-bot cabinet illustration |
-| `src/play/page.ts`, `public/play/arcade.mjs` | Existing arcade slot and initialization |
-| `tests/order-flow-model.test.mjs`, `tests/order-flow-ui.test.mjs` | Solver, rules, full campaign, loss/undo and input/animation checks |
+| public/play/games/order-flow-model.mjs | Ten boards, immutable rules, BFS, greedy baseline and rating |
+| public/play/games/order-flow-progress.mjs | Attempt history, limited Undo and validated save/restore |
+| public/play/games/order-flow.mjs | Input queue, 150ms trace, accessibility, sound and rendering |
+| src/play/games/order-flow.ts | Cabinet-scoped board, outcomes and responsive CSS |
+| tests/order-flow-model.test.mjs | Solvability, greedy failures, handoffs, locks, retries, budgets and saves |
+| tests/order-flow-ui.test.mjs | Campaign controls, all losses, progress, queued taps and live labels |
 
-The cabinet retains the existing dark shell and typeface. Order Flow alone adjusts the cabinet dimensions, marquee spacing and viewport, and hides the decorative rim and station brief to fit the board. The warm board uses rounded slots and original vector bot faces. Skill colors communicate capabilities; a dark ring marks the front token, dashed bot borders indicate unavailable yard bots, and red slot borders indicate a loss. Skill names and letters ensure color is not the only cue. Gameplay buttons have a minimum height of 44px, bot targets are at least 44px square, and gameplay labels are at least 14px. No layout or style changes apply to the other six games.
-
-The reducer commits a complete turn synchronously. A single requestAnimationFrame loop can replay its enter, serve and leave snapshots for at most 650ms. Another tap or Undo flushes that visual trace immediately. Backgrounding and reduced motion also flush it. Geometry is read only when the board is measured, including correction for the cabinet's opening scale; frame rendering uses cached positions. Delayed frames skip ahead instead of stretching a short animation into a long wait.
+The existing arcade type and colors remain. The warm board uses skill colors plus letters, native buttons, 44px minimum bot targets, and labels of at least 14px. No new dependencies.
 
 ## Verification
 
-On 4 November 2026, all **147 repository tests** and TypeScript checking passed. The 15 puzzle-specific tests verify all six levels through button controls, numbering, Inventory's introduction, final-screen wraparound, every level's BFS minimum, full arrow paths, only-front serving, immediate loss, unlimited history restoration, deterministic replay, keyboard focus, reduced motion, delayed frames and the removal of old map/game files. The model tests also traverse every reachable playing state to check that no unexplained deadlock is possible.
+On 4 November 2026, all **158 repository tests** and TypeScript checking passed. The 26 dedicated Order Flow tests cover all ten solver minima, greedy losses on levels 3–10, every rule and loss, saved wins/active boards/losses, limited Undo, corrupt/denied storage, queued input (including Memory enter/release), 150ms event steps, hold acceleration, accessible belt labels, keyboard focus and removal of departed markers.
 
-After trimming the tutorials, all six remaining levels were also completed through browser controls. The final screen reads “All 6 cleared!” and offers “Play from level 1”. That run had no console errors.
+All ten levels were completed through browser controls. Level 3 was deliberately lost and retried; reload restored both that loss and a mid-level handoff. Level 6 was played on a phone-sized viewport. Level 10, its nine bot targets and final win card fit at 390×700; desktop captures use 1280×800. Bot rectangles measured at least 44×44px without overlap in the final mobile yard. The captured browser console contained no errors. These checks do not claim a universal latency measurement across devices.
 
-Before the two tutorials were removed, browser play completed all eight original levels, including a deliberate full-bay loss and recovery. Desktop was checked at 1280×800; the final board and win card also fit at 390×700 and 390×844 without scrolling. That run had no console errors. Input state changes do not wait for frames; automated checks include a second tap and Undo before the previous animation completes. The host's browser automation occasionally delayed commands, so these checks do not claim a universal end-to-end paint latency.
-
-Impeccable's detector ran once over the UI source with regex matching. It reported no findings, but parsed-page rules were unavailable; this is not a substitute for the rendered desktop/mobile review.
-
-The original implementation received an independent finish review and a documentation check. Subsequent user play-testing requested a UI improvement and removal of the two easy tutorials. This update only trims the campaign; it does not claim to complete that broader visual revision.
+One source-only Impeccable detector pass returned no findings. Rendered screenshots, rather than that source scan, provide the layout evidence.
