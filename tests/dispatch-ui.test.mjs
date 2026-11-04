@@ -38,7 +38,16 @@ test('tap then tap and number shortcuts route synchronously without stopping ani
  const f=setup();try{f.click('run');f.tick();f.tick();const pin=f.root.querySelector('[data-order="1"]');pin.click();pin.dispatchEvent(new f.win.KeyboardEvent('keydown',{key:'2',bubbles:true}));assert.equal(f.app.state.shift.orders[0].lane,'urgent');assert.equal(f.app.state.playing,true);assert.ok(Number(f.root.dataset.inputLatencyMs)<100);assert.equal(f.frames.size,1);assert.equal(f.root.querySelector('[data-order="1"]'),null);}finally{await f.dispose();}
 });
 test('dragged pins enter lanes and cancellation does not route or leave a ghost',async()=>{
- const f=setup();try{f.click('run');f.tick();f.tick();const pin=f.root.querySelector('[data-order="1"]');f.doc.elementFromPoint=()=>f.root.querySelector('[data-lane="normal"]');pin.dispatchEvent(new f.win.PointerEvent('pointerdown',{clientX:20,clientY:30,bubbles:true}));f.doc.dispatchEvent(new f.win.PointerEvent('pointermove',{clientX:100,clientY:100,bubbles:true}));assert.ok(f.root.querySelector('.rd-drag-ghost'));f.doc.dispatchEvent(new f.win.PointerEvent('pointerup',{clientX:100,clientY:100,bubbles:true}));assert.equal(f.app.state.shift.orders[0].lane,'normal');assert.equal(f.root.querySelector('.rd-drag-ghost'),null);}finally{await f.dispose();}
+ const f=setup();try{
+  f.click('run');f.tick();f.tick();const pin=f.root.querySelector('[data-order="1"]');
+  f.doc.elementFromPoint=()=>f.root.querySelector('[data-lane="normal"]');
+  const beginDrag=()=>{pin.dispatchEvent(new f.win.PointerEvent('pointerdown',{clientX:20,clientY:30,bubbles:true}));f.doc.dispatchEvent(new f.win.PointerEvent('pointermove',{clientX:100,clientY:100,bubbles:true}));assert.ok(f.root.querySelector('.rd-drag-ghost'));};
+  beginDrag();f.doc.dispatchEvent(new f.win.PointerEvent('pointercancel',{bubbles:true}));
+  f.doc.dispatchEvent(new f.win.PointerEvent('pointerup',{clientX:100,clientY:100,bubbles:true}));
+  assert.equal(f.app.state.shift.orders[0].lane,null);assert.equal(f.root.querySelector('.rd-drag-ghost'),null);
+  beginDrag();f.doc.dispatchEvent(new f.win.PointerEvent('pointerup',{clientX:100,clientY:100,bubbles:true}));
+  assert.equal(f.app.state.shift.orders[0].lane,'normal');assert.equal(f.root.querySelector('.rd-drag-ghost'),null);
+ }finally{await f.dispose();}
 });
 test('moving a working bot changes its next lane; shared tools remain unlocked',async()=>{
  const f=setup();try{f.finish();f.click('next');assert.equal(f.root.querySelector('[data-bot="1"]').disabled,false);f.click('run');f.tick();f.tick();f.route(1,'normal');f.tick();const job=f.app.state.shift.workers[0].job;f.root.querySelector('[data-bot="1"]').click();f.root.querySelector('[data-lane="urgent"]').click();assert.equal(f.app.state.shift.workers[0].lane,'urgent');assert.equal(f.app.state.shift.workers[0].job,job);f.finish();f.click('next');f.click('claim');f.finish();f.click('next');assert.ok(f.app.state.shift.claims);assert.equal(f.$('claim').getAttribute('aria-pressed'),'true');}finally{await f.dispose();}
