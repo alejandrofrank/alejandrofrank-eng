@@ -2,7 +2,7 @@
 
 [Play Order Flow](https://me.alejandrofranks.workers.dev/play#concept-madrid-delivery-sim).
 
-This original browser puzzle replaces the Agents in GCP dispatch game in the same cabinet. It has eight deterministic levels, no clock and no city or map. The mechanic is inspired by [Bus Traffic Fever](https://play.google.com/store/apps/details?id=jp.co.goodroid.hyper.busflow); all artwork is original. Orders are synthetic. The puzzle makes no AI or GCP calls and does not execute the project's Python agents.
+This original browser puzzle replaces the Agents in GCP dispatch game in the same cabinet. It has six deterministic levels, no clock and no city or map. The mechanic is inspired by [Bus Traffic Fever](https://play.google.com/store/apps/details?id=jp.co.goodroid.hyper.busflow); all artwork is original. Orders are synthetic. The puzzle makes no AI or GCP calls and does not execute the project's Python agents.
 
 ## Playing
 
@@ -14,24 +14,24 @@ If every slot is occupied and no parked bot can serve the front order, the bay t
 
 Use Tab and Shift+Tab to choose a control, then Enter or Space to activate it. Bot labels include skill, capacity, exit direction and the blocking bot when applicable. Sound starts off. Reduced motion skips the visual transitions. No gameplay depends on animation or elapsed time; after the page and its modules have loaded, the puzzle needs no network connection.
 
-## Eight levels
+## Six levels
+
+The two introductory puzzles were removed after play-testing found them too easy. The game now opens with a blocked-bot dependency; the remaining puzzles keep their original boards and rules.
 
 The bot numbers below identify the accessible button labels, not an extra control. Each listed solution is found by breadth-first search over actual game states.
 
 | Level | Idea | Bay slots | Minimum moves | One minimum solution |
 | --- | --- | --- | --- | --- |
-| 1 · Hello, Picker | Serve the front orders | 4 | 2 | 1, 2 |
-| 2 · Front of the line | Match the next skill | 4 | 2 | 1, 2 |
-| 3 · After you | Clear a dependency | 4 | 3 | 2, 1, 3 |
-| 4 · Room for three | Preserve concurrency capacity | 3 | 5 | 1, 2, 3, 5, 4 |
-| 5 · Two can do it | Scale out with another worker | 4 | 5 | 1, 2, 3, 4, 5 |
-| 6 · Park ahead | Reserve capacity to unblock work | 4 | 5 | 2, 1, 3, 4, 5 |
-| 7 · Stock comes first | Inventory before Courier | 4 | 4 | 2, 1, 3, 4 |
-| 8 · All together | Combine ordering, capacity and dependencies | 5 | 10 | 3, 2, 1, 4, 5, 6, 8, 7, 9, 10 |
+| 1 · After you | Clear a dependency | 4 | 3 | 2, 1, 3 |
+| 2 · Room for three | Preserve concurrency capacity | 3 | 5 | 1, 2, 3, 5, 4 |
+| 3 · Two can do it | Scale out with another worker | 4 | 5 | 1, 2, 3, 4, 5 |
+| 4 · Park ahead | Reserve capacity to unblock work | 4 | 5 | 2, 1, 3, 4, 5 |
+| 5 · Stock comes first | Inventory before Courier | 4 | 4 | 2, 1, 3, 4 |
+| 6 · All together | Combine ordering, capacity and dependencies | 5 | 10 | 3, 2, 1, 4, 5, 6, 8, 7, 9, 10 |
 
 Three stars requires the minimum number of successful taps and no undos. Two stars allows up to two undos and two extra taps; every other completed solution earns one star. Blocked taps do not count. Undo restores the board, while the move and undo totals retain the attempt's history.
 
-To reproduce a loss, start level 4 and tap bots **2, 3, 4**. All three slots hold Courier or Support while the front requires Picker. Undo the last tap, then use **1, 5, 4** to finish without restarting.
+To reproduce a loss, start level 2 and tap bots **2, 3, 4**. All three slots hold Courier or Support while the front requires Picker. Undo the last tap, then use **1, 5, 4** to finish without restarting.
 
 ## Source and design
 
@@ -50,10 +50,12 @@ The reducer commits a complete turn synchronously. A single requestAnimationFram
 
 ## Verification
 
-On 4 November 2026, all **147 repository tests** and TypeScript checking passed. The 15 puzzle-specific tests verify all eight levels through actual controls, every level's BFS minimum, full arrow paths, only-front serving, immediate loss, unlimited history restoration, deterministic replay, keyboard focus, reduced motion, delayed frames and the removal of old map/game files. The model tests also traverse every reachable playing state to check that no unexplained deadlock is possible.
+On 4 November 2026, all **147 repository tests** and TypeScript checking passed. The 15 puzzle-specific tests verify all six levels through button controls, numbering, Inventory's introduction, final-screen wraparound, every level's BFS minimum, full arrow paths, only-front serving, immediate loss, unlimited history restoration, deterministic replay, keyboard focus, reduced motion, delayed frames and the removal of old map/game files. The model tests also traverse every reachable playing state to check that no unexplained deadlock is possible.
 
-Browser play completed all eight levels, including a deliberate level 4 loss and recovery. Desktop was checked at 1280×800; the final board and win card also fit at 390×700 and 390×844 without scrolling. The final run had no console errors. Input state changes do not wait for frames; automated checks include a second tap and Undo before the previous animation completes. The host's browser automation occasionally delayed commands, so these checks do not claim a universal end-to-end paint latency.
+After trimming the tutorials, all six remaining levels were also completed through browser controls. The final screen reads “All 6 cleared!” and offers “Play from level 1”. That run had no console errors.
+
+Before the two tutorials were removed, browser play completed all eight original levels, including a deliberate full-bay loss and recovery. Desktop was checked at 1280×800; the final board and win card also fit at 390×700 and 390×844 without scrolling. That run had no console errors. Input state changes do not wait for frames; automated checks include a second tap and Undo before the previous animation completes. The host's browser automation occasionally delayed commands, so these checks do not claim a universal end-to-end paint latency.
 
 Impeccable's detector ran once over the UI source with regex matching. It reported no findings, but parsed-page rules were unavailable; this is not a substitute for the rendered desktop/mobile review.
 
-An independent finish reviewer inspected the five desktop/mobile captures and returned `disposition: ship` with no material fixes. The documenter checked the local design notes against the implementation; this replacement does not establish a new site-wide design system.
+The original implementation received an independent finish review and a documentation check. Subsequent user play-testing requested a UI improvement and removal of the two easy tutorials. This update only trims the campaign; it does not claim to complete that broader visual revision.

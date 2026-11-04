@@ -1,10 +1,10 @@
 export function renderOrderFlowGame(): string {
  return `<section id="order-flow-game" aria-label="Order Flow puzzle" hidden>
-  <header class="of-heading"><h3 id="of-title">Hello, Picker</h3><span id="of-level">1 / 8</span><p id="of-caption">Tap a free bot. It serves the front orders.</p></header>
-  <div class="of-toolbar"><button id="of-undo" type="button" disabled>Undo</button><button id="of-replay" type="button">Replay</button><span id="of-moves">0 moves · target 2</span><button id="of-sound" type="button" aria-pressed="false">Sound off</button></div>
+  <header class="of-heading"><h3 id="of-title">After you</h3><span id="of-level">1 / 6</span><p id="of-caption">Clear the bot in front to open an exit.</p></header>
+  <div class="of-toolbar"><button id="of-undo" type="button" disabled>Undo</button><button id="of-replay" type="button">Replay</button><span id="of-moves">0 moves · target 3</span><button id="of-sound" type="button" aria-pressed="false">Sound off</button></div>
   <p id="of-message" class="of-message" role="status" aria-live="polite" aria-atomic="true">Tap a bot with a clear arrow to begin.</p>
   <div class="of-board" id="of-board">
-   <section class="of-queue" aria-label="Order queue"><div class="of-section-label"><strong>Order queue</strong><span id="of-orders">5 left</span></div><svg id="of-belt" aria-label="Orders on a U-shaped belt" role="img"></svg></section>
+   <section class="of-queue" aria-label="Order queue"><div class="of-section-label"><strong>Order queue</strong><span id="of-orders">7 left</span></div><svg id="of-belt" aria-label="Orders on a U-shaped belt" role="img"></svg></section>
    <div class="of-work" id="of-work">
     <section class="of-bay" aria-label="Agent bay"><div class="of-section-label"><strong>Agent bay</strong><span id="of-bay-count">0 / 4 slots</span></div><div id="of-slots" class="of-slots"></div></section>
     <section class="of-yard" aria-label="Agent yard"><div class="of-section-label"><strong>Agent yard</strong><span>Arrow = exit · number = orders</span></div><div id="of-cells" class="of-cells"></div></section>

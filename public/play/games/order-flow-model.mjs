@@ -9,8 +9,6 @@ const bot=(skill,capacity,x,y,dir='up')=>({skill,capacity,x,y,dir});
 const P=(n,x,y,d)=>bot('picker',n,x,y,d),C=(n,x,y,d)=>bot('courier',n,x,y,d),S=(n,x,y,d)=>bot('support',n,x,y,d),I=(n,x,y,d)=>bot('inventory',n,x,y,d);
 const queue=(...groups)=>groups.flatMap(([skill,n])=>Array(n).fill(skill));
 export const LEVELS = [
- {title:'Hello, Picker',caption:'Tap a free bot. It serves the front orders.',slots:4,rows:2,par:2,bots:[P(2,1,0),P(3,2,0)],queue:queue(['picker',5]),agent:'fulfillment',note:'Fulfillment workers pick the next orders waiting in a queue.'},
- {title:'Front of the line',caption:'Match the front order before the next color.',slots:4,rows:2,par:2,bots:[C(3,1,0),P(2,2,0)],queue:queue(['picker',2],['courier',3]),agent:'dispatcher',note:'The dispatcher sends queued work to an agent with the right tools.'},
  {title:'After you',caption:'Clear the bot in front to open an exit.',slots:4,rows:2,par:3,bots:[P(3,1,1),C(2,1,0),S(2,2,1,'right')],queue:queue(['courier',2],['picker',3],['support',2]),agent:'fulfillment',note:'A dependent task waits until the earlier handoff is complete.'},
  {title:'Room for three',caption:'Keep a slot free for the skill needed next.',slots:3,rows:2,par:5,bots:[P(2,0,0),C(2,1,0),S(2,2,0),C(2,3,0),P(2,0,1,'down')],queue:queue(['picker',4],['courier',4],['support',2]),agent:'dispatcher',note:'Concurrency limits cap how many workers can hold active tasks at once.'},
  {title:'Two can do it',caption:'A big group needs more than one matching bot.',slots:4,rows:2,par:5,bots:[P(3,0,0),C(3,1,0),S(2,2,0),P(3,3,0),C(3,1,1,'down')],queue:queue(['picker',6],['courier',6],['support',2]),agent:'fulfillment',note:'More fulfillment workers can share a queue when demand grows.'},
