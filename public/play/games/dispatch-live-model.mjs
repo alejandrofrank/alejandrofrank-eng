@@ -22,7 +22,8 @@ export function makeOrders(round,seed=17){
 export function createShift(round=0,carry={},seed=17){
  if(!ROUNDS[round])throw new RangeError('Unknown round');
  const budget=round===0?4:6,defaults=round===0?['normal','urgent','urgent','problem']:['normal','normal','normal','normal','urgent','problem'];
- const lanes=Array.isArray(carry.lanes)?carry.lanes:defaults;
+ // Capacity unlocks with the lunch roster; from then on player allocations persist.
+ const lanes=round!==1&&Array.isArray(carry.lanes)?carry.lanes:defaults;
  const workers=Array.from({length:budget},(_,i)=>({id:i+1,lane:QUEUES.includes(lanes[i])?lanes[i]:defaults[i],job:null,offline:false,x:46+i*2,y:90}));
  const state={round,time:0,duration:DURATION,orders:makeOrders(round,seed),workers,queues:{normal:[],urgent:[],problem:[]},claims:round>=2&&!!carry.claims,notes:[],rain:false,stockOut:false,events:[],failures:[],score:{onTime:0,late:0,wasted:0,escalations:0},finished:false,result:null,actions:0};
  const fired=new Set();let serial=0;
@@ -58,7 +59,7 @@ export function createShift(round=0,carry={},seed=17){
  function escalate(id){
   const o=order(id);if(state.finished||round<4||!o||o.status==='future'||o.delivered||o.escalated)return false;
   o.escalated=true;o.confirmed=true;state.score.escalations++;state.actions++;
-  if(o.needsHuman){o.needsHuman=false;for(const w of workers)if(w.job?.orderId===o.id){w.job.version=o.version;w.job.to=target(o);w.job.elapsed=0;w.job.duration=2;}}
+  if(o.needsHuman){o.needsHuman=false;for(const w of workers)if(w.job?.orderId===o.id){w.job.version=o.version;if(w.job.phase==='deliver'){w.job.to=target(o);w.job.from=workerPosition(w);w.job.elapsed=0;w.job.duration=2;}}}
   else o.due-=2;
   event('human',o.version?'Human confirms the new address. The courier turns toward it.':'A human checked an order that needed no confirmation.',o,{delta:'escalations'});return true;
  }
@@ -121,8 +122,8 @@ export function createShift(round=0,carry={},seed=17){
  }
  return {state,advance,route,moveBot,claiming,pin,escalate,carry:()=>({claims:state.claims,lanes:workers.map(w=>w.lane)})};
 }
-export function workerPosition(w){
- if(!w.job||w.offline)return {x:w.x,y:w.y};const j=w.job,t=Math.min(1,j.elapsed/j.duration),dx=j.to.x-j.from.x,dy=j.to.y-j.from.y,d=Math.abs(dx)+Math.abs(dy),travel=d*t;
+export function workerPosition(w,extra=0){
+ if(!w.job||w.offline)return {x:w.x,y:w.y};const j=w.job,t=Math.min(1,(j.elapsed+extra)/j.duration),dx=j.to.x-j.from.x,dy=j.to.y-j.from.y,d=Math.abs(dx)+Math.abs(dy),travel=d*t;
  return travel<=Math.abs(dx)?{x:j.from.x+Math.sign(dx)*travel,y:j.from.y}:{x:j.to.x,y:j.from.y+Math.sign(dy)*(travel-Math.abs(dx))};
 }
 // Stable screen slots. Overflow is a count badge, never overlapping hit targets.

@@ -1,91 +1,147 @@
-import {QUEUES,STORES,ZONES,HUB,ROUNDS,rulesFor,createShift,workerPosition} from './dispatch-model.mjs';
-const COLORS={normal:'#087c43',urgent:'#a85219',problem:'#365d9c'},cap=s=>s[0].toUpperCase()+s.slice(1);
+import {QUEUES,STORES,ROUNDS,createShift,workerPosition,pinLayout} from './dispatch-live-model.mjs';
+const COLORS={normal:'#287b53',urgent:'#b76b19',problem:'#527fc2'};
+const robot='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M4 10H2m20 0h-2M7 21v-3m10 3v-3"/><rect x="4" y="6" width="16" height="13" rx="4"/><path d="M8 11h1m6 0h1M9 15h6"/></svg>';
+const star='<svg viewBox="0 0 30 30" aria-hidden="true"><path d="m15 2 4 8 9 1-6.5 6.5L23 27l-8-4.5L7 27l1.5-9.5L2 11l9-1z"/></svg>';
+const name=o=>o.needsHuman?'Address?':o.kind==='cold'?'Cold bag':o.kind==='problem'?'Check?':'Groceries';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const robot=(x,y,color,offline=false)=>`<g transform="translate(${x} ${y})"><rect x="-10" y="-8" width="20" height="17" rx="5" fill="${offline?'#7c7c73':color}" stroke="#fffdf6" stroke-width="2.5"/><path d="M-5-1h2m6 0h2" stroke="#fffdf6" stroke-width="3" stroke-linecap="round"/>${offline?'<path d="m-7-6 14 13" stroke="#8c301d" stroke-width="3"/>':''}</g>`;
-function city(){return `<rect width="720" height="450" fill="#eeeade"/><path d="M0 5C115 38 63 116 112 163S80 253 144 306 76 389 177 450" stroke="#c1d7d2" stroke-width="24" fill="none"/><path d="M582 183q65-10 86 45l-15 96-73-13-20-72z" fill="#d7dfbd"/><path d="M190 30 150 120 218 198 145 281 230 355 211 440M341 10 310 87 359 165 299 230 356 306 309 439M475 15 491 94 456 180 513 242 470 319 512 450M610 10 575 99 620 160M72 107 176 140 315 120 435 140 548 121 690 158M111 226 251 199 401 222 558 205M161 333 282 305 400 344 541 350 690 378" fill="none" stroke="#fffdf6" stroke-width="8" stroke-linejoin="round"/><path d="M180 48 671 345M100 371 583 48M231 12 664 421M98 185 585 427" fill="none" stroke="#d9d8c8" stroke-width="2"/><path d="M192 60Q380-25 597 96T652 360Q388 499 170 333T192 60Z" fill="none" stroke="#ddd8c7" stroke-width="5"/><text x="57" y="319" transform="rotate(-65 57 319)" fill="#527b72" font-size="12">Manzanares</text><text x="593" y="248" fill="#68744d" font-size="14">El Retiro</text>${ZONES.filter(z=>z.name!=='Retiro').map(z=>`<text x="${z.x}" y="${z.y-30}" text-anchor="middle" fill="#687461" font-size="14">${z.name}</text>`).join('')}<g transform="translate(${HUB.x} ${HUB.y})"><circle r="24" fill="#fffdf6" stroke="#b8c7b4"/><path d="M-13 5h26M-9 5V-5h18V5M-6-5v-6h12v6" stroke="#52665b" fill="none" stroke-width="2"/><text y="42" text-anchor="middle" fill="#52665b" font-size="12">Dispatch</text></g>`;}
+
 export function initDispatchGame(root=document.getElementById('dispatch-game')){
- if(!root)return null;root.hidden=false;const doc=root.ownerDocument,win=doc.defaultView,$=id=>root.querySelector('#rd-'+id),form=$('form'),settings=$('settings'),media=win.matchMedia('(prefers-reduced-motion: reduce)'),panel=root.closest('[data-station-panel]');
- let round=0,plan=rulesFor(0),shift=null,playing=false,raf=0,last=null,acc=0,pausedFailure=false,selectedFailure=null,lastEvent=0,completed=new Set();
- const totalStaff=()=>QUEUES.reduce((n,q)=>n+plan.staff[q],0);
- function focusControl(control,toTop=false){
-  if(!control)return;control.focus({preventScroll:true});
-  const viewport=root.closest('.screen-viewport'),dialog=root.closest('dialog');
-  if(viewport)viewport.scrollTop=toTop?0:Math.max(0,viewport.scrollTop+control.getBoundingClientRect().top-viewport.getBoundingClientRect().top-20);
-  if(dialog)dialog.scrollTop=0;
+ if(!root)return null;
+ root.hidden=false;
+ const doc=root.ownerDocument,win=doc.defaultView,$=id=>root.querySelector('#rd-'+id),panel=root.closest('[data-station-panel]');
+ const media=win.matchMedia('(prefers-reduced-motion: reduce)'),narrow=win.matchMedia('(max-width:700px)');
+ let round=0,carry={},shift=createShift(),playing=false,started=false,firstFailure=false,focusFailure=null,selection=null,raf=0,last=null,acc=0,seen=0,finishedShown=false,sound=false,audio=null,lastHud=-1,drag=null,suppressClick=0,inputAt=null;
+ let bounds={width:800,height:350};
+ const pinNodes=new Map(),botNodes=new Map(),courierNodes=new Map(),routeNodes=new Map(),memo=new Map();
+ function html(node,value){if(memo.get(node)!==value){node.innerHTML=value;memo.set(node,value);}}
+ function text(node,value){value=String(value);if(node.textContent!==value)node.textContent=value;}
+ function message(value,failure=false){text($('message'),value);$('message').dataset.failure=String(failure);}
+ function beep(kind){
+  if(!sound)return;
+  try{audio??=new (win.AudioContext||win.webkitAudioContext)();if(audio.state==='suspended')audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.frequency.value=kind==='failure'?180:kind==='delivery'?540:370;g.gain.setValueAtTime(.035,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.12);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+.13);}catch{sound=false;text($('sound'),'Sound unavailable');}
  }
- function syncRules(){
-  for(const q of QUEUES){form.elements.namedItem('route-'+q).value=plan.routing[q];$('staff-'+q).value=plan.staff[q];}
-  for(const key of ['claims','milk','offline'])form.elements.namedItem(key).checked=plan[key];form.elements.namedItem('escalate').value=plan.escalate;
-  $('budget').textContent=totalStaff()+' / 6';root.querySelectorAll('[data-staff]').forEach(b=>{b.disabled=(b.dataset.delta==='1'?totalStaff()>=6:plan.staff[b.dataset.staff]===0);});
-  ['capacity','memory','human'].forEach((id,i)=>{$(id+'-section').hidden=round<[1,2,4][i];});$('milk-setting').hidden=round<3;$('offline-setting').hidden=round<4;
- }
- function loadRound(){
-  stop();shift=null;plan=rulesFor(round);pausedFailure=false;selectedFailure=null;lastEvent=0;
-  $('title').textContent=ROUNDS[round].title;$('brief').textContent=ROUNDS[round].brief;$('round').textContent=(round+1)+' / 5';
-  ['routing','capacity','memory','human'].forEach((id,i)=>{$(id+'-section').open=i===(round===0?0:round===1?1:round<4?2:3);});
-  syncRules();message('Set your rules, then run the shift. Orders arrive on their own.');render();
- }
- function message(text,failure=false){$('message').textContent=text;$('message').dataset.failure=String(failure);}
- function controls(){const done=shift?.state.finished;$('launch').hidden=!!shift;settings.disabled=!!shift;$('run').textContent=playing?'Pause':done?'Replay shift':shift?'Continue':'Run shift';$('step').disabled=!!done;$('edit').hidden=!shift;$('next').hidden=!done||!shift.state.result.won||round===4;$('rule-status').textContent=shift?'Rules are fixed for this run. Change rules to retry the same shift.':'Same orders and timing on every retry.';}
- function renderMap(fraction=0){
-  const s=shift?.state,orders=s?.orders||[],workers=s?.workers||QUEUES.flatMap(q=>Array.from({length:plan.staff[q]},(_,i)=>({queue:q,x:HUB.x+(i-1)*22,y:HUB.y+(QUEUES.indexOf(q)-1)*22,job:null})));
-  const routes=workers.filter(w=>w.job&&!w.offline).map(w=>{const j=w.job;return `<path d="M${j.from.x} ${j.from.y}H${j.to.x}V${j.to.y}" fill="none" stroke="${COLORS[w.queue]}" stroke-width="3" stroke-opacity=".55" stroke-dasharray="6 5"/>`;}).join('');
-  const stores=STORES.map(st=>`<g class="rd-store" transform="translate(${st.x} ${st.y})"><rect x="-17" y="-15" width="34" height="30" rx="5" fill="#fffdf6" stroke="#203c31" stroke-width="2.5"/><path d="M-12-4h24M-8-4v12m8-12v12m8-12v12" stroke="#203c31" stroke-width="2"/><text y="31" text-anchor="middle" fill="#203c31" font-size="13" font-weight="600">${st.name}</text>${s?.stockOut&&st.id==='sol'?'<rect x="-46" y="-41" width="92" height="20" rx="4" fill="#fffdf6"/><text y="-27" text-anchor="middle" fill="#8c301d" font-size="12">Milk sold out</text>':''}</g>`).join('');
-  const pins=orders.filter(o=>o.status!=='future').sort((a,b)=>Number(!!a.failures.length)-Number(!!b.failures.length)).map(o=>{const failed=o.failures.length>0,done=o.status==='delivered',c=failed?'#b33729':done?'#087c43':COLORS[o.type];return `<g class="rd-pin" transform="translate(${o.x} ${o.y})"><circle r="${done?10:15}" fill="${done?'#d6e8d0':'#fffdf6'}" stroke="${c}" stroke-width="${failed?4:2.5}"/><text y="4.5" text-anchor="middle" font-size="13" font-weight="700" fill="${c}">${failed?'!':done?'✓':o.id}</text>${!done&&!failed?`<path d="M-7 21h14" stroke="${c}" stroke-width="3" opacity="${o.status==='waiting'?.9:.3}"/>`:''}</g>`;}).join('');
-  const bots=workers.map((w,i)=>{const p=workerPosition(w);return `<g data-worker="${i}" transform="translate(${p.x} ${p.y})">${robot(0,0,COLORS[w.queue],w.offline)}</g>`;}).join('');
-  $('map').innerHTML=`<svg viewBox="0 0 720 320" aria-hidden="true" focusable="false">${city()}${s?.rain?'<g class="rd-weather" transform="translate(16 260)" fill="#365b67"><path d="M0 0h44q15 0 15 12t-15 12H-2q-14 0-14-11T0 0" fill="#bbd0d2"/><path d="m1 31-5 9m18-9-5 9m18-9-5 9m18-9-5 9" stroke="#557b8a" stroke-width="2"/><text x="65" y="20" font-size="12">Rain: slower routes</text></g>':''}${routes}${stores}${pins}${bots}</svg>`;
-  // Compress geography, not symbols: pins and labels stay circular and readable.
-  const svg=$('map').firstElementChild;
-  svg.querySelectorAll(':scope > path').forEach(p=>p.setAttribute('transform','scale(1 .7)'));
-  svg.querySelector('rect')?.setAttribute('height','320');
-  svg.querySelectorAll(':scope > text').forEach(t=>{t.classList.add('rd-district');const y=Number(t.getAttribute('y'));t.setAttribute('y',String(y*.7));if(t.getAttribute('transform'))t.setAttribute('transform','rotate(-65 57 223)');});
-  svg.querySelectorAll(':scope > g[transform]').forEach(g=>{const match=/^translate\(([\d.]+) ([\d.]+)\)$/.exec(g.getAttribute('transform'));if(match&&!g.getAttribute('transform').includes('16 260'))g.setAttribute('transform',`translate(${match[1]} ${Number(match[2])*.7})`);});
-  svg.querySelectorAll(':scope > path[stroke-dasharray]').forEach(p=>p.setAttribute('transform','scale(1 .7)'));
- }
- function moveWorkers(fraction){
-  if(!shift)return;
-  if(!media.matches)$('map').querySelectorAll('[data-worker]').forEach(node=>{const w=shift.state.workers[Number(node.dataset.worker)],p=workerPosition(w,fraction/(shift.state.rain?1.35:1));node.setAttribute('transform',`translate(${p.x} ${p.y*.7})`);});
-  $('time').value=shift.state.time+fraction;
- }
- function render(){
-  const s=shift?.state,score=s?.score||{onTime:0,wasted:0,escalations:0};$('on-time').textContent=score.onTime+' / '+ROUNDS[round].count;$('waste').textContent=score.wasted;$('human').textContent=score.escalations;
-  $('time').value=s?.time||0;$('clock').textContent=s?Math.floor(s.time)+'s · '+(s.finished?'Shift ended':playing?'Running':'Paused'):'Ready for the shift';
-  $('queues').innerHTML=QUEUES.map(q=>{const n=s?.queues[q].length||0,busy=s?.workers.filter(w=>w.queue===q&&w.job&&!w.offline).length||0;return `<div class="rd-queue" data-overload="${n>plan.staff[q]}" style="--queue:${COLORS[q]}"><div><span>${cap(q)}</span><b>${n} waiting</b></div><div class="rd-bars" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i data-full="${i<n}"></i>`).join('')}</div><small>${plan.staff[q]} ${plan.staff[q]===1?'agent':'agents'} · ${busy} busy</small></div>`;}).join('');
-  $('notes').innerHTML=s?.notes.length?s.notes.map(n=>`<p>${esc(n.text)}</p>`).join(''):'<p>No shared notes yet.</p>';
-  $('orders').innerHTML=s?s.orders.filter(o=>o.status!=='future').sort((a,b)=>Number(!!a.failures.length)-Number(!!b.failures.length)).map(o=>`<li data-failed="${o.failures.length>0}">Order ${o.id} · ${cap(o.type)} · ${esc(o.zone)} · ${o.status}${o.failures.length?' — '+esc(s.failures.find(f=>f.order===o.id)?.text):''}</li>`).join(''):'';
-  $('result').hidden=!s?.finished;
-  if(s?.finished){const r=s.result;$('result-title').textContent=r.won?(round===4?'Madrid is moving. Five shifts complete.':'Every order arrived on time.'):'The network needs a better handoff.';$('result-copy').textContent=r.onTime+' of '+r.total+' on time · '+r.wasted+' wasted trips · '+r.escalations+' human escalations. '+(r.won?(r.stars===3?'Three-star shift.':'Try fewer human checks for three stars.'):'Change your rules and retry the same orders.');$('real').innerHTML='In the real system: '+esc(ROUNDS[round].note)+' <a href="/projects/agents-demo/?view=agents&agent='+ROUNDS[round].agent+'">Meet the '+(ROUNDS[round].agent==='customer_service'?'customer service agent':ROUNDS[round].agent)+' →</a>';if(r.won)completed.add(round);}
-  controls();renderMap();
- }
+ function setSelection(kind,id){selection={kind,id};message(kind==='bot'?'Bot '+id+' selected. Tap the lane it should join.':'Order '+id+' selected. Tap a lane'+(round===4?' or Human.':'.'));sync();}
  function stop(){playing=false;if(raf)win.cancelAnimationFrame(raf);raf=0;last=null;acc=0;}
- function begin(){shift=createShift(round,plan,17);selectedFailure=null;pausedFailure=false;lastEvent=0;}
- function tick(){
-  if(!shift||shift.state.finished)return;const before=shift.state.failures.length,stepFocused=doc.activeElement===$('step');shift.advance();
-  const s=shift.state,e=s.events.at(-1);if(e&&e.id!==lastEvent){lastEvent=e.id;message(e.text);}
-  if(s.failures.length>before){selectedFailure=s.failures.at(-1);message(selectedFailure.text,true);if(!pausedFailure){pausedFailure=true;stop();}}
-  if(s.finished){stop();if(s.failures.length){selectedFailure=s.failures[0];message(selectedFailure.text,true);}else message('The shift is complete. See what held the network together.');}
-  render();if(s.finished&&stepFocused)focusControl(s.result.won&&round<4?$('next'):$('run'),true);
+ function pause(){if(!playing)return;stop();message('Paused. You can still route pins, move bots and pin notes.');sync();}
+ function controls(){
+  text($('run'),playing?'Pause':shift.state.finished?'Replay shift':started?'Continue':'Run shift');$('edit').hidden=!firstFailure||shift.state.finished;
+  text($('clock'),Math.max(0,Math.ceil(50-shift.state.time))+'s');$('time').value=shift.state.time;
+  text($('claim'),round<2?'Claim · shift 3':shift.state.claims?'Claim stamped':'Stamp Claim');$('claim').disabled=round<2||shift.state.finished;$('claim').setAttribute('aria-pressed',String(shift.state.claims));
+  text($('human'),round<4?'Human · shift 5':'Send to Human');$('human').disabled=round<4||shift.state.finished;
+  $('welcome').hidden=started;$('world').inert=shift.state.finished;$('lanes').inert=shift.state.finished;$('board').inert=shift.state.finished;
+ }
+ function focus(node){node?.focus({preventScroll:true});}
+ function reset(next=false){
+  stop();if(next){carry=shift.carry();round++;}else carry=shift.carry();
+  shift=createShift(round,carry);started=false;firstFailure=false;focusFailure=null;selection=null;seen=0;finishedShown=false;lastHud=-1;
+  pinNodes.forEach(n=>n.remove());pinNodes.clear();botNodes.forEach(n=>n.remove());botNodes.clear();courierNodes.forEach(n=>n.remove());courierNodes.clear();routeNodes.forEach(n=>n.remove());routeNodes.clear();$('effects').replaceChildren();
+  text($('title'),ROUNDS[round].title);text($('round'),(round+1)+' / 5');text($('brief'),ROUNDS[round].brief);text($('budget'),shift.state.workers.length+' bots');
+  html($('team-tip'),robot+(round?'Tap a bot, then a lane to move it. A busy bot finishes its bag first.':'Four bots, fixed this shift. Use the free lanes.'));
+  message('Tap Run shift. Then tap a pin and a lane, or drag it there.');sync();focus($('run'));
+ }
+ function start(){if(shift.state.finished)reset();started=true;playing=true;focusFailure=null;last=null;acc=0;message('Tap a pin → tap a lane. Use spare capacity before its ring runs out.');sync();if(!raf)raf=win.requestAnimationFrame(frame);}
+ function result(){
+  const s=shift.state,r=s.result;$('result').hidden=!s.finished;if(!s.finished||finishedShown)return;
+  finishedShown=true;
+  text($('result-title'),r.won?(round===4?'Madrid is moving!':'Shift delivered.'):'The queues got away.');
+  html($('stars'),Array.from({length:3},(_,i)=>star.replace('<svg','<svg data-empty="'+(i>=r.stars)+'"')).join(''));$('stars').setAttribute('aria-label',r.stars+' of 3 stars');
+  html($('result-score'),[['On time',r.onTime+'/'+r.total],['Late',r.late],['Wasted',r.wasted],['Human',r.escalations]].map(([label,value])=>'<div><strong>'+value+'</strong>'+label+'</div>').join(''));
+  text($('result-copy'),r.won?(round===4?'All five shifts complete. You kept the agents coordinated.':'Keep the tools you unlocked. The next shift adds a new challenge.'):'Deliver 70% on time with at most 3 wasted trips to advance.');
+  $('next').hidden=!r.won||round===4;$('real').href='/projects/agents-demo/?view=agents&agent='+ROUNDS[round].agent;text($('real-copy'),ROUNDS[round].note);focus($('replay'));
+ }
+ function syncPins(){
+  const s=shift.state,groups=pinLayout(s.orders.map(o=>o.id===focusFailure?.order?{...o,status:'new'}:o),narrow.matches),keep=new Set();
+  for(const group of groups){
+   const o=group.items.find(o=>o.id===focusFailure?.order)||group.items[0],key=group.slot;keep.add(key);let b=pinNodes.get(key);
+   if(!b){b=doc.createElement('button');b.type='button';b.className='rd-pin';b.dataset.new='true';b.innerHTML='<svg class="rd-ring" viewBox="0 0 66 66" aria-hidden="true"><circle class="rd-ring-bg" cx="33" cy="33" r="30"/><circle class="rd-ring-value" cx="33" cy="33" r="30"/></svg><strong></strong><small></small><span class="rd-count" hidden></span>';pinNodes.set(key,b);$('pins').append(b);}
+   b.dataset.order=o.id;b.dataset.kind='order';b.dataset.late=String(o.late);b.style.left=group.x+'%';b.style.top=group.y+'%';b.style.setProperty('--pin',o.needsHuman||o.kind==='problem'?COLORS.problem:o.kind==='cold'?COLORS.urgent:COLORS.normal);
+   b.setAttribute('aria-pressed',String(selection?.kind==='order'&&selection.id===o.id));b.classList.toggle('is-focus',focusFailure?.order===o.id);text(b.querySelector('strong'),o.needsHuman?'Address':o.kind==='cold'?'Cold':o.kind==='problem'?'Check':'Bag '+o.id);
+   const seconds=Math.max(0,Math.ceil(o.due-s.time));text(b.querySelector('small'),seconds+'s');b.setAttribute('aria-label','Order '+o.id+', '+name(o)+', '+seconds+' seconds'+(group.items.length>1?', '+group.items.length+' orders here':''));
+   const badge=b.querySelector('.rd-count');badge.hidden=group.items.length<2;text(badge,group.items.length);b.querySelector('.rd-ring-value').style.strokeDashoffset=String(188.5*(1-Math.max(0,(o.due-s.time)/o.window)));
+  }
+  for(const [key,node] of pinNodes)if(!keep.has(key)){node.remove();pinNodes.delete(key);}
+ }
+ function syncBots(){
+  const s=shift.state;
+  for(const w of s.workers){
+   let b=botNodes.get(w.id);if(!b){b=doc.createElement('button');b.type='button';b.className='rd-bot';b.dataset.bot=w.id;b.dataset.kind='bot';b.innerHTML=robot+'<span>'+w.id+'</span>';botNodes.set(w.id,b);}
+   const lane=$('bots-'+w.lane);if(b.parentNode!==lane)lane.append(b);b.disabled=round===0||w.offline;b.dataset.offline=String(w.offline);b.dataset.busy=String(!!w.job);b.setAttribute('aria-label','Bot '+w.id+', '+w.lane+(w.offline?', offline':w.job?', delivering':', free'));b.setAttribute('aria-pressed',String(selection?.kind==='bot'&&selection.id===w.id));
+   let actor=courierNodes.get(w.id);if(!actor){actor=doc.createElement('div');actor.className='rd-courier';actor.innerHTML=robot;courierNodes.set(w.id,actor);$('couriers').append(actor);const path=doc.createElementNS('http://www.w3.org/2000/svg','path');$('routes').append(path);routeNodes.set(w.id,path);}
+   actor.style.setProperty('--bot',COLORS[w.lane]);actor.dataset.offline=String(w.offline);
+   const path=routeNodes.get(w.id),j=w.job;path.setAttribute('stroke',COLORS[w.lane]);path.setAttribute('d',j?'M'+j.from.x+' '+j.from.y+'H'+j.to.x+'V'+j.to.y:'');
+  }
+ }
+ function sync(){
+  const s=shift.state;controls();root.dataset.focusFailure=String(!!focusFailure);root.dataset.round=round;root.dataset.state=s.finished?'finished':playing?'running':started?'paused':'ready';
+  for(const key of ['onTime','late','wasted','escalations'])text($(key),s.score[key]);
+  for(const q of QUEUES){
+   text($('waiting-'+q),s.queues[q].length+' waiting');html($('queue-'+q),s.queues[q].slice(0,8).map(t=>'<span class="rd-queue-token">'+t.orderId+'</span>').join('')+(s.queues[q].length>8?'<span class="rd-queue-token">+'+(s.queues[q].length-8)+'</span>':''));
+   root.querySelector('[data-lane-zone="'+q+'"]').classList.toggle('is-focus',focusFailure?.lane===q);
+  }
+  html($('note-inbox'),s.notes.filter(n=>!n.pinned).map(n=>'<button type="button" class="rd-note" data-note="'+n.id+'" data-kind="note"><strong>Pin note →</strong>'+esc(n.text)+'</button>').join(''));
+  html($('notes'),s.notes.some(n=>n.pinned)?s.notes.filter(n=>n.pinned).map(n=>'<div class="rd-pinned">'+esc(n.text)+'</div>').join(''):'<p>'+(round<3?'Facts unlock in shift 4.':'No shared facts yet. Pin new notes as they arrive.')+'</p>');
+  $('weather').hidden=!s.rain;root.querySelector('[data-store="sol"]').dataset.empty=String(s.stockOut);
+  syncPins();syncBots();move();result();
+ }
+ function move(){
+  for(const w of shift.state.workers){const extra=playing&&!media.matches?acc:0,p=w.job?workerPosition(w,extra/(shift.state.rain&&w.job.phase==='deliver'?1.4:1)):w.offline?workerPosition(w):{x:45+Math.sin((shift.state.time+extra)*.25+w.id)*18,y:79+Math.cos((shift.state.time+extra)*.3+w.id)*7};courierNodes.get(w.id)?.style.setProperty('transform','translate3d('+(p.x/100*bounds.width)+'px,'+(p.y/100*bounds.height)+'px,0)');}
+  $('time').value=shift.state.time;
+ }
+ function process(){
+  const s=shift.state;let pauseFailure=null;
+  for(const e of s.events.slice(seen)){
+   if(e.delta){const d=doc.createElement('span');d.textContent='+1';$("delta-"+e.delta).replaceChildren(d);}
+   if(e.kind==='failure'){
+    message(e.text,true);beep('failure');
+    if(!firstFailure){firstFailure=true;pauseFailure={...e,lane:e.lane||(s.orders.find(o=>o.id===e.order)?.kind==='cold'?'urgent':s.orders.find(o=>o.id===e.order)?.kind==='problem'?'problem':'normal')};}
+    const pin=[...pinNodes.values()].find(p=>Number(p.dataset.order)===e.order);if(pin){pin.classList.remove('is-flash');pin.classList.add('is-flash');pin.addEventListener('animationend',()=>pin.classList.remove('is-flash'),{once:true});}
+    if(e.delta==='wasted'){const puff=doc.createElement('span');puff.className='rd-puff';puff.style.left=(e.x??46)+'%';puff.style.top=(e.y??50)+'%';puff.dataset.expires=String(s.time+1);puff.textContent='+1 wasted';$('effects').append(puff);puff.addEventListener('animationend',()=>puff.remove(),{once:true});}
+   }else if(['note','address','offline','weather','retry','memory','claim','capacity','human'].includes(e.kind))message(e.text);
+   if(e.kind==='delivery')beep('delivery');
+  }
+  seen=s.events.length;for(const puff of $('effects').children)if(Number(puff.dataset.expires)<s.time)puff.remove();
+  if(pauseFailure){stop();focusFailure=pauseFailure;message(pauseFailure.text,true);focus($('run'));}
+  if(s.finished)stop();
  }
  function frame(now){
-  raf=0;if(!playing)return;if(doc.hidden||panel?.hidden){stop();render();return;}
-  if(last!==null)acc+=Math.min(80,Math.max(0,now-last))/1000*1.5;last=now;
-  while(acc>=.25&&playing){acc-=.25;tick();}
-  if(playing){moveWorkers(acc);raf=win.requestAnimationFrame(frame);}
+  raf=0;if(!playing)return;if(doc.hidden||panel?.hidden){pause();return;}
+  if(last!==null){const elapsed=Math.max(0,(now-last)/1000);if(elapsed>2){pause();message('Paused while the page was inactive. Continue when you are ready.');return;}acc+=elapsed;}last=now;
+  let changed=false;
+  while(acc>=.05&&playing){acc-=.05;shift.advance(.05);process();changed=true;}
+  if(changed&&(now-lastHud>=100||!playing)){sync();lastHud=now;}else if(!media.matches)move();
+  if(inputAt!==null){root.dataset.paintLatencyMs=String(Math.max(0,now-inputAt).toFixed(2));inputAt=null;}
+  if(playing)raf=win.requestAnimationFrame(frame);
  }
- function pause(){if(!playing)return;stop();if(shift?.state.failures.length)message(shift.state.failures.at(-1).text,true);render();}
- function edit(){
-  const rule=selectedFailure?.rule;stop();shift=null;selectedFailure=null;pausedFailure=false;syncRules();render();message('Adjust the rule, then replay the same shift.');
-  const section=rule==='routing'?'routing':rule==='capacity'?'capacity':rule==='escalate'?'human':'memory';
-  if(rule)$(section+'-section').open=true;const control=rule==='routing'?form.elements.namedItem('route-problem'):rule==='capacity'?root.querySelector('[data-staff][data-delta="-1"]:not(:disabled)'):form.elements.namedItem(rule||'route-normal');focusControl(control);
+ function input(action){const before=win.performance.now();inputAt=before;const ok=action();if(ok){focusFailure=null;process();sync();beep('action');}root.dataset.inputLatencyMs=String((win.performance.now()-before).toFixed(2));return ok;}
+ function send(lane){
+  if(!selection){message('Tap an order pin or a bot first, then this lane.');return;}
+  const chosen=selection;selection=null;
+  if(input(()=>chosen.kind==='bot'?shift.moveBot(chosen.id,lane):shift.route(chosen.id,lane))){message(chosen.kind==='bot'?'Bot '+chosen.id+' joins '+lane+'.':'Order '+chosen.id+' sent to '+lane+'. Keep routing.');focus(root.querySelector('[data-lane="'+lane+'"]'));}
  }
- $('run').addEventListener('click',()=>{if(playing){pause();return;}if(!shift||shift.state.finished)begin();playing=true;last=null;acc=0;message('Shift running. Watch the queues and the handoffs.');render();raf=win.requestAnimationFrame(frame);});
- $('step').addEventListener('click',()=>{stop();if(!shift)begin();tick();});$('edit').addEventListener('click',edit);
- $('next').addEventListener('click',()=>{if(!shift?.state.result?.won||round>=4)return;round++;loadRound();focusControl($('run'),true);});$('reset').addEventListener('click',()=>{round=0;completed=new Set();loadRound();focusControl($('run'),true);});
- $('rules-link').addEventListener('click',()=>{if(shift)edit();const section=$(['routing','capacity','memory','memory','human'][round]+'-section');section.open=true;focusControl(section.querySelector('select,input,button:not(:disabled)'));});
- $('launch').addEventListener('click',()=>{$('run').click();focusControl($('run'),true);});
- form.addEventListener('submit',e=>e.preventDefault());form.addEventListener('change',e=>{if(shift)return;const name=e.target.name;if(name?.startsWith('route-'))plan.routing[name.slice(6)]=e.target.value;else if(['claims','milk','offline'].includes(name))plan[name]=e.target.checked;else if(name==='escalate')plan.escalate=e.target.value;syncRules();renderMap();});
- form.addEventListener('click',e=>{const b=e.target.closest('[data-staff]');if(!b||shift)return;const n=plan.staff[b.dataset.staff]+Number(b.dataset.delta);if(n<0||n>6||totalStaff()+Number(b.dataset.delta)>6)return;plan.staff[b.dataset.staff]=n;syncRules();render();});
+ function click(e){
+  if(win.performance.now()<suppressClick)return;const b=e.target.closest('button');if(!b||b.disabled)return;
+  if(b.dataset.order){setSelection('order',Number(b.dataset.order));return;}
+  if(b.dataset.bot){setSelection('bot',Number(b.dataset.bot));return;}
+  if(b.dataset.lane){send(b.dataset.lane);return;}
+  if(b.dataset.note){input(()=>shift.pin(b.dataset.note));return;}
+  if(b.id==='rd-run'){playing?pause():start();return;}
+  if(b.id==='rd-edit'){stop();focusFailure=null;message('Make the repair on the map, then Continue. The shift stays paused.');sync();return;}
+  if(b.id==='rd-claim'){input(()=>shift.claiming());return;}
+  if(b.id==='rd-human'){if(selection?.kind==='order'){const id=selection.id;selection=null;input(()=>shift.escalate(id));}else message('Tap the changed-address pin first, then Human.');return;}
+  if(b.id==='rd-sound'){sound=!sound;text(b,sound?'Sound on':'Sound off');b.setAttribute('aria-pressed',String(sound));b.setAttribute('aria-label',sound?'Sound on':'Sound off');if(sound)beep('action');return;}
+  if(b.id==='rd-replay'||b.id==='rd-reset'){reset();return;}
+  if(b.id==='rd-next'&&shift.state.result?.won&&round<4){reset(true);return;}
+ }
+ function key(e){if(['1','2','3'].includes(e.key)&&selection){e.preventDefault();send(QUEUES[Number(e.key)-1]);}}
+ function down(e){const b=e.target.closest('[data-kind]');if(!b||b.disabled||e.button>0)return;drag={node:b,kind:b.dataset.kind,id:b.dataset.order||b.dataset.bot||b.dataset.note,x:e.clientX,y:e.clientY,moved:false,ghost:null};}
+ function pointerMove(e){if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)<8)return;e.preventDefault();if(!drag.moved){drag.moved=true;drag.ghost=drag.node.cloneNode(true);drag.ghost.removeAttribute('id');drag.ghost.classList.add('rd-drag-ghost');drag.ghost.style.left=drag.x+'px';drag.ghost.style.top=drag.y+'px';drag.ghost.setAttribute('aria-hidden','true');root.append(drag.ghost);}drag.ghost.style.setProperty('transform','translate3d('+dx+'px,'+dy+'px,0)','important');}
+ function up(e){if(!drag)return;const d=drag;drag=null;if(d.moved){d.ghost?.remove();suppressClick=win.performance.now()+350;const target=doc.elementFromPoint(e.clientX,e.clientY);const lane=target?.closest('[data-lane-zone]')?.dataset.laneZone;if(lane&&d.kind!=='note'){selection={kind:d.kind,id:Number(d.id)};send(lane);}else if(d.kind==='note'&&target?.closest('[data-board]'))input(()=>shift.pin(d.id));else if(d.kind==='order'&&target?.closest('[data-human]'))input(()=>shift.escalate(Number(d.id)));}}
+ function cancel(){drag?.ghost?.remove();drag=null;}
  const observer=new win.MutationObserver(()=>{if(panel?.hidden)pause();});if(panel)observer.observe(panel,{attributes:true,attributeFilter:['hidden']});
- win.addEventListener('blur',pause);doc.addEventListener('visibilitychange',pause);media.addEventListener('change',pause);loadRound();
- return {get state(){return {round,plan:structuredClone(plan),shift:shift?.state,playing,completed:[...completed]};},destroy(){stop();observer.disconnect();win.removeEventListener('blur',pause);doc.removeEventListener('visibilitychange',pause);media.removeEventListener('change',pause);}};
+ const measure=()=>{bounds={width:$('world').clientWidth||800,height:$('world').clientHeight||350};move();};
+ const resize=win.ResizeObserver?new win.ResizeObserver(measure):null;resize?.observe($('world'));
+ $('stores').innerHTML=STORES.map(s=>'<div class="rd-store" data-store="'+s.id+'" style="left:'+s.x+'%;top:'+s.y+'%"><svg viewBox="0 0 30 24" aria-hidden="true"><rect x="2" y="2" width="26" height="20" rx="3"/><path d="M5 8h20M8 8v11m7-11v11m7-11v11"/></svg>'+s.name+'</div>').join('');
+ root.addEventListener('click',click);root.addEventListener('keydown',key);root.addEventListener('pointerdown',down);doc.addEventListener('pointermove',pointerMove,{passive:false});doc.addEventListener('pointerup',up);doc.addEventListener('pointercancel',cancel);
+ win.addEventListener('blur',pause);doc.addEventListener('visibilitychange',pause);media.addEventListener('change',pause);narrow.addEventListener('change',sync);win.addEventListener('resize',measure);reset();
+ return {get state(){return {round,shift:shift.state,playing,selection,carry:shift.carry()};},destroy(){stop();observer.disconnect();resize?.disconnect();cancel();audio?.close();root.removeEventListener('click',click);root.removeEventListener('keydown',key);root.removeEventListener('pointerdown',down);doc.removeEventListener('pointermove',pointerMove);doc.removeEventListener('pointerup',up);doc.removeEventListener('pointercancel',cancel);win.removeEventListener('blur',pause);doc.removeEventListener('visibilitychange',pause);media.removeEventListener('change',pause);narrow.removeEventListener('change',sync);win.removeEventListener('resize',measure);}};
 }

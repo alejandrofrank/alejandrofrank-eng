@@ -25,7 +25,7 @@ test('round one rewards spare capacity, not matching grocery labels to Normal',(
  const shift=createShift();while(!shift.state.finished){for(const o of shift.state.orders.filter(o=>o.status==='new'))shift.route(o.id,o.kind==='grocery'?'normal':o.kind==='cold'?'urgent':'problem');shift.advance(.1);}assert.ok(shift.state.score.late>0);assert.equal(play(createShift()).score.late,0);
 });
 test('cold bags miss deadlines in Normal; moving fixed-budget bots repairs the lunch rush',()=>{
- const bad=play(createShift(1),{capacity:false}),good=play(createShift(1));assert.ok(bad.score.late>good.score.late);assert.equal(good.workers.length,6);
+ const bad=play(createShift(1,createShift(0).carry()),{capacity:false}),good=play(createShift(1));assert.ok(bad.score.late>good.score.late);assert.equal(good.workers.length,6);
  const s=createShift(1);s.advance(.1);assert.equal(s.moveBot(99,'urgent'),false);assert.equal(s.moveBot(1,'elsewhere'),false);s.route(1,'normal');s.advance(.1);assert.equal(s.moveBot(1,'urgent'),true);assert.equal(s.state.workers[0].job.lane,'normal');
 });
 test('duplicate pickers cause immediate wasted trips; Claim cancels queued and travelling retries',()=>{
