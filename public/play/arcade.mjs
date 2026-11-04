@@ -6,7 +6,7 @@ import { initQueryGame } from './games/query.mjs';
 import { initIdentityGames } from './games/identity.mjs';
 import { initPaletteGame } from './games/palette.mjs';
 import { initBasketGame } from './games/basket.mjs';
-import { initDispatchGame } from './games/dispatch.mjs';
+import { initOrderFlowGame } from './games/order-flow.mjs';
 import { mountCabinetScreen } from './arcade-screen.mjs';
 
 export function initArcade() {
@@ -22,7 +22,7 @@ export function initArcade() {
   initIdentityGames();
   initPaletteGame();
   initBasketGame();
-  initDispatchGame();
+  initOrderFlowGame();
   document.getElementById('image-inspector').addEventListener('toggle', event => {
     if (event.target.open) imageDemo.activate();
   });
