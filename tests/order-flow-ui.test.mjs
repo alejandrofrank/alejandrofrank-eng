@@ -98,6 +98,16 @@ test('old saved dead ends remain intact and are identified without claiming a wi
  const save=JSON.stringify({version:1,level:2,stars:[3,3,0,0,0,0,0,0,0,0],actions:[{tap:1}]});
  const f=await fixture({save});try{assert.match(f.get('proof').textContent,/No winning path/);assert.equal(f.controller.snapshot().state.moves,1);f.get('hint').click();assert.match(f.get('message').textContent,/Undo or Retry/);f.get('undo').click();assert.match(f.get('proof').textContent,/Solvable/);}finally{await f.close();}
 });
+test('more menu hides proof tools until opened and still runs the hint',async()=>{
+ const f=await fixture();try{
+  assert.equal(f.get('menu').hidden,true);assert.equal(f.get('more').getAttribute('aria-expanded'),'false');
+  assert.equal(f.get('undo').textContent,'Undo 3');assert.match(f.get('proof').textContent,/Solvable/);
+  f.get('more').click();assert.equal(f.get('menu').hidden,false);assert.equal(f.get('more').getAttribute('aria-expanded'),'true');
+  f.get('hint').click();assert.match(f.get('message').textContent,/Picker bot 1/);assert.equal(f.get('menu').hidden,true);
+  f.get('more').click();f.get('menu').dispatchEvent(new f.win.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  assert.equal(f.get('menu').hidden,true);assert.equal(f.get('more').getAttribute('aria-expanded'),'false');
+ }finally{await f.close();}
+});
 test('game has no city code, timed gameplay, network dependency or unscoped styles',()=>{
  const html=renderOrderFlowGame(),js=readFileSync(new URL('../public/play/games/order-flow.mjs',import.meta.url),'utf8');
  assert.doesNotMatch(html,/Madrid|street|district|courier route|<select|checkbox|Run shift/i);assert.doesNotMatch(js,/setInterval|setTimeout|fetch\(/);

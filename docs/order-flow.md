@@ -103,7 +103,7 @@ The real memory scope includes run, store, role and context; the game only demon
 | tests/order-flow-model.test.mjs | Solvability, greedy failures, handoffs, locks, retries, budgets and saves |
 | tests/order-flow-ui.test.mjs | Campaign controls, all losses, progress, queued taps and live labels |
 
-The existing arcade type and colors remain. The warm board uses skill colors plus letters, native buttons, 44px minimum bot targets, and labels of at least 14px. No new dependencies.
+The playfield is one warm toy cabinet: chunky skill tokens, packages on a conveyor, molded bay docks and a tiled yard. Proof, the next-move hint and fast-forward sit in the More menu. Undo, Retry and sound stay on the primary row. Native buttons, 44px minimum bot targets, and labels of at least 14px. No new dependencies.
 
 ## Verification
 
