@@ -87,6 +87,7 @@ export function initOrderFlowGame(){
   const narrow=geometry.width<560,mid=geometry.beltHeight/2,left=narrow?74:108,right=Math.max(left+80,geometry.width-(narrow?40:68));
   const fit=(right-left-16)/Math.max(1,display.length-1);
   const useU=display.length>1&&fit<46;
+  $('belt').dataset.layout=useU?'turn':'straight';
   let html='<defs><pattern id="of-stripes" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><rect width="2.5" height="7" fill="#fff" opacity=".75"/></pattern><filter id="of-lift" x="-40%" y="-45%" width="180%" height="200%"><feDropShadow dx="0" dy="1.5" stdDeviation=".9" flood-color="#2a1c12" flood-opacity=".4"/></filter></defs>';
   if(!useU){
    const spacing=Math.min(132,fit),pw=Math.min(78,Math.max(34,spacing-18)),ph=Math.min(86,geometry.beltHeight-40,pw+10);
