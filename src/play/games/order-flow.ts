@@ -215,9 +215,14 @@ export const orderFlowStyles = `
  .of-work{flex:none;min-height:calc(124px + var(--yard-rows, 3) * 60px)}
  .of-outcome{position:fixed;inset:12px;overflow:auto}
 }
-@media(max-height:620px){
- .arcade-screen:has([data-station-panel="madrid-delivery-sim"]:not([hidden])) .screen-viewport{overflow:auto}
- #order-flow-game{min-height:600px}
+@media(max-height:740px){
+ .arcade-screen:has([data-station-panel="madrid-delivery-sim"]:not([hidden])) .screen-viewport{overflow:auto;scrollbar-gutter:stable;scrollbar-width:auto}
+ /* Let content size the whole panel chain. A taller game inside a fixed,
+    overflow-hidden station-panel is clipped before the viewport can scroll. */
+ .arcade-screen:has([data-station-panel="madrid-delivery-sim"]:not([hidden])) :is(.station-panels,.station-panel,.console-body,.game-content){height:auto}
+ #order-flow-game{height:auto;grid-template-rows:repeat(6,auto)}
+ .of-board{overflow:visible}
+ .of-work{flex:none}
  .of-outcome{position:fixed;inset:12px;overflow:auto}
  .of-result-card{margin:auto}
 }
