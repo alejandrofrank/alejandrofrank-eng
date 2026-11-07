@@ -1,45 +1,67 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {LEVELS,initialState,copyState,blocker,locked,legalMoves,move,solve,greedy,visibleOrders,validateLevel,rating} from '../public/play/games/order-flow-model.mjs';
-import {newAttempt,takeTurn,undoTurn,restoreProgress,serializeProgress} from '../public/play/games/order-flow-progress.mjs';
+import {LEVELS,DIRECTIONS,generateYard,rayIds,initialState,copyState,blocker,legalMoves,move,solve,solveBFS,validateLevel,rating} from '../public/play/games/order-flow-model.mjs';
+import {SAVE_KEY,newAttempt,takeTurn,undoTurn,useHint,restoreProgress,serializeProgress} from '../public/play/games/order-flow-progress.mjs';
 
-test('BFS wins all ten authored levels with the exact three-star minimum',()=>{
- assert.equal(LEVELS.length,10);
- for(const l of LEVELS){validateLevel(l);const answer=solve(l);assert.ok(answer,l.title);assert.equal(answer.moves,l.par,l.title);let s=initialState(l);for(const id of answer.path)s=move(l,s,id).state;assert.equal(s.status,'won');assert.equal(s.yard,0);assert.equal(s.queue.length,0);assert.equal(s.bags.length,0);assert.ok(s.bay.every(b=>!b));assert.equal(rating(l,s.moves,0),3);}
+test('ten deterministic, fully packed yards grow from 16 to 72 identical two-seat cars',()=>{
+ assert.equal(LEVELS.length,10);assert.equal(LEVELS[0].cars.length,16);assert.equal(LEVELS.at(-1).cars.length,72);
+ for(const [i,l] of LEVELS.entries()){
+  assert.equal(validateLevel(l),true);assert.equal(l.cars.length,l.cols*l.rows);
+  assert.deepEqual(generateYard(l.cols,l.rows,l.seed),{cars:l.cars,witness:l.witness});
+  assert.ok(l.cars.every(c=>c.capacity===2));assert.ok(!('queue' in l)&&!('slots' in l));
+  if(i)assert.ok(l.cars.length>LEVELS[i-1].cars.length);
+ }
 });
-test('front-first greedy baseline loses every level from three to ten',()=>{
- for(const l of LEVELS.slice(2)){const result=greedy(l);assert.equal(result.state.status,'lost',l.title+' '+result.path);assert.ok(['slots','overflow','moves'].includes(result.state.cause));}
+test('independent BFS solves every campaign level at its exact N-car lower bound',()=>{
+ for(const l of LEVELS){const bfs=solveBFS(l);assert.equal(bfs.moves,l.cars.length);assert.equal(solve(l).moves,bfs.moves);let s=initialState(l);for(const id of bfs.path)s=move(l,s,id).state;assert.equal(s.status,'won');}
 });
-test('only the front raw order is served; arrow paths include all blockers',()=>{
- const l=LEVELS[1],s=initialState(l);assert.equal(blocker(l,s,1),2);assert.equal(move(l,s,1).state,s);const waiting=move(l,s,3).state;assert.equal(waiting.queue.length,7);const open=move(l,waiting,2).state;assert.equal(blocker(l,open,1),null);const result=move(l,open,1);assert.equal(result.state.status,'won');assert.deepEqual(result.events.filter(e=>e.kind==='serve').map(e=>e.id),[1,1,1,3,3]);assert.equal(s.yard,7);
+test('a blocked tap is immutable and names the nearest blocker',()=>{
+ const l=LEVELS[0],s=initialState(l),id=s.yard.find(id=>blocker(l,s,id)),before=copyState(s),by=blocker(l,s,id);
+ const r=move(l,s,id);assert.equal(r.state,s);assert.equal(r.blockedBy,by);assert.deepEqual(s,before);
 });
-test('each completed pick publishes one bag; ready Couriers drain before the next pick',()=>{
- const l=LEVELS[3];let s=move(l,initialState(l),1).state;assert.equal(s.bags.length,3);assert.equal(s.status,'playing');const lost=move(l,s,2).state;assert.equal(lost.status,'lost');assert.equal(lost.cause,'overflow');assert.equal(lost.bags.length,5);
- s=move(l,initialState(l),3).state;const t=move(l,s,1);assert.equal(t.state.bags.length,0);assert.deepEqual(t.events.filter(e=>e.kind==='serve').map(e=>e.source),['queue','bags','queue','bags','queue','bags']);
+test('all four arrow rays inspect every cell to the edge, including gaps',()=>{
+ const l={cols:5,rows:5,cars:[]};for(const dir of Object.keys(DIRECTIONS)){
+  const c={id:13,x:2,y:2,dir};l.cars[12]=c;const ray=rayIds(l,c);assert.equal(ray.length,2);
+  assert.equal(blocker(l,{yard:[13,ray[1]]},13),ray[1]);assert.equal(blocker(l,{yard:[13]},13),null);
+ }
 });
-test('Memory reveals four more without serving and release costs one move',()=>{
- const l=LEVELS[5],s=initialState(l);assert.equal(visibleOrders(l,s).length,4);const parked=move(l,s,2).state;assert.equal(visibleOrders(l,parked).length,7);assert.equal(parked.served,0);assert.equal(parked.bay.filter(Boolean).length,1);const released=move(l,parked,2).state;assert.equal(visibleOrders(l,released).length,4);assert.equal(released.moves,2);assert.equal(released.bay.filter(Boolean).length,0);
+test('car identifiers above 32 and 64 remain independent',()=>{
+ const l=LEVELS.at(-1);let s=initialState(l);
+ for(const id of solve(l).path){const before=[...s.yard];s=move(l,s,id).state;assert.deepEqual(s.yard,before.filter(n=>n!==id));}
+ assert.equal(s.moves,72);assert.equal(s.yard.length,0);
 });
-test('locks open on departure, not on parking',()=>{
- const l=LEVELS[6];let s=initialState(l);assert.equal(locked(l,s,4),true);assert.match(move(l,s,4).error,/Inventory.*finish/);s=move(l,s,2).state;assert.equal(locked(l,s,4),true);s=move(l,s,3).state;assert.equal(locked(l,s,4),false);assert.ok(legalMoves(l,s).includes(4));
+test('cleared cars cannot be released twice and wins reject further taps',()=>{
+ const l=LEVELS[0],id=legalMoves(l,initialState(l))[0],r=move(l,initialState(l),id);
+ assert.ok(move(l,r.state,id).error);let s=initialState(l);for(const n of solve(l).path)s=move(l,s,n).state;assert.ok(move(l,s,1).error);
 });
-test('a striped order returns exactly once and a retried pick does not duplicate a bag',()=>{
- const l=LEVELS[7],t=move(l,initialState(l),1);assert.equal(t.state.queue.at(-1).id,1);assert.equal(t.state.queue.at(-1).retry,false);assert.equal(t.events.filter(e=>e.retry).length,1);
- const final=LEVELS[9];let s=initialState(final),retry=0,produced=0;for(const id of solve(final).path){const t=move(final,s,id);retry+=t.events.filter(e=>e.retry).length;produced+=t.events.filter(e=>e.produced).length;s=t.state;}assert.equal(retry,1);assert.equal(produced,8);
+test('generation has no random global source and rejects malformed authored layouts',()=>{
+ assert.deepEqual(generateYard(4,4,15),generateYard(4,4,15));assert.notDeepEqual(generateYard(4,4,15),generateYard(4,4,16));
+ for(const change of [{cars:[]},{witness:[]},{cars:LEVELS[0].cars.map((c,i)=>i?c:{...c,capacity:3})}])assert.throws(()=>validateLevel({...LEVELS[0],...change}));
 });
-test('every reachable playing state has a legal next decision; BFS does not hide deadlocks',()=>{
- for(const l of LEVELS){const states=[initialState(l)],seen=new Set();for(let n=0;n<states.length;n++){const s=states[n],key=JSON.stringify(s);if(seen.has(key))continue;seen.add(key);if(s.status!=='playing')continue;const choices=legalMoves(l,s);assert.ok(choices.length,l.title);for(const id of choices)states.push(move(l,s,id,{trace:false}).state);assert.ok(seen.size<100000);}}
+test('blocked taps, hints and successful releases persist as distinct actions',()=>{
+ const l=LEVELS[0];let a=newAttempt(l),bad=legalMoves(l,a.state)[0]===1?2:1;
+ a=takeTurn(l,a,bad).attempt;assert.equal(a.mistakes,1);assert.equal(a.state.moves,0);
+ a=useHint(a);a=takeTurn(l,a,legalMoves(l,a.state)[0]).attempt;
+ const saved=restoreProgress(serializeProgress(0,Array(10).fill(0),a));assert.deepEqual(saved.attempt,a);
 });
-test('Undo is capped at three, retains spent moves, lowers stars and cannot refund an exhausted budget',()=>{
- const l={...LEVELS[0],budget:10};let a=newAttempt(l);for(let n=0;n<3;n++){a=takeTurn(l,a,1).attempt;a=undoTurn(l,a);assert.equal(a.undos,n+1);}assert.equal(a.state.moves,3);a=takeTurn(l,a,1).attempt;assert.equal(undoTurn(l,a),null);assert.equal(rating(l,l.par,1),1);assert.equal(rating(l,l.par+1,0),2);
- const tight=LEVELS[0];let b=newAttempt(tight);for(let n=0;n<3;n++){b=takeTurn(tight,b,1).attempt;b=undoTurn(tight,b);}b=takeTurn(tight,b,1).attempt;b=takeTurn(tight,b,2).attempt;assert.equal(b.state.cause,'moves');assert.equal(undoTurn(tight,b),null);
+test('Undo restores the exact car and stops after three uses',()=>{
+ const l=LEVELS[0];let a=newAttempt(l);
+ for(let i=0;i<3;i++){const before=copyState(a.state);a=takeTurn(l,a,legalMoves(l,a.state)[0]).attempt;a=undoTurn(l,a);assert.deepEqual(a.state,before);}
+ a=takeTurn(l,a,legalMoves(l,a.state)[0]).attempt;assert.equal(undoTurn(l,a),null);assert.equal(a.undos,3);
 });
-test('progress restores active turns, losses, wins, Undo history and best stars',()=>{
- for(const index of [0,2,5,9]){const l=LEVELS[index],stars=LEVELS.map((_,i)=>i<index?3:0);let a=newAttempt(l);for(const id of solve(l).path)a=takeTurn(l,a,id).attempt;const restored=restoreProgress(serializeProgress(index,stars,a));assert.equal(restored.level,index);assert.deepEqual(restored.attempt,a);assert.equal(restored.stars[index],3);}
- let a=newAttempt(LEVELS[2]);for(const id of [1,2])a=takeTurn(LEVELS[2],a,id).attempt;assert.equal(a.state.status,'lost');const restore=restoreProgress(serializeProgress(2,[3,3,0,0,0,0,0,0,0,0],a));assert.deepEqual(restore.attempt,a);assert.equal(undoTurn(LEVELS[2],restore.attempt).state.status,'playing');
+test('new campaign saves do not reuse old coordination stars or mutate the old key',()=>{
+ assert.equal(SAVE_KEY,'portfolio.order-flow.packed-v1');
+ assert.equal(restoreProgress(JSON.stringify({version:1,level:9,stars:Array(10).fill(3),actions:[]})).level,0);
 });
-test('bad or obsolete saves fall back safely; reducers never mutate caller state',()=>{
- for(const raw of [null,'{','{}','{"version":1,"level":99}','{"version":1,"level":2,"stars":[3]}'])assert.equal(restoreProgress(raw).level,0);
- for(const l of LEVELS){const state=initialState(l),old=copyState(state);const id=legalMoves(l,state)[0];assert.deepEqual(move(l,state,id),move(l,state,id));assert.deepEqual(state,old);}
+test('invalid, corrupted or impossible action histories restart safely',()=>{
+ for(const raw of ['{bad',null,JSON.stringify({version:2,level:9,stars:Array(10).fill(0),actions:[]}),JSON.stringify({version:2,level:0,stars:Array(10).fill(0),actions:[{tap:900}]}),JSON.stringify({version:2,level:0,stars:Array(10).fill(0),actions:[{undo:true}]})])assert.equal(restoreProgress(raw).attempt.state.moves,0);
+});
+test('a completed yard restores its best stars and clear state',()=>{
+ const l=LEVELS[0];let a=newAttempt(l);for(const id of solve(l).path)a=takeTurn(l,a,id).attempt;
+ const p=restoreProgress(serializeProgress(0,Array(10).fill(0),a));assert.equal(p.attempt.state.status,'won');assert.equal(p.stars[0],3);
+});
+test('stars reward careful reading and explicitly account for help and Undo',()=>{
+ assert.equal(rating({mistakes:0,hints:0,undos:0}),3);assert.equal(rating({mistakes:1,hints:0,undos:0}),2);assert.equal(rating({mistakes:0,hints:1,undos:0}),2);
+ assert.equal(rating({mistakes:3,hints:0,undos:0}),1);assert.equal(rating({mistakes:0,hints:2,undos:0}),1);assert.equal(rating({mistakes:0,hints:0,undos:1}),1);
 });
 
