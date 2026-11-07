@@ -1,40 +1,37 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {LEVELS,initialState,move,legalMoves,solve,rayIds} from '../public/play/games/order-flow-model.mjs';
+import {LEVELS,initialState,move,legalMoves,solveBFS,stateKey} from '../public/play/games/order-flow-model.mjs';
 import {PROOFS} from '../public/play/games/order-flow-proof-data.mjs';
-import {inspectPosition,nextMoveHint,verifyCertificate,levelSignature} from '../public/play/games/order-flow-proof.mjs';
-import {buildProofs,serializeProofs} from '../scripts/build-order-flow-proof.mjs';
-test('compact dependency certificates exactly match regeneration',()=>{
+import {inspectPosition,nextMoveHint,verifyCertificate,validState} from '../public/play/games/order-flow-proof.mjs';
+import {buildProofs,serializeProofs,buildCertificate} from '../scripts/build-order-flow-proof.mjs';
+test('the complete yard/queue/parking proof exactly matches regeneration',()=>{
  const p=buildProofs();assert.equal(readFileSync(new URL('../public/play/games/order-flow-proof-data.mjs',import.meta.url),'utf8').replaceAll('\r',''),serializeProofs(p));
- assert.ok(p.every((c,i)=>verifyCertificate(LEVELS[i],c)));assert.equal(Math.max(...p.map(c=>c.depth)),34);
 });
-test('every dependency is ranked earlier: the proof covers every remaining subset, not only one route',()=>{
- for(const l of LEVELS){const c=PROOFS[l.index],rank=new Map(c.order.map((id,i)=>[id,i]));
-  for(const car of l.cars)for(const blocker of rayIds(l,car))assert.ok(rank.get(blocker)<rank.get(car.id));
- }
+test('every reachable edge and terminal outcome is verified for all ten levels',()=>{
+ for(const l of LEVELS)assert.equal(verifyCertificate(l,PROOFS[l.index]),true);
 });
-test('every reachable position on the first yard is solvable and every legal removal stays solvable',()=>{
+test('the certificate agrees with independent BFS from every position on the tutorial',()=>{
  const l=LEVELS[0],seen=new Set(),todo=[initialState(l)];
- for(let i=0;i<todo.length;i++){const s=todo[i],key=s.yard.join(',');if(seen.has(key))continue;seen.add(key);
-  assert.equal(inspectPosition(l,s).minimum,s.yard.length);assert.equal(solve(l,s).moves,s.yard.length);
-  for(const id of legalMoves(l,s))todo.push(move(l,s,id).state);
+ for(let i=0;i<todo.length;i++){const s=todo[i],key=stateKey(s);if(seen.has(key))continue;seen.add(key);
+  const bfs=solveBFS(l,s),proof=inspectPosition(l,s);assert.equal(proof.kind,bfs?(s.status==='won'?'won':'solvable'):'dead-end');
+  if(bfs)assert.equal(proof.minimum,bfs.moves);for(const id of legalMoves(l,s))todo.push(move(l,s,id).state);
  }
- assert.ok(seen.size>l.cars.length);
+ assert.equal(seen.size,Object.keys(PROOFS[0].policy).length);
 });
-test('the largest yard remains solvable under several different legal removal orders',()=>{
- const l=LEVELS.at(-1);
- for(let policy=0;policy<8;policy++){let s=initialState(l);while(s.yard.length){const options=legalMoves(l,s),id=options[(s.moves*7+policy)%options.length];assert.ok(id);s=move(l,s,id).state;assert.equal(inspectPosition(l,s).minimum,s.yard.length);}assert.equal(s.status,'won');}
+test('every campaign has genuinely losing queue/parking choices despite an acyclic yard',()=>{
+ for(const l of LEVELS)assert.ok(Object.values(PROOFS[l.index].policy).some(v=>v===-1));
 });
-test('cycles, reordered certificates and definition drift cannot claim verification',()=>{
- const l=LEVELS[0],c=PROOFS[0];assert.equal(verifyCertificate(l,{...c,order:[...c.order].reverse()}),false);
- assert.equal(verifyCertificate({...l,cols:99},c),false);assert.equal(inspectPosition({...l,cols:99},initialState(l)).kind,'unknown');
- const cycle={cols:2,rows:1,cars:[{id:1,x:0,y:0,dir:'right'},{id:2,x:1,y:0,dir:'left'}]};
- assert.equal(verifyCertificate(cycle,{signature:levelSignature(cycle),order:[1,2]}),false);
+test('safe hints lead through the real queue and parking all the way to a win',()=>{
+ for(const l of LEVELS){let s=initialState(l);while(s.status==='playing'){const h=nextMoveHint(l,s);assert.ok(legalMoves(l,s).includes(h.id));s=move(l,s,h.id).state;}assert.equal(s.status,'won');assert.equal(s.cursor,l.queue.length);assert.equal(nextMoveHint(l,s),null);}
 });
-test('duplicate and invalid car identities fail closed',()=>{
- const l=LEVELS[0];for(const yard of [[1,1],[999],[-1]])assert.equal(inspectPosition(l,{...initialState(l),yard}).kind,'unknown');
+test('definition drift, incomplete certificates and incorrect policies fail closed',()=>{
+ const l=LEVELS[0],p=PROOFS[0];assert.equal(verifyCertificate({...l,slots:4},p),false);assert.equal(inspectPosition({...l,queue:[...l.queue].reverse()},initialState(l)).kind,'unknown');
+ const policy={...p.policy};delete policy[Object.keys(policy)[0]];assert.equal(verifyCertificate(l,{...p,policy}),false);
+ assert.equal(verifyCertificate(l,{...p,policy:{...p.policy,[stateKey(initialState(l))]:-1}}),false);
+ assert.throws(()=>buildCertificate(l,{limit:1}),/incomplete proof/);
 });
-test('hints only identify currently legal cars and disappear after a win',()=>{
- for(const l of LEVELS){let s=initialState(l);while(s.yard.length){const h=nextMoveHint(l,s);assert.ok(legalMoves(l,s).includes(h.id));s=move(l,s,h.id).state;}assert.equal(nextMoveHint(l,s),null);}
+test('malformed parking, queue and car identities cannot claim a solution',()=>{
+ const l=LEVELS[0],s=initialState(l);
+ for(const bad of [{...s,yard:[1,1]},{...s,yard:[999]},{...s,cursor:1},{...s,bay:[{id:1,left:2},null,null]},{...s,moves:8},{...s,status:'won'}]){assert.equal(validState(l,bad),false);assert.equal(inspectPosition(l,bad).kind,'unknown');}
 });
