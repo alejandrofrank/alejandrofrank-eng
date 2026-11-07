@@ -3,16 +3,17 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {build} from 'esbuild';
 import {Window} from 'happy-dom';
-import {LEVELS,solve,legalMoves,blocker,initialState,move,stateKey} from '../public/play/games/order-flow-model.mjs';
+import {LEVELS,SKILLS,solve,legalMoves,blocker,initialState,move,stateKey,isIncognito} from '../public/play/games/order-flow-model.mjs';
 import {inspectPosition} from '../public/play/games/order-flow-proof.mjs';
 import {SAVE_KEY} from '../public/play/games/order-flow-progress.mjs';
 import {initOrderFlowGame} from '../public/play/games/order-flow.mjs';
 const {outputFiles}=await build({entryPoints:['src/play/games/order-flow.ts'],bundle:true,write:false,platform:'node',format:'esm'});
 const {renderOrderFlowGame,orderFlowStyles}=await import('data:text/javascript;base64,'+Buffer.from(outputFiles[0].contents).toString('base64'));
-async function fixture({reduce=true,index=0,save=null,noStorage=false,compact=false}={}){
+async function fixture({reduce=true,index=0,save=null,noStorage=false,compact=false,now=1000000}={}){
+ const originalNow=Date.now;let wallClock=now;Date.now=()=>wallClock;
  const win=new Window({url:'https://arcade.example/play'});win.document.body.innerHTML='<section data-station-panel="madrid-delivery-sim">'+renderOrderFlowGame()+'</section>';
  if(save!==null)win.localStorage.setItem(SAVE_KEY,save);
- else if(index)win.localStorage.setItem(SAVE_KEY,JSON.stringify({version:3,level:index,stars:LEVELS.map((_,i)=>i<index?3:0),actions:[]}));
+ else if(index)win.localStorage.setItem(SAVE_KEY,JSON.stringify({version:4,level:index,stars:LEVELS.map((_,i)=>i<index?3:0),actions:[],deadline:null,timedOut:false}));
  if(noStorage)Object.defineProperty(win,'localStorage',{get(){throw Error('blocked');}});
  const media=new win.EventTarget();media.matches=reduce;const mobile=new win.EventTarget();mobile.matches=compact;win.matchMedia=q=>q.includes('reduced')?media:mobile;
  const pending=new Map();let serial=0;const previous={};
@@ -20,7 +21,7 @@ async function fixture({reduce=true,index=0,save=null,noStorage=false,compact=fa
  Object.assign(globalThis,{window:win,document:win.document,MutationObserver:win.MutationObserver,requestAnimationFrame:fn=>{pending.set(++serial,fn);return serial;},cancelAnimationFrame:id=>pending.delete(id)});
  const controller=initOrderFlowGame(),get=id=>win.document.getElementById('of-'+id),car=id=>get('grid').querySelector('[data-car="'+id+'"]'),tap=id=>car(id).click();
  const finish=()=>{const s=controller.snapshot();for(const id of solve(LEVELS[s.level],s.state).path)tap(id);};
- return {win,media,mobile,pending,get,car,tap,finish,controller,tick:now=>{const batch=[...pending.values()];pending.clear();batch.forEach(fn=>fn(now));},save:()=>win.localStorage.getItem(SAVE_KEY),close:async()=>{controller.destroy();await win.happyDOM.close();Object.assign(globalThis,previous);}};
+ return {win,media,mobile,pending,get,car,tap,finish,controller,advanceClock:ms=>{wallClock+=ms;},tick:now=>{const batch=[...pending.values()];pending.clear();batch.forEach(fn=>fn(now));},save:()=>win.localStorage.getItem(SAVE_KEY),close:async()=>{controller.destroy();await win.happyDOM.close();Object.assign(globalThis,previous);Date.now=originalNow;}};
 }
 function losingPath(level){
  const seen=new Set(),todo=[{state:initialState(level),path:[]}];
@@ -29,9 +30,9 @@ function losingPath(level){
  }
  throw Error('Missing losing fixture');
 }
-test('all ten packed boards complete with an empty queue and bay through the shipped controls',async()=>{
- const f=await fixture();try{for(let i=0;i<10;i++){
-  assert.equal(f.controller.snapshot().level,i);assert.equal(f.get('grid').children.length,LEVELS[i].cars.length);assert.equal(f.get('bay').children.length,3);
+test('all twenty packed boards complete with an empty queue and bay through the shipped controls',async()=>{
+ const f=await fixture();try{for(let i=0;i<LEVELS.length;i++){
+  assert.equal(f.controller.snapshot().level,i);assert.equal(f.get('grid').children.length,LEVELS[i].cars.length);assert.equal(f.get('bay').children.length,LEVELS[i].slots);
   f.finish();assert.equal(f.get('result').hidden,false);assert.equal(f.get('stars').getAttribute('aria-label'),'3 of 3 stars');assert.equal(f.get('passengers').children.length,0);
   assert.equal(f.controller.snapshot().state.bay.filter(Boolean).length,0);assert.equal(f.controller.snapshot().stars[i],3);assert.equal(f.get('real-note').textContent,LEVELS[i].note);
   assert.ok(f.get('real').href.includes('agent='+LEVELS[i].agent));f.get('next').click();
@@ -113,7 +114,7 @@ test('level selection only exposes earned levels and preserves best stars on Ret
   f.get('level').click();f.get('level-list').children[0].click();f.finish();f.get('again').click();assert.equal(f.controller.snapshot().state.yard.length,16);assert.equal(f.controller.snapshot().stars[0],3);
  }finally{await f.close();}
 });
-test('storage failure does not prevent play; compact controls, quiet sound and no clock remain',async()=>{
+test('storage failure does not prevent play; early levels remain untimed with compact controls and quiet sound',async()=>{
  const f=await fixture({noStorage:true,compact:true,save:'{bad'});try{const before=f.controller.snapshot();f.tick(10000);assert.deepEqual(f.controller.snapshot(),before);assert.match(f.get('saved').textContent,/cannot be saved/);
   assert.equal(f.get('tools').open,false);assert.equal(f.get('sound').getAttribute('aria-pressed'),'false');f.mobile.matches=false;f.mobile.dispatchEvent(new f.win.Event('change'));assert.equal(f.get('tools').open,true);f.finish();
  }finally{await f.close();}
@@ -127,4 +128,62 @@ test('one passenger queue and parking remain without Memory, handoff bags or cap
  const html=renderOrderFlowGame(),js=readFileSync(new URL('../public/play/games/order-flow.mjs',import.meta.url),'utf8');
  assert.match(html,/id="of-passengers"/);assert.match(html,/id="of-bay"/);assert.doesNotMatch(html,/of-handoff|of-memory|of-release|<select|Run shift/);
  assert.doesNotMatch(js,/setInterval|setTimeout|fetch\(/);assert.match(html,/Bus Traffic Fever/);assert.match(html,/no AI\/GCP calls/);assert.match(orderFlowStyles,/prefers-reduced-motion/);
+});
+
+test('incognito cars conceal colors and accessible names until unblocked, then Undo hides them again',async()=>{
+ const l=LEVELS[5],f=await fixture({index:5});try{
+  let revealed=false;
+  for(const id of l.witness){const before=f.controller.snapshot().state,hidden=before.yard.filter(n=>isIncognito(l,before,n));
+   for(const n of hidden){assert.match(f.car(n).getAttribute('aria-label'),/^Hidden-color car/);assert.equal(f.car(n).style.getPropertyValue('--car'),'#626b68');assert.doesNotMatch(f.car(n).outerHTML,new RegExp(SKILLS[l.cars[n-1].skill].name));}
+   f.tap(id);const after=f.controller.snapshot().state,newlyVisible=hidden.filter(n=>!isIncognito(l,after,n));
+   if(newlyVisible.length){const n=newlyVisible[0];assert.match(f.car(n).getAttribute('aria-label'),new RegExp('^'+SKILLS[l.cars[n-1].skill].name));assert.equal(f.car(n).classList.contains('is-incognito'),false);
+    f.get('undo').click();assert.equal(f.car(n).classList.contains('is-incognito'),true);revealed=true;break;}
+  }
+  assert.equal(revealed,true);
+ }finally{await f.close();}
+});
+
+test('hidden queue never renders future passenger colors or accessibility labels',async()=>{
+ for(const index of [5,6,12,19]){const f=await fixture({index});try{const l=LEVELS[index];
+  for(const id of l.witness.slice(0,12)){const s=f.controller.snapshot().state,people=f.get('passengers').children;
+   assert.equal(people.length,l.hiddenQueue?1:l.queue.length-s.cursor);assert.equal(f.get('concealed').hidden,!l.hiddenQueue);
+   if(l.hiddenQueue){assert.equal(people[0].title,SKILLS[l.queue[s.cursor]].name);assert.doesNotMatch(f.get('passengers').outerHTML,/Passenger 2:/);}
+   f.tap(id);
+  }
+ }finally{await f.close();}}
+});
+
+test('countdown uses the same frame loop, updates without rebuilding the grid and expires with reduced motion',async()=>{
+ const l=LEVELS[12],f=await fixture({index:12});try{
+  assert.equal(f.get('timer').hidden,false);assert.equal(f.get('timer').textContent,'Time 5:00');assert.equal(f.pending.size,0);
+  f.tap(l.witness[0]);assert.equal(f.pending.size,1);const passenger=f.get('passengers').firstElementChild;
+  f.advanceClock(1000);f.tick(1000);assert.equal(f.get('timer').textContent,'Time 4:59');assert.equal(f.get('passengers').firstElementChild,passenger);assert.equal(f.pending.size,1);
+  f.advanceClock(299000);f.tick(300000);assert.equal(f.get('loss').hidden,false);assert.equal(f.get('loss-title').textContent,'Time is up');assert.equal(f.get('loss-undo').hidden,true);assert.equal(f.pending.size,0);
+  const moves=f.controller.snapshot().state.moves;f.tap(l.witness[1]);assert.equal(f.controller.snapshot().state.moves,moves);
+  f.get('loss-retry').click();assert.equal(f.get('loss').hidden,true);assert.equal(f.get('timer').textContent,'Time 5:00');assert.equal(f.controller.snapshot().deadline,null);
+ }finally{await f.close();}
+});
+
+test('countdown survives closing the cabinet and reload, and cannot be extended by Undo',async()=>{
+ const l=LEVELS[12];let saved;let f=await fixture({index:12});try{
+  f.tap(l.witness[0]);const deadline=f.controller.snapshot().deadline;f.advanceClock(1000);f.get('undo').click();assert.equal(f.controller.snapshot().deadline,deadline);
+  f.advanceClock(1000);saved=f.save();
+ }finally{await f.close();}
+ f=await fixture({save:saved,now:1003000});try{assert.equal(f.get('timer').textContent,'Time 4:57');const panel=f.get('grid').closest('[data-station-panel]');panel.hidden=true;await Promise.resolve();f.tick(100);assert.equal(f.pending.size,0);
+  f.advanceClock(300000);panel.hidden=false;await Promise.resolve();f.win.document.dispatchEvent(new f.win.Event('visibilitychange'));assert.equal(f.get('loss-title').textContent,'Time is up');assert.equal(f.get('loss').hidden,false);
+ }finally{await f.close();}
+});
+
+test('legacy campaign progress unlocks level eleven and the new campaign has twenty selectable levels',async()=>{
+ const f=await fixture({save:JSON.stringify({version:3,level:9,stars:Array(10).fill(3),actions:[]})});try{
+  f.get('level').click();assert.equal(f.get('level-list').children.length,20);assert.equal(f.get('level-list').children[10].disabled,false);assert.equal(f.get('level-list').children[11].disabled,true);
+  f.get('level-list').children[10].click();assert.equal(f.controller.snapshot().level,10);assert.equal(f.get('level').textContent,'11 / 20');
+ }finally{await f.close();}
+});
+
+test('final two levels combine two parking spaces, hidden colors, hidden queue and a timer',async()=>{
+ for(const index of [18,19]){const f=await fixture({index});try{
+  assert.equal(f.get('bay').children.length,2);assert.ok(f.get('grid').querySelector('.is-incognito'));assert.equal(f.get('passengers').children.length,1);assert.equal(f.get('timer').hidden,false);
+  f.finish();assert.equal(f.get('result').hidden,false);if(index===19)assert.equal(f.get('result-title').textContent,'All 20 yards cleared!');
+ }finally{await f.close();}}
 });

@@ -37,6 +37,16 @@ const stages=[
  [7,8,50,'Unravel it','Trace the chain before choosing a car.','fulfillment','Agents share completion signals so dependent work can proceed.'],
  [8,8,190,'A packed house','Find the next opening in the full grid.','dispatcher','Coordination is about dependencies, not just individual decisions.'],
  [8,9,97,'The whole chain','Clear all 72 cars, one dependency at a time.','dispatcher','The real system coordinates dependencies, queued tasks and limited agent capacity.'],
+ [8,9,356,'Under cover','Open a path to discover its color.','inventory','Agents learn new facts when upstream work completes.'],
+ [8,9,368,'One at a time','Only the front passenger is visible.','dispatcher','The next queued task can change which worker is useful.'],
+ [8,9,385,'On the clock','The countdown starts with your first car.','fulfillment','Work has to finish before its deadline, not just in the right order.'],
+ [8,9,428,'Quick decisions','Read the arrows before you start.','dispatcher','Limited information makes coordinating available workers harder.'],
+ [8,9,470,'Hidden chain','Uncover the next useful color.','inventory','Inventory checks reveal information other agents need.'],
+ [8,9,478,'Keep it moving','Free parking before it fills.','courier','A completed handoff frees capacity for the next task.'],
+ [8,9,582,'Against the clock','The queue stays hidden as time runs down.','fulfillment','A deadline adds pressure to dependencies and queue ordering.'],
+ [8,9,596,'Last three spaces','Use every opening carefully.','dispatcher','Good coordination uses limited capacity on the work that can progress.'],
+ [8,9,302,'Two spaces','One parking space is closed.','dispatcher','Reducing worker concurrency leaves less room for waiting tasks.'],
+ [8,9,305,'Final call','Two spaces. Hidden colors. One deadline.','dispatcher','Dependencies, partial information and deadlines all compete for the same capacity.'],
 ];
 export function generatePuzzle(cols,rows,seed,{slots=3,wave=3}={}){
  if(!Number.isInteger(cols)||!Number.isInteger(rows)||cols<2||rows<2||cols>12||rows>12||!Number.isInteger(seed))throw Error('Use a 2–12 by 2–12 grid and an integer seed');
@@ -51,7 +61,12 @@ export function generatePuzzle(cols,rows,seed,{slots=3,wave=3}={}){
  }
  return {cols,rows,seed,slots,wave,queue,...yard};
 }
-export const LEVELS=stages.map(([cols,rows,seed,title,caption,agent,note],index)=>({id:'boarding-'+(index+1),index,title,caption:index?'Clear the path. Keep room for the next color.':'Match the front passenger. Each car seats two.',agent,note,...generatePuzzle(cols,rows,seed,{wave:index?3:2})}));
+export const LEVELS=stages.map(([cols,rows,seed,title,caption,agent,note],index)=>{
+ const slots=index>=18?2:3,puzzle=generatePuzzle(cols,rows,seed,{slots,wave:index?slots:2});
+ return {id:'boarding-'+(index+1),index,title,caption:index===0?'Match the front passenger. Each car seats two.':index===5?'Gray cars reveal their color when their exit path clears.':index===6?'From here, only the front passenger is visible.':index>=10?caption:'Clear the path. Keep room for the next color.',agent,note,...puzzle,
+  incognito:index<5?[]:puzzle.cars.filter(c=>(Math.imul(c.id,17)+seed)%5<(index<10?2:3)).map(c=>c.id),
+  hiddenQueue:index>=6,timeLimitSeconds:index>=12?[300,285,270,255,240,225,240,210][index-12]:null};
+});
 export const initialState=level=>({yard:level.cars.map(c=>c.id),bay:Array(level.slots).fill(null),cursor:0,moves:0,status:'playing'});
 export const copyState=s=>({...s,yard:[...s.yard],bay:s.bay.map(c=>c?{...c}:null)});
 export const inYard=(s,id)=>s.yard.includes(id);
@@ -59,6 +74,8 @@ export function blocker(level,s,id){
  const car=level.cars[id-1];if(!car||!inYard(s,id))return null;
  return rayIds(level,car).find(n=>inYard(s,n))??null;
 }
+export const isIncognito=(level,s,id)=>level.incognito?.includes(id)&&inYard(s,id)&&blocker(level,s,id)!==null;
+export const visiblePassengers=(level,s)=>level.queue.slice(s.cursor,level.hiddenQueue?s.cursor+1:undefined);
 export function legalMoves(level,s){return s.status==='playing'&&s.bay.includes(null)?s.yard.filter(id=>blocker(level,s,id)===null):[];}
 export function move(level,previous,id){
  if(previous.status!=='playing'||!inYard(previous,id))return {state:previous,error:'That car has already left.'};
@@ -94,8 +111,8 @@ export function stateKey(s){
  return mask.toString(36)+'|'+s.cursor.toString(36)+'|'+s.bay.map(c=>c?(c.id*2+c.left-1).toString(36):'-').join('.');
 }
 // DFS with memoization is exact (all actions remove one yard car). A cap throws,
-// never converts an unfinished search to "unsolvable". Browser input uses the
-// generated full-state certificate instead.
+// never converts an unfinished search to "unsolvable". The optional browser Hint
+// uses the generated full-state certificate; normal taps do not consult it.
 export function solve(level,start=initialState(level),limit=250000){
  const failed=new Set();let visited=0;
  const visit=s=>{

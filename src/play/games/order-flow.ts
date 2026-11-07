@@ -1,8 +1,8 @@
 export function renderOrderFlowGame(): string {
  return `<section id="order-flow-game" aria-label="Order Flow puzzle" hidden>
-  <header class="of-heading"><button id="of-exit" type="button" aria-label="Back to arcade">Back</button><div class="of-title-group"><h3 id="of-title">Find the opening</h3><p id="of-caption">Match the front passenger. Each car seats two.</p></div><button id="of-undo" type="button" disabled>Undo 3</button><details id="of-tools"><summary aria-label="More puzzle controls"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="4" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="20" cy="12" r="2"/></svg></summary><div class="of-actions"><button id="of-replay" type="button">Retry</button><button id="of-hint" type="button" title="Show a move with a complete queue and parking solution. A hint changes the best rating to two stars.">Hint</button><button id="of-sound" type="button" aria-pressed="false">Sound off</button></div></details><button id="of-level" type="button" aria-label="Choose level">1 / 10</button></header>
-  <p id="of-message" role="status" aria-live="polite" aria-atomic="true">Match the front color. Each car seats two.</p>
-  <section class="of-queue" aria-label="Passenger queue"><div><strong id="of-front">Front · Picker</strong><span id="of-waiting">32 waiting</span></div><ol id="of-passengers" aria-label="Passengers in service order"></ol></section>
+  <header class="of-heading"><button id="of-exit" type="button" aria-label="Back to arcade">Back</button><div class="of-title-group"><h3 id="of-title">Find the opening</h3><p id="of-caption">Match the front passenger. Each car seats two.</p></div><button id="of-undo" type="button" disabled>Undo 3</button><details id="of-tools"><summary aria-label="More puzzle controls"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="4" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="20" cy="12" r="2"/></svg></summary><div class="of-actions"><button id="of-replay" type="button">Retry</button><button id="of-hint" type="button" title="Show a move with a complete queue and parking solution. A hint changes the best rating to two stars.">Hint</button><button id="of-sound" type="button" aria-pressed="false">Sound off</button></div></details><button id="of-level" type="button" aria-label="Choose level">1 / 20</button></header>
+  <div class="of-status-row"><p id="of-message" role="status" aria-live="polite" aria-atomic="true">Match the front color. Each car seats two.</p><span id="of-timer" role="timer" aria-live="off" hidden></span></div>
+  <section class="of-queue" aria-label="Passenger queue"><div><strong id="of-front">Front · Picker</strong><span id="of-waiting">32 waiting</span></div><ol id="of-passengers" aria-label="Passengers in service order"></ol><span id="of-concealed" hidden>Next passengers hidden</span></section>
   <section class="of-parking" aria-label="Parking bay"><div class="of-bay-label"><strong>Parking</strong><span id="of-bay-count">0 / 3</span></div><div id="of-bay" aria-label="Parking spaces"></div></section>
   <div class="of-yard-viewport"><div id="of-grid" class="of-grid" role="group" aria-label="Packed yard"></div></div>
   <div class="of-summary"><span id="of-remaining">16 / 16 cars in yard</span><span id="of-score">0 blocked · 0 hints</span><span>3 stars: no hints, blocked taps or undo.</span></div>
@@ -45,10 +45,14 @@ export const orderFlowStyles = `
 #of-tools>.of-actions{display:flex}
 #of-remaining{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
 #of-message{margin:0;min-height:21px;font-size:14px;color:#5c4632}
+.of-status-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:24px}
+#of-timer{flex-shrink:0;font-size:14px;font-weight:750;font-variant-numeric:tabular-nums;padding:2px 7px;border:1px solid var(--of-rim);border-radius:7px;color:var(--of-ink);background:var(--of-card)}
+#of-timer.is-low{color:#8a2919;border-color:#a5482e;background:#ffeadf}
 .of-yard-viewport{max-width:100%;overflow:auto;padding:6px 2px 10px;scrollbar-color:#947147 #f3e2c4}
 .of-grid{display:grid;grid-template-columns:repeat(var(--cols),var(--cell));grid-template-rows:repeat(var(--rows),var(--cell));width:max-content;margin-inline:auto;position:relative;isolation:isolate;border:3px solid #a17d4d;border-radius:10px;background:#dec69e;box-shadow:0 5px 12px #69482629}
 #order-flow-game .of-car{display:grid;place-items:center;position:relative;width:var(--cell);height:var(--cell);min-height:44px;padding:0;margin:0;border:1px solid #f3e2c4;border-radius:7px;background:var(--car);color:#fffaf3;box-shadow:inset 0 2px 0 #ffffff3b,inset 0 -3px 0 #00000026;opacity:1}
 .of-car svg{width:100%;height:100%;rotate:var(--angle);pointer-events:none}
+#order-flow-game .of-car.is-incognito{box-shadow:inset 0 2px 0 #ffffff2e,inset 0 -3px 0 #00000030}
 .of-direction{fill:none;stroke:#fffaf3;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
 #order-flow-game .of-car:hover:not(:disabled){filter:brightness(1.1)}
 #order-flow-game .of-car:focus-visible{z-index:3;outline:3px solid #fff8ee;outline-offset:-5px}
@@ -63,6 +67,8 @@ export const orderFlowStyles = `
 .of-queue{display:flex;gap:10px;align-items:center;min-width:0;padding:4px 8px;border:1px solid var(--of-rim);border-radius:12px;background:#ead6b1}
 .of-queue>div,.of-bay-label{display:flex;flex-direction:column;flex-shrink:0;font-size:14px}
 #of-passengers{display:flex;gap:5px;align-items:center;overflow-x:auto;min-width:0;flex:1;padding:3px;margin:0;list-style:none;scrollbar-width:thin;scrollbar-color:#947147 #ead6b1}
+#of-passengers.is-concealed{flex:0 0 auto;overflow:visible}
+#of-concealed{font-size:14px;color:var(--of-soft);margin-inline-start:4px}
 .of-person{flex:0 0 26px;width:26px;height:32px;color:var(--car)}
 .of-person svg{width:100%;height:100%;display:block}
 .of-person:first-child{outline:2px solid var(--of-ink);outline-offset:1px;border-radius:5px}
