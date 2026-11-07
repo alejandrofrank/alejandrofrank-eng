@@ -2,123 +2,93 @@
 
 [Play Order Flow](https://me.alejandrofranks.workers.dev/play#concept-madrid-delivery-sim).
 
-A deterministic, turn-based coordination puzzle in the Agents in GCP arcade cabinet. Original art; mechanic inspired by [Bus Traffic Fever](https://play.google.com/store/apps/details?id=jp.co.goodroid.hyper.busflow). Synthetic orders, no AI or GCP calls, no Python agents, map or real-time clock.
+A calm, deterministic puzzle about dependencies. Clear a fully packed yard of identical two-seat cars by following their arrows. Original browser art; mechanic inspired by [Bus Traffic Fever](https://play.google.com/store/apps/details?id=jp.co.goodroid.hyper.busflow). Synthetic agents, no AI or GCP calls.
 
 ## Rules
 
-Tap a bot whose arrow has a clear path. It enters the first free bay slot. Only parked bots work, and only the front order can be served. A bot's number is its remaining capacity; it leaves at zero. Colors also have skill letters and accessible names.
+Each square starts occupied. Tap a car whose arrow has an unobstructed path all the way to the edge. The car leaves; the new gap can free another car. Cars do not turn or move into other cells.
 
-- **Handoff:** a completed Picker order publishes one bag to the Courier belt. Only Couriers collect bags. That belt holds four bags; producing a fifth loses. A ready Courier collects before the next pick.
-- **Memory:** limited-view levels show the next four orders. Parking Memory reveals up to eight. It consumes a bay slot and serves nothing. Tap parked Memory again to release it for one move. The extra preview disappears.
-- **Locks:** a skill-colored lock opens after a bot of that skill finishes and departs, not merely when it parks.
-- **Retries:** a striped order returns to the back once. Its second handling uses capacity again. A retried Picker order publishes its bag only after the second handling, so the retry does not create two bags.
+Every car has the same two seats, drawn beside its central arrow. There are no capacity numbers, queue belts, parking slots, Memory/Release cars, locks, retry orders or timers. Color identifies an illustrative agent role; it does not change the rules.
 
-Finish both belts and clear all bots, including releasing Memory. A full bay with no usable worker and no Memory bot to release means **Out of slots**. A fifth bag means **Courier belt overflow**. Passing the move budget means **Out of moves**. Each has a separate cause, highlight and Retry control.
+A blocked tap leaves the board unchanged, highlights the nearest blocker and explains what to clear first. Clear every car to win. There is no dead-end loss: removing an unblocked car only opens paths. The challenge is reading long, intersecting dependency chains, not guessing which legal move will secretly lose.
 
-Three undos are available per attempt. Undo restores the board but does not refund spent moves; using it gives a one-star completion. It is unavailable after an **Out of moves** loss. Retry starts a fresh attempt. Three stars requires the BFS minimum with no Undo; other completions within budget earn two stars, or one if Undo was used. Invalid blocked/locked taps explain the issue without consuming a move.
+- **Three stars:** no blocked taps, hints or Undo.
+- **Two stars:** at most two blocked taps and one hint, without Undo.
+- **One star:** a completion with Undo, more blocked taps or more hints.
+- **Undo:** three per attempt. Retry starts the same board again.
+- **Hint:** highlights one car with a clear path; it does not move it.
 
-## Ten levels
+## Ten packed yards
 
-The first two requested tutorials introduce the basic mechanic and blocking; planning traps start at level three. Bot numbers correspond to accessible button labels.
+Every cell is occupied at the start. Fixed seeds generate the same boards on every retry.
 
-| Level | Bay | Minimum | Budget | One BFS solution |
-| --- | ---: | ---: | ---: | --- |
-| 1 · Front first | 3 | 2 | 4 | 1, 2 |
-| 2 · After you | 3 | 3 | 5 | 2, 1, 3 |
-| 3 · One spare slot | 2 | 3 | 5 | 2, 3, 1 |
-| 4 · Pass the bag | 3 | 4 | 6 | 1, 3, 2, 4 |
-| 5 · A narrow handoff | 2 | 5 | 7 | 2, 3, 4, 1, 5 |
-| 6 · Room to remember | 2 | 5 | 7 | 2, 2, 3, 4, 1 |
-| 7 · Wait for the signal | 2 | 4 | 6 | 2, 3, 4, 1 |
-| 8 · Once more | 3 | 4 | 6 | 1, 3, 4, 2 |
-| 9 · Read, unlock, hand off | 3 | 8 | 10 | 1, 2, 2, 3, 4, 6, 5, 7 |
-| 10 · Every slot counts | 3 | 10 | 11 | 1, 2, 2, 3, 4, 5, 7, 6, 8, 9 |
+| Level | Title | Grid | Cars / minimum removals | Seed | Longest blocking chain |
+| --- | --- | --- | ---: | ---: | ---: |
+| 1 | Find the opening | 4 × 4 | 16 | 67 | 13 |
+| 2 | Across the grain | 4 × 5 | 20 | 15 | 15 |
+| 3 | Inside out | 5 × 5 | 25 | 197 | 18 |
+| 4 | One way through | 5 × 6 | 30 | 30 | 24 |
+| 5 | Long chain | 6 × 6 | 36 | 139 | 21 |
+| 6 | Crossed paths | 6 × 7 | 42 | 194 | 24 |
+| 7 | Deep in the yard | 7 × 7 | 49 | 147 | 26 |
+| 8 | Unravel it | 7 × 8 | 56 | 50 | 28 |
+| 9 | A packed house | 8 × 8 | 64 | 190 | 34 |
+| 10 | The whole chain | 8 × 9 | 72 | 97 | 32 |
 
-Repeated Memory IDs mean enter, then release. The baseline greedy policy picks a free front-matching bot, otherwise the first free yard bot in authored order, and releases Memory only when no yard move remains. It loses levels 3–10. This is an explicit deterministic baseline, not a claim that every possible greedy tie-break loses.
+## Why every board is solvable
 
-## Controls and progress
+For each car, draw an edge from every car along its exit ray to that car. An edge means “this blocker must leave first.” The generator produces a clearing order; the build script verifies that every blocker appears earlier in that order. This is a topological certificate for a directed acyclic graph (DAG).
 
-Before committing a legal tap, the game checks whether the resulting position can still finish within the remaining moves. A dead-end warning offers **Keep planning** or **Play anyway**. Cancelling spends no move or Undo and clears queued intentions. The warning is advisory: deliberately continuing still permits the original losses. **Next move?** highlights one verified continuation on request; it does not play the move. Hints are optional and do not affect stars.
-
-The position reported in the 5 November play-test was level 6 after bots 2 and 3: Memory and Support occupy the bay. It remains solvable in three moves: release Memory (2), send Picker (4), then Courier (1). Parked Memory now visibly says **Release**, with the one-move cost in the status and accessible label.
-
-Use click/tap or Tab then Enter/Space. Taps during serving enter a visible FIFO queue. One animation loop displays one order hop per 150ms; input never waits for it. Hold **Hold to speed up** (pointer or keyboard) for 6× playback. Reduced motion settles immediately. There are no gameplay timers.
-
-The label, belt accessibility description, capacities and lock state are derived together from each displayed state. Departed bot elements are hidden and transient hop markers are cleared.
-
-Local storage keeps the current level, completed stars and a validated action history, including Undo. Reload reconstructs the board through the same reducer. The numbered level button opens earned levels. Corrupt saves reset safely; denied storage does not prevent play. Saving is local to this browser/device. The previous six-level campaign's different boards are not imported.
-
-The win-card explanation opens in a new tab with opener isolation. It is separated from Next level by the explanation block. Sound starts off. Other arcade games are unchanged.
-
-## Proof of solvability
-
-The certificate is generated from the actual transition rules, not hand-written solutions. Treat every reachable settled position as a graph node, and each legal bot tap as a directed edge. The current ten levels contain **903 nodes and 1,636 edges**, including losing branches. Reverse breadth-first search from all winning nodes calculates the shortest remaining distance:
+For remaining cars R, define:
 
 ```text
-d(s) = 0                                      if s is a win
-d(s) = 1 + min(d(next(s, a)))                  over legal taps a
-d(s) = infinity                               if no win is reachable
-can_finish(s) = d(s) <= move_budget - moves_spent
+free(R) = {c in R : no car in R lies along c's exit ray}
+next(R, c) = R without c, when c is in free(R)
+minimum_remaining(R) = number of cars in R
 ```
 
-The key includes yard occupancy, bay capacities, ordered tokens and retry flags, bags, departed skills, and terminal status. Spent moves are checked separately, so Undo cannot refund the budget in the proof. All edges are enumerated; exceeding the generation safety limit fails instead of certifying a partial search.
+Every nonempty induced subgraph of a DAG has an available car. Removing an available car leaves another DAG. Therefore **every legal sequence can finish**, and it takes exactly one removal per remaining car. A greedy legal-removal policy must succeed under these simpler rules; claiming otherwise would be false. Stars measure careful reading rather than a fictitious shorter solution.
 
-The browser reads the generated table, avoiding a live search during input. A test regenerates it to catch drift and compares **every reachable position** with the independent forward BFS solver. Another verifies the reported Memory position. Signature mismatches or absent positions are reported as unverified, never silently declared solvable. The claim applies to this deterministic puzzle's encoded rules, not to real AI-agent reliability.
-
-Regenerate after changing puzzle mechanics or layouts:
+The generated certificate includes each board's signature and clearing order. Tests regenerate the file, reject cycles or signature drift, and independently run BFS on all ten boards. The largest search visits 41,493 states. The browser checks the certificate without running a large search on each tap. Arrays support all 72 cars without a 32-bit occupancy limit.
 
 ```bash
 node scripts/build-order-flow-proof.mjs
 npm test
+npm run typecheck
 ```
 
-## Larger board
+## Controls, layout and saves
 
-The yard and bay are measured independently; a short bay no longer shrinks every yard bot. Roomy boards allow 132px yard bots and 112px parked bots, and order discs are 40px instead of 24px. Wide screens place the bay beside the yard below the belt; portrait retains the stacked sequence. Unused bottom rows are omitted without changing authored bot coordinates or blockers. Phone controls combine the Back action with the level header. At very short heights, scrolling preserves usable controls and the result stays in view.
+Click or tap a car. Keyboard users Tab into the grid, move focus with arrow keys and release with Enter/Space. Accessible names identify role, row, column, direction and whether the path is blocked. A blocked car remains focusable and explains its blocker.
 
-## Connection to the real system
+The model updates immediately. A single animation loop draws concurrent 180ms departures, so rapid taps do not wait for earlier animations. Geometry is read once per departure, not every frame. Reduced motion settles immediately; closing the cabinet or hiding the tab finishes the visual exits. Sound starts off.
 
-The puzzle is an analogy, not a cloud execution trace.
+The grid uses touching tiles, central arrows and two visible seat marks. Cars remain at least 44px square. Labels are at least 14px. Board dimensions respond to both viewport width and height. Short or unusually narrow windows scroll instead of clipping bottom rows or shrinking targets below the minimum. Results stay in an overlay, separate from the outbound explanation link.
 
-| Puzzle | Real project behavior | Source |
-| --- | --- | --- |
-| Bounded belts and bay | Queue capacity/backpressure and bounded work | src/delivery/queue.py; role.json limits |
-| Picker to Courier | Fulfillment emits ready/handoff events before dispatch/custody | config/agents/fulfillment/role.json |
-| Memory bot | Scoped, bounded recall available to roles; **not** a separate production agent or a literal bay slot | src/delivery/memory_profiles.py |
-| Locks | Downstream work waits for a completed handoff | fulfillment and inventory manifests |
-| Striped retry | At-least-once queue delivery with idempotent transactional effects | src/delivery/queue.py |
+Progress, best stars and a validated action history are saved under `portfolio.order-flow.packed-v1`. Reload replays the actions through the same rules. Invalid saves reset safely; blocked storage does not stop play. The previous coordination campaign's save remains untouched, but its stars are not imported into these different puzzles. The level button opens earned yards.
 
-The real memory scope includes run, store, role and context; the game only demonstrates the information-versus-capacity trade-off. The real system prevents duplicate committed picking; the game repeats handling without publishing a duplicate bag. Every win links to the relevant real agent.
+## Connection to Agents in GCP
+
+The game illustrates one idea: downstream work waits for its dependencies. For example, fulfillment must finish a bag before dispatch can hand it to a courier. Each win supplies a short example and a link to the relevant real agent, opening in a new tab.
+
+This is an analogy, not the Python agent system. The packed-yard version does not model real queues, concurrency limits, memory policy, token cost or cloud reliability.
 
 ## Source
 
 | File | Responsibility |
 | --- | --- |
-| public/play/games/order-flow-model.mjs | Ten boards, immutable rules, BFS, greedy baseline and rating |
-| public/play/games/order-flow-progress.mjs | Attempt history, limited Undo and validated save/restore |
-| public/play/games/order-flow-proof.mjs, order-flow-proof-data.mjs, order-flow-position.mjs | Position certificate, exact distance lookup and pre-move advice |
-| scripts/build-order-flow-proof.mjs, tests/order-flow-proof.test.mjs | Complete graph generation, drift gate and independent verification |
-| public/play/games/order-flow.mjs | Input queue, 150ms trace, accessibility, sound and rendering |
-| src/play/games/order-flow.ts | Cabinet-scoped board, outcomes and responsive CSS |
-| tests/order-flow-model.test.mjs | Solvability, greedy failures, handoffs, locks, retries, budgets and saves |
-| tests/order-flow-ui.test.mjs | Campaign controls, all losses, progress, queued taps and live labels |
-
-The playfield is one warm toy cabinet: chunky skill tokens, packages on a conveyor, molded bay docks and a tiled yard. Proof, the next-move hint and fast-forward sit in the More menu. Undo, Retry and sound stay on the primary row. Native buttons, 44px minimum bot targets, and labels of at least 14px. No new dependencies.
+| public/play/games/order-flow-model.mjs | Seeded layouts, immutable rules, exact solver, independent BFS and stars |
+| public/play/games/order-flow-progress.mjs | Attempt history, Undo and validated save/restore |
+| public/play/games/order-flow-proof.mjs, order-flow-proof-data.mjs | DAG certificate and position/hint verification |
+| scripts/build-order-flow-proof.mjs | Reproducible certificate generation |
+| public/play/games/order-flow.mjs | Immediate input, accessibility, sound and one animation loop |
+| src/play/games/order-flow.ts | Cabinet markup, responsive grid and outcomes |
+| tests/order-flow-{model,proof,ui}.test.mjs | Rules, proofs, complete campaigns, saves and interactions |
 
 ## Verification
 
-On 4 November 2026, all **158 repository tests** and TypeScript checking passed. The 26 dedicated Order Flow tests cover all ten solver minima, greedy losses on levels 3–10, every rule and loss, saved wins/active boards/losses, limited Undo, corrupt/denied storage, queued input (including Memory enter/release), 150ms event steps, hold acceleration, accessible belt labels, keyboard focus and removal of departed markers.
+The packed-yard revision passes **166 repository tests**, including **34 Order Flow tests**, plus TypeScript checking. Tests complete all ten levels through the actual shipped markup and controls and independently solve every board. They cover full occupancy, all four exit directions, long rays across gaps, IDs above 32 and 64, blocked feedback, Undo, hints, reloads, keyboard focus, rapid input and reduced motion.
 
-All ten levels were completed through browser controls. Level 3 was deliberately lost and retried; reload restored both that loss and a mid-level handoff. Level 6 was played on a phone-sized viewport. Level 10, its nine bot targets and final win card fit at 390×700; desktop captures use 1280×800. Bot rectangles measured at least 44×44px without overlap in the final mobile yard. The captured browser console contained no errors. These checks do not claim a universal latency measurement across devices.
+All ten yards were also completed through Chromium browser controls. A blocked tap highlighted its blocker, Retry reset the attempt, and reload restored both a partial yard and the final win. The captured console contained no errors.
 
-On 5 November 2026, the proof/enlargement update passed all **166 repository tests**, including **34 Order Flow tests**, and TypeScript checking. Browser play reproduced and completed the reported level 6 position, cancelled a prospective overflow in level 10 and finished it, and caught level 3's future dead end before the first move. Captures cover 1280×800, 753×947 and 390×700, including mobile warnings and the final win. Saved progress still restores. No console errors were captured. Independent layout review found no material clipping or overlap.
-
-One source-only Impeccable detector pass for this update returned no findings. Rendered screenshots, rather than that source scan, provide the layout evidence.
-
-On 6 November 2026, the warm cabinet's sizing was corrected without changing its art, rules, or saves. The frame is capped at 1280×960px; the conveyor uses a shorter single-row view when its orders fit. Bay and yard headings now have their own grid tracks, so the yard cannot take the full parent height and push its bottom row out of view. Phone layouts put the bay beside the yard; screens narrower than 360px retain scrolling instead of overlapping tap targets. Parked Memory keeps its Release label readable at small sizes.
-
-All 167 repository tests and TypeScript checking passed. Chromium viewport checks covered 1280×800, 1280×720, 768×800 and 390×700, including the expanded Memory preview, a cancelled overflow warning and the final level win. No console errors were captured. These were resized browser checks, not physical-device or Safari testing. The single Impeccable detector pass returned no findings.
-
-The follow-up desktop report exposed a missing case: at 840×474 CSS pixels (comparable to a zoomed desktop window), the 600px game was clipped by its shorter parent panel, so the outer scrollbar could not reach the bottom. Short viewports now size the entire panel chain from content and expose a scrollbar. The board also grows to include all yard rows when the extra courier belt is present. There is no CSS scale or browser-zoom override; readable controls take priority over forcing everything onto a short screen.
-
-The correction was checked in Chromium at 840×474, 1280×640, 1280×800, 390×600 and 390×700. Scrolling and keyboard focus reached the final row and footer; level 2 was completed and its win restored after reload. Level 10 supplied the fullest board for clipping checks. All 167 tests and TypeScript checking passed, and the browser console and Impeccable detector reported no errors/findings. The zoom case used an equivalent resized viewport, not an actual Chrome zoom setting or physical-device test.
+The 72-car grid was checked at 1280×800 and 390×700. On the phone-sized viewport, all cars remained 44px square and the full grid and footer fit without horizontal scrolling. At 840×474, scrolling and keyboard focus reached the final row and footer. These are resized browser checks, not physical-device, browser-zoom or Safari tests. The single Impeccable source-detector pass returned no findings; the browser checks caught and corrected the cabinet's scrollbar allowance separately.

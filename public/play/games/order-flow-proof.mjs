@@ -1,25 +1,19 @@
 import {PROOFS} from './order-flow-proof-data.mjs';
-import {positionKey,levelSignature} from './order-flow-position.mjs';
-import {SKILLS} from './order-flow-model.mjs';
-
+import {rayIds,legalMoves} from './order-flow-model.mjs';
+export const levelSignature=l=>JSON.stringify({cols:l.cols,rows:l.rows,cars:l.cars});
+export function verifyCertificate(level,certificate){
+ if(!certificate||certificate.signature!==levelSignature(level)||certificate.order.length!==level.cars.length||new Set(certificate.order).size!==level.cars.length)return false;
+ const ranks=new Map(certificate.order.map((id,i)=>[id,i]));
+ return level.cars.every(car=>ranks.has(car.id)&&rayIds(level,car).every(id=>ranks.get(id)<ranks.get(car.id)));
+}
 export function inspectPosition(level,state){
- const certificate=PROOFS[level.index],left=level.budget-state.moves;
- if(!certificate||certificate.signature!==levelSignature(level))return {kind:'unknown',left};
- if(state.cause==='moves')return {kind:'budget',left,minimum:null,next:[]};
- const row=certificate.positions[positionKey(state)];
- if(!row)return {kind:'unknown',left};
- const minimum=row[0];
- return {kind:minimum<0?'deadend':minimum>left?'budget':minimum===0?'won':'solvable',minimum:minimum<0?null:minimum,left,next:row.slice(1),positions:certificate.states};
+ const cert=PROOFS[level.index];
+ if(!verifyCertificate(level,cert)||new Set(state.yard).size!==state.yard.length||state.yard.some(id=>!Number.isInteger(id)||id<1||id>level.cars.length))return {kind:'unknown',minimum:null,next:[]};
+ // Every induced subgraph of a DAG is acyclic. The least-ranked remaining car
+ // has no remaining blocker, so every legal move preserves a clearing path.
+ return {kind:state.yard.length?'solvable':'won',minimum:state.yard.length,next:legalMoves(level,state)};
 }
-export function riskExplanation(level,state,proof=inspectPosition(level,state)){
- if(proof.kind==='budget')return proof.minimum===null?'This move would exceed the '+level.budget+'-move budget. Retry with a shorter plan.':'This plan needs '+proof.minimum+' more moves, but would leave only '+Math.max(0,proof.left)+'. Keep planning or Retry.';
- if(state.cause==='overflow')return 'This would add a fifth bag. Send a Courier before this Picker.';
- if(state.cause==='slots')return 'This would fill the bay with no worker for the front order. Free the needed skill first.';
- return 'This move leaves no winning path: the remaining bots cannot clear the work. Keep planning and choose a different bot.';
-}
-export function nextMoveHint(level,state,proof=inspectPosition(level,state)){
- if(proof.kind!=='solvable')return null;
- const id=proof.next[0],bot=level.bots[id-1];
- const release=bot.skill==='memory'&&state.bay.some(b=>b?.id===id);
- return {id,text:release?'Release Memory for 1 move to free a bay slot.':'Try '+SKILLS[bot.skill].name+' bot '+id+'. Its arrow has a clear path and a finish is still possible.'};
+export function nextMoveHint(level,state){
+ const proof=inspectPosition(level,state);if(proof.kind!=='solvable')return null;
+ return {id:proof.next[0],text:'The highlighted arrow has a clear path to the edge.'};
 }
