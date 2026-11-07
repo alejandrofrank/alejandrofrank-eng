@@ -21,7 +21,7 @@ export const orderFlowStyles = `
 .arcade-screen:has([data-station-panel="madrid-delivery-sim"]:not([hidden])) .screen-viewport{overflow:auto;scrollbar-gutter:stable;scrollbar-color:#947147 #f3e2c4;background:#f3e2c4}
 .arcade-screen:has([data-station-panel="madrid-delivery-sim"]:not([hidden])) :is(.station-panels,.station-panel,.console-body,.game-content){height:auto;min-height:0;max-width:none;background:#f3e2c4}
 .arcade-screen:has([data-station-panel="madrid-delivery-sim"]:not([hidden])) .station-brief{display:none}
-#order-flow-game{--of-sand:#f3e2c4;--of-ink:#3a2918;--of-soft:#6d5640;--of-rim:#c9a56c;--of-card:#fff8ee;--cols:4;--rows:4;--cell:max(44px,min(76px,calc((100dvh - 310px)/var(--rows)),calc((100vw - 46px)/var(--cols))));display:flex;flex-direction:column;gap:8px;position:relative;padding:10px 16px 12px;background:var(--of-sand);color:var(--of-ink);font:16px/1.35 var(--sans,system-ui,sans-serif);color-scheme:light}
+#order-flow-game{--of-sand:#f3e2c4;--of-ink:#3a2918;--of-soft:#6d5640;--of-rim:#c9a56c;--of-card:#fff8ee;--cols:4;--rows:4;--cell:max(44px,min(76px,calc((100dvh - 360px)/var(--rows)),calc((100vw - 46px)/var(--cols))));display:flex;flex-direction:column;gap:8px;position:relative;padding:10px 16px 12px;background:var(--of-sand);color:var(--of-ink);font:16px/1.35 var(--sans,system-ui,sans-serif);color-scheme:light}
 #order-flow-game *{box-sizing:border-box}
 #order-flow-game [hidden]{display:none!important}
 #order-flow-game :is(button,a){font:inherit;font-size:15px}
