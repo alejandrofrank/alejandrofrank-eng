@@ -1,6 +1,6 @@
 import {LEVELS,initialState,copyState,move,rating} from './order-flow-model.mjs';
 // New campaign; leave the previous campaign's stored progress untouched.
-export const SAVE_KEY='portfolio.order-flow.boarding-v1';
+export const SAVE_KEY='portfolio.order-flow.boarding-v2';
 export const newAttempt=level=>({state:initialState(level),history:[],mistakes:0,undos:0,hints:0,actions:[]});
 export function takeTurn(level,a,id){
  const result=move(level,a.state,id);

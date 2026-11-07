@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {build} from 'esbuild';
 import {Window} from 'happy-dom';
-import {LEVELS,solve,legalMoves,blocker,initialState,move,stateKey} from '../public/play/games/order-flow-model.mjs';
+import {LEVELS,SKILLS,solve,legalMoves,blocker,initialState,move,stateKey} from '../public/play/games/order-flow-model.mjs';
 import {inspectPosition} from '../public/play/games/order-flow-proof.mjs';
 import {SAVE_KEY} from '../public/play/games/order-flow-progress.mjs';
 import {initOrderFlowGame} from '../public/play/games/order-flow.mjs';
@@ -49,9 +49,12 @@ test('touching grid blocks contain only the central arrow: no numbers, seats, wh
  }assert.equal(f.get('grid').querySelectorAll('.of-cell').length,0);}finally{await f.close();}
 });
 test('a waiting car occupies parking and passenger labels always describe the real front',async()=>{
- const f=await fixture();try{f.tap(LEVELS[0].witness[0]);assert.match(f.get('bay').children[0].getAttribute('aria-label'),/Picker, 0 of two seats filled/);assert.equal(f.get('passengers').children.length,32);
-  f.tap(LEVELS[0].witness[1]);assert.equal(f.get('passengers').children.length,28);assert.equal(f.get('front').textContent,'Front · Courier');
-  assert.match(f.get('passengers').getAttribute('aria-label'),/needs Courier/);assert.equal(f.get('bay').querySelectorAll('.of-parked').length,0);
+ const f=await fixture();try{
+  const l=LEVELS[0],open=legalMoves(l,f.controller.snapshot().state),hold=open.find(id=>l.cars[id-1].skill!==l.queue[0]),clear=open.find(id=>l.cars[id-1].skill===l.queue[0]);
+  f.tap(hold);assert.match(f.get('bay').children[0].getAttribute('aria-label'),new RegExp(SKILLS[l.cars[hold-1].skill].name+', 0 of two seats filled'));assert.equal(f.get('passengers').children.length,32);
+  f.tap(clear);assert.equal(f.get('passengers').children.length,28);assert.equal(f.get('front').textContent,'Front · '+SKILLS[l.queue[4]].name);
+  assert.match(f.get('passengers').getAttribute('aria-label'),new RegExp('needs '+SKILLS[l.queue[4]].name));assert.equal(f.get('bay').querySelectorAll('.of-parked').length,0);
+  assert.ok(f.car(clear).classList.contains('is-empty'));assert.ok(f.get('grid').querySelector('.is-ready'));
  }finally{await f.close();}
 });
 test('rapid legal taps commit immediately and share one nonblocking animation loop',async()=>{
@@ -99,8 +102,10 @@ test('keyboard arrows navigate spatially; departed cars leave the focus order',a
  }finally{await f.close();}
 });
 test('progress restores a parked car, the passenger front and the final win without leaving the page',async()=>{
- let saved;let f=await fixture();try{f.tap(LEVELS[0].witness[0]);saved=f.save();}finally{await f.close();}
- f=await fixture({save:saved});try{assert.equal(f.controller.snapshot().state.bay[0].id,LEVELS[0].witness[0]);assert.equal(f.get('waiting').textContent,'32 waiting');f.finish();saved=f.save();}finally{await f.close();}
+ let saved;let f=await fixture();try{
+  const l=LEVELS[0],hold=legalMoves(l,initialState(l)).find(id=>l.cars[id-1].skill!==l.queue[0]);f.tap(hold);saved=f.save();
+ }finally{await f.close();}
+ f=await fixture({save:saved});try{const l=LEVELS[0],hold=legalMoves(l,initialState(l)).find(id=>l.cars[id-1].skill!==l.queue[0]);assert.equal(f.controller.snapshot().state.bay[0].id,hold);assert.equal(f.get('waiting').textContent,'32 waiting');f.finish();saved=f.save();}finally{await f.close();}
  f=await fixture({save:saved});try{assert.equal(f.get('result').hidden,false);assert.equal(f.controller.snapshot().stars[0],3);assert.equal(f.get('real').target,'_blank');assert.match(f.get('real').rel,/noopener/);}finally{await f.close();}
 });
 test('level selection only exposes earned levels and preserves best stars on Retry',async()=>{

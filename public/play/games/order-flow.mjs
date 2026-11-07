@@ -2,7 +2,7 @@ import {LEVELS,SKILLS,copyState,inYard,blocker,rating} from './order-flow-model.
 import {SAVE_KEY,newAttempt,takeTurn,undoTurn,useHint,restoreProgress,serializeProgress} from './order-flow-progress.mjs';
 import {inspectPosition,nextMoveHint} from './order-flow-proof.mjs';
 const marks={picker:'<circle cx="0" cy="0" r="3"/>',courier:'<path d="M-3-3h6v6h-6z"/>',support:'<path d="m0-4 4 7h-8z"/>',inventory:'<path d="m0-4 4 4-4 4-4-4z"/>'};
-const carArt=()=>'<svg viewBox="0 0 64 64" aria-hidden="true"><path class="of-direction" d="M32 47V17m-12 12 12-12 12 12"/></svg>';
+const carArt=()=>'<svg viewBox="0 0 64 64" aria-hidden="true"><path class="of-direction" d="M32 52V12m-16 16 16-16 16 16"/></svg>';
 const personArt=skill=>'<svg viewBox="0 0 26 34" aria-hidden="true"><circle cx="13" cy="7" r="5" fill="currentColor"/><path d="M5 31V20a8 8 0 0 1 16 0v11z" fill="currentColor"/><g fill="#fffaf3" transform="translate(13 22)">'+marks[skill]+'</g></svg>';
 const star='<svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 3 4 8 9 1-6.5 6.5L24 28l-8-4.5L8 28l1.5-9.5L3 12l9-1z"/></svg>';
 export function initOrderFlowGame(){
@@ -28,13 +28,14 @@ export function initOrderFlowGame(){
   if(!buttons.length)return;
   const s=attempt.state;root.dataset.level=String(index+1);root.dataset.status=s.status;
   $('grid').inert=s.status!=='playing'||pending!==null||!$('levels').hidden;
-  for(const c of level.cars){
-   const el=buttons[c.id-1],present=inYard(s,c.id),by=blocker(level,s,c.id);
-   el.classList.toggle('is-empty',!present);el.classList.toggle('is-blocker',c.id===highlight);el.classList.toggle('is-hint',c.id===hint);
-   el.tabIndex=present&&c.id===focusId?0:-1;el.disabled=!present;el.setAttribute('aria-hidden',String(!present));
-   el.setAttribute('aria-label',SKILLS[c.skill].name+' car, row '+(c.y+1)+', column '+(c.x+1)+', arrow '+c.dir+(by?', path blocked':', clear path'));
-  }
   const front=level.queue[s.cursor];
+  for(const c of level.cars){
+   const el=buttons[c.id-1],present=inYard(s,c.id),by=blocker(level,s,c.id),open=present&&by===null&&s.status==='playing'&&!pending;
+   el.classList.toggle('is-empty',!present);el.classList.toggle('is-blocker',c.id===highlight);el.classList.toggle('is-hint',c.id===hint);
+   el.classList.toggle('is-ready',open&&c.skill===front);el.classList.toggle('is-open',open&&c.skill!==front);el.classList.toggle('is-covered',present&&by!==null);
+   el.tabIndex=present&&c.id===focusId?0:-1;el.disabled=!present;el.setAttribute('aria-hidden',String(!present));
+   el.setAttribute('aria-label',SKILLS[c.skill].name+' car, row '+(c.y+1)+', column '+(c.x+1)+', arrow '+c.dir+(by?', path blocked':c.skill===front&&front?', clear path, matches the front passenger':', clear path'));
+  }
   $('front').textContent=front?'Front · '+SKILLS[front].name:'Queue cleared';
   $('waiting').textContent=(level.queue.length-s.cursor)+' waiting';
   $('passengers').innerHTML=level.queue.slice(s.cursor).map((skill,i)=>'<li class="of-person" style="--car:'+SKILLS[skill].color+'" aria-label="Passenger '+(i+1)+': '+SKILLS[skill].name+'" title="'+SKILLS[skill].name+'">'+personArt(skill)+'</li>').join('');
@@ -109,7 +110,8 @@ export function initOrderFlowGame(){
   const before=copyState(attempt.state),r=buttons[id-1].getBoundingClientRect(),q=$('passengers').getBoundingClientRect();
   attempt=turn.attempt;focusId=attempt.state.yard.find(n=>n>id)??attempt.state.yard[0]??null;
   save();draw();animateTurn(before,turn.events,{x:r.x,y:r.y},{x:q.x,y:q.y});draw();tone();
-  announce(attempt.state.status==='won'?'Everyone aboard. Your stars are saved.':attempt.state.status==='lost'?$('loss-text').textContent:'Match the front color. Keep a parking space free.');
+  const name=SKILLS[level.cars[id-1].skill].name,boarded=turn.events.filter(e=>e.type==='board'&&e.id===id).length,left=turn.events.some(e=>e.type==='depart'&&e.id===id),front=level.queue[attempt.state.cursor];
+  announce(attempt.state.status==='won'?'Everyone aboard. Your stars are saved.':attempt.state.status==='lost'?$('loss-text').textContent:turn.events.filter(e=>e.type==='depart').length>1?'Those cars took their passengers and left.':left&&boarded===2?name+' took both passengers and left.':boarded?name+' boarded. The front still needs '+(front?SKILLS[front].name:'a car')+'.':name+' is holding a space. The front still needs '+(front?SKILLS[front].name:'a car')+'.');
   if(attempt.state.status==='lost')$('loss-undo').disabled?$('loss-retry').focus():$('loss-undo').focus();
   else if(attempt.state.status==='won'&&!effects.length)$('next').focus({preventScroll:true});
   else if(focusId)buttons[focusId-1].focus({preventScroll:true});
@@ -119,10 +121,16 @@ export function initOrderFlowGame(){
   $('levels').hidden=true;$('title').textContent=level.title;$('caption').textContent=level.caption;$('level').textContent=(index+1)+' / '+LEVELS.length;
   $('level').setAttribute('aria-label','Level '+(index+1)+' of '+LEVELS.length+'. Choose an unlocked level.');
   root.style.setProperty('--cols',level.cols);root.style.setProperty('--rows',level.rows);root.style.setProperty('--slots',level.slots);
-  $('grid').setAttribute('aria-label',level.cols+' by '+level.rows+' packed yard. Arrow keys move focus; Enter or Space sends a car to parking.');
-  $('grid').innerHTML=level.cars.map(c=>'<button class="of-car" type="button" data-car="'+c.id+'" style="--car:'+SKILLS[c.skill].color+';--angle:'+({up:0,right:90,down:180,left:270})[c.dir]+'deg">'+carArt(c.skill)+'</button>').join('');
+  const split=level.split,gutter=18;
+  $('grid').style.gridTemplateColumns=split?.axis==='col'?'repeat('+split.at+',var(--cell)) '+gutter+'px repeat('+(level.cols-split.at)+',var(--cell))':'repeat('+level.cols+',var(--cell))';
+  $('grid').style.gridTemplateRows=split?.axis==='row'?'repeat('+split.at+',var(--cell)) '+gutter+'px repeat('+(level.rows-split.at)+',var(--cell))':'repeat('+level.rows+',var(--cell))';
+  $('grid').setAttribute('aria-label',level.cols+' by '+level.rows+' packed yard in two groups. Arrow keys move focus; Enter or Space sends a car to parking.');
+  $('grid').innerHTML=level.cars.map(c=>{
+   const col=split?.axis==='col'&&c.x>=split.at?c.x+2:c.x+1,row=split?.axis==='row'&&c.y>=split.at?c.y+2:c.y+1;
+   return '<button class="of-car" type="button" data-car="'+c.id+'" data-lane="'+c.lane+'" style="--car:'+SKILLS[c.skill].color+';--angle:'+({up:0,right:90,down:180,left:270})[c.dir]+'deg;grid-column:'+col+';grid-row:'+row+'">'+carArt()+'</button>';
+  }).join('');
   buttons=[...$('grid').children];buttons.forEach((el,i)=>el.addEventListener('click',()=>tap(i+1)));
-  save();draw();closeTools();announce(resume?.actions.length?'Your queue and parking are restored.':'Match the front color. Each car seats two.');
+  save();draw();closeTools();announce(resume?.actions.length?'Your queue and parking are restored.':level.caption);
  }
  function undo(){
   const next=undoTurn(level,attempt);if(!next)return;

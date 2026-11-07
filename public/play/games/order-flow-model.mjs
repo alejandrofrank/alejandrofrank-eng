@@ -6,52 +6,65 @@ export function rayIds(level,car){
  for(let x=car.x+dx,y=car.y+dy;x>=0&&x<level.cols&&y>=0&&y<level.rows;x+=dx,y+=dy)ids.push(y*level.cols+x+1);
  return ids;
 }
-// A forward peel supplies a witness. Arrows preferentially point through cells
-// removed earlier, producing dependencies instead of only outward-facing edges.
+// Two separate lanes, each a snake that only points back along itself.
+// Both heads can leave at once, so a level is a choice of lane rather than one corridor.
 export function generateYard(cols,rows,seed){
- let random=seed>>>0;
- const rng=()=>{random=(Math.imul(random,1664525)+1013904223)>>>0;return random/4294967296;};
- const remaining=new Set(Array.from({length:cols*rows},(_,i)=>i+1)),cars=[],witness=[];
- while(remaining.size){
-  let best=null;
-  for(const id of remaining)for(const dir of Object.keys(DIRECTIONS)){
-   const car={id,x:(id-1)%cols,y:Math.floor((id-1)/cols),dir},ray=rayIds({cols,rows},car);
-   if(ray.some(n=>remaining.has(n)))continue;
-   const score=ray.length+rng();
-   if(!best||score>best.score)best={car,score};
-  }
-  if(!best)throw Error('No removable boundary cell');
-  remaining.delete(best.car.id);witness.push(best.car.id);cars.push(best.car);
+ const bits=seed>>>0,skills=Object.keys(SKILLS),count=cols*rows;
+ const vertical=(cols===rows?(bits&8)!==0:(bits&1)!==0),flip=(bits&2)!==0;
+ const width=vertical?rows:cols,height=vertical?cols:rows,mid=Math.ceil(height/2);
+ const snake=(y0,y1,down)=>{
+  const ys=[];for(let y=y0;y<y1;y++)ys.push(y);if(!down)ys.reverse();
+  const path=[];
+  ys.forEach((y,i)=>{for(let k=0;k<width;k++){const x=(i%2?width-1-k:k);path.push(flip?{x:width-1-x,y}:{x,y});}});
+  return path;
+ };
+ const mapped=p=>vertical?{x:p.y,y:p.x}:p;
+ const paths=[snake(0,mid,true),snake(mid,height,false)].filter(p=>p.length).map(path=>path.map(mapped));
+ const between=(a,b)=>b.x===a.x?(b.y<a.y?'up':'down'):b.x<a.x?'left':'right';
+ const opposite={up:'down',down:'up',left:'right',right:'left'};
+ const dirOf=Array(count+1),laneOf=Array(count+1),skillOf=Array(count+1);
+ const shift=bits%4,palettes=[[skills[shift],skills[(shift+1)%4]],[skills[(shift+2)%4],skills[(shift+3)%4]]];
+ paths.forEach((path,lane)=>{
+  dirOf[path[0].y*cols+path[0].x+1]=opposite[between(path[0],path[1])];
+  path.forEach((p,i)=>{
+   const id=p.y*cols+p.x+1;laneOf[id]=lane;skillOf[id]=palettes[lane][i%2];
+   if(i)dirOf[id]=between(p,path[i-1]);
+  });
+ });
+ const index=paths.map(()=>0),witness=[];
+ let turn=bits%paths.length;
+ while(witness.length<cols*rows){
+  let guard=0;while(index[turn]>=paths[turn].length&&++guard<=paths.length)turn=(turn+1)%paths.length;
+  if(guard>paths.length)throw Error('No removable boundary cell');
+  const p=paths[turn][index[turn]++];witness.push(p.y*cols+p.x+1);turn=(turn+1)%paths.length;
  }
- const skills=Object.keys(SKILLS);
- return {cars:cars.sort((a,b)=>a.id-b.id).map(c=>({...c,capacity:2,skill:skills[(c.x+2*c.y+seed)%skills.length]})),witness};
+ const cars=[];
+ for(let id=1;id<=cols*rows;id++)cars.push({id,x:(id-1)%cols,y:Math.floor((id-1)/cols),dir:dirOf[id],capacity:2,skill:skillOf[id],lane:laneOf[id]});
+ return {cars,witness,split:{axis:vertical?'col':'row',at:mid}};
 }
 const stages=[
- [4,4,67,'Find the opening','Trace an arrow all the way to the edge.','fulfillment','A task can start only after its blockers finish.'],
- [4,5,15,'Across the grain','Clear a row to open the next direction.','dispatcher','Dispatch coordinates the order of work across agents.'],
- [5,5,197,'Inside out','The middle opens through the outside.','inventory','Downstream work waits for inventory to confirm the stock.'],
- [5,6,30,'One way through','Follow each arrow through the whole row.','fulfillment','A dependency can sit several steps ahead of a task.'],
- [6,6,139,'Long chain','Each opening reveals another dependency.','dispatcher','The dispatcher must coordinate queued work with available agents.'],
- [6,7,194,'Crossed paths','Look beyond the car beside you.','courier','A courier waits for the packed order before starting delivery.'],
- [7,7,147,'Deep in the yard','Work from the clear edges toward the centre.','inventory','Completing one prerequisite can release several waiting tasks.'],
- [7,8,50,'Unravel it','Trace the chain before choosing a car.','fulfillment','Agents share completion signals so dependent work can proceed.'],
- [8,8,190,'A packed house','Find the next opening in the full grid.','dispatcher','Coordination is about dependencies, not just individual decisions.'],
- [8,9,97,'The whole chain','Clear all 72 cars, one dependency at a time.','dispatcher','The real system coordinates dependencies, queued tasks and limited agent capacity.'],
+ [4,4,67,'Find the opening','Two cars can leave. Match the front color.','fulfillment','A task can start only after its blockers finish.'],
+ [4,5,15,'Across the grain','Send the color at the front. The other car can wait.','dispatcher','Dispatch coordinates the order of work across agents.'],
+ [5,5,197,'Inside out','A clear arrow can leave. A blocked arrow has to wait.','inventory','Downstream work waits for inventory to confirm the stock.'],
+ [5,6,30,'Side by side','Both open cars are real choices. The front color leaves at once.','fulfillment','A dependency can sit several steps ahead of a task.'],
+ [6,6,139,'Open choice','Hold a car only while a parking space stays free.','dispatcher','The dispatcher must coordinate queued work with available agents.'],
+ [6,7,194,'Crossed paths','Look at the front pair, then pick the matching car.','courier','A courier waits for the packed order before starting delivery.'],
+ [7,7,147,'Deep in the yard','The open cars are the choice. Blocked arrows wait.','inventory','Completing one prerequisite can release several waiting tasks.'],
+ [7,8,50,'Unravel it','Matching the front color clears that car at once.','fulfillment','Agents share completion signals so dependent work can proceed.'],
+ [8,8,190,'A packed house','Use parking for a car you are not ready to board.','dispatcher','Coordination is about dependencies, not just individual decisions.'],
+ [8,9,97,'Full yard','Both groups run to the end. Keep a space free.','dispatcher','The real system coordinates dependencies, queued tasks and limited agent capacity.'],
 ];
 export function generatePuzzle(cols,rows,seed,{slots=3,wave=3}={}){
  if(!Number.isInteger(cols)||!Number.isInteger(rows)||cols<2||rows<2||cols>12||rows>12||!Number.isInteger(seed))throw Error('Use a 2–12 by 2–12 grid and an integer seed');
  if(!Number.isInteger(slots)||slots<2||slots>5||!Number.isInteger(wave)||wave<1||wave>slots)throw Error('Passenger waves must fit the parking bay');
  const yard=generateYard(cols,rows,seed),queue=[];
- // Reverse each short group of the clearing witness, then repeat its colors.
- // Cars must wait for one another, but the witness never needs > slots spaces.
- // Each group consumes exactly its own two seats per car before the next group.
- for(let i=0;i<yard.witness.length;i+=wave){
-  const colors=yard.witness.slice(i,i+wave).reverse().map(id=>yard.cars[id-1].skill);
-  queue.push(...colors,...colors);
- }
+ // Each witness car meets the next two passengers of its own color and leaves.
+ // `wave` stays in the signature so older callers still validate, but it no longer
+ // batches several cars into one automatic boarding run.
+ for(const id of yard.witness){const skill=yard.cars[id-1].skill;queue.push(skill,skill);}
  return {cols,rows,seed,slots,wave,queue,...yard};
 }
-export const LEVELS=stages.map(([cols,rows,seed,title,caption,agent,note],index)=>({id:'boarding-'+(index+1),index,title,caption:index?'Clear the path. Keep room for the next color.':'Match the front passenger. Each car seats two.',agent,note,...generatePuzzle(cols,rows,seed,{wave:index?3:2})}));
+export const LEVELS=stages.map(([cols,rows,seed,title,caption,agent,note],index)=>({id:'boarding-'+(index+1),index,title,caption,agent,note,...generatePuzzle(cols,rows,seed,{wave:1})}));
 export const initialState=level=>({yard:level.cars.map(c=>c.id),bay:Array(level.slots).fill(null),cursor:0,moves:0,status:'playing'});
 export const copyState=s=>({...s,yard:[...s.yard],bay:s.bay.map(c=>c?{...c}:null)});
 export const inYard=(s,id)=>s.yard.includes(id);
