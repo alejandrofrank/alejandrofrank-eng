@@ -12,7 +12,7 @@ There are three parking spaces. Only the passenger at the front can board, and o
 
 Squares contain only a central arrow and subtle highlights—no capacity numbers, wheel dashes, seat decorations or role badges. Two small occupancy dots beside a parked car show whether it is empty or half full. There are no Memory/Release cars, locks, retry orders, second courier belt, timers or maps.
 
-A blocked tap leaves the puzzle unchanged and highlights the nearest blocker. An unblocked car can still be the wrong choice for the queue: filling all three spaces with the wrong colors causes **Out of slots**. Before a move that makes completion impossible, a warning offers **Keep planning** or **Release anyway**. A loss highlights the stuck spaces, names the front passenger's color and offers Undo or Retry.
+A blocked tap leaves the puzzle unchanged and highlights the nearest blocker. An unblocked car can still be the wrong choice for the queue: filling all three spaces with the wrong colors causes **Out of slots**. Every legal move commits immediately, even when it makes completion impossible. There is no predictive warning or confirmation. A loss highlights the stuck spaces, names the front passenger's color and offers Undo or Retry.
 
 - **Three stars:** no blocked taps, hints or Undo.
 - **Two stars:** at most two blocked taps and one hint, without Undo.
@@ -53,7 +53,7 @@ The construction supplies a complete solution, not just a clearable yard. Each g
 
 The generator guarantees a solution for supported dimensions. It does not claim every size or seed has equally interesting difficulty, or that exhaustive state enumeration is cheap for arbitrary large boards.
 
-## Full puzzle proof and dead-end warnings
+## Full puzzle proof
 
 A state includes the remaining yard cars, the passenger cursor, and every parking slot's car and remaining seats. The yard alone is insufficient: identical remaining cars can have different outcomes depending on parking and passenger order.
 
@@ -67,7 +67,7 @@ winning(S) = any winning(T(S, car)) for car in legal(S), otherwise
 
 Every move removes one yard car, so the state graph is finite and acyclic. The build script explores every legal successor, storing a safe next car, a win, or a dead end for every reachable state. Across the campaign, **69,945 states** are covered. Tests regenerate the certificates and verify every transition and terminal result. An independent BFS finds a winning minimum-length solution for each level; on the first level it also checks every reachable state against the certificate.
 
-The browser uses a certificate lookup before committing a move, not a large search on the input thread. Missing states, invalid saves or changed level definitions are reported as unverified rather than falsely called safe. Search limits throw an error; an unfinished search is never reported as an impossible puzzle. BigInt state keys support the 72-car yard without a 32-bit occupancy limit.
+Certificates verify the levels and supply the optional Hint action. Normal taps do not consult the solver or prevent mistakes. A dead end is allowed to play out until parking fills. Missing states, invalid saves or changed level definitions cannot receive a verified safe hint. Search limits throw an error; an unfinished search is never reported as an impossible puzzle. BigInt state keys support the 72-car yard without a 32-bit occupancy limit.
 
 ```bash
 node scripts/build-order-flow-proof.mjs
@@ -81,7 +81,7 @@ Click or tap a car. Tab enters the grid, arrow keys move focus and Enter/Space r
 
 Logical input commits immediately. One animation loop draws car arrivals, approximately 150ms passenger hops and departures. A new tap settles previous visual effects without delaying its decision. Geometry is cached before animation; there are no layout reads on every frame. Reduced motion settles immediately. Sound starts off.
 
-The grid has touching tiles, at least 44px tap targets and no internal decoration beyond arrows and highlights. Labels are at least 14px. Board dimensions respond to both width and height. Short windows can scroll rather than clipping the bottom or shrinking targets. Results, warnings and losses stay in an overlay; Next level is separated from the outbound explanation link.
+The grid has touching tiles, at least 44px tap targets and no internal decoration beyond arrows and highlights. Labels are at least 14px. Board dimensions respond to both width and height. Short windows can scroll rather than clipping the bottom or shrinking targets. Results and losses stay in an overlay; Next level is separated from the outbound explanation link.
 
 Progress, best stars and validated action history use `portfolio.order-flow.boarding-v1`. Reload replays actions through the same rules, including parked or half-full cars. Invalid saves reset safely; blocked storage does not stop play. Earlier campaign saves remain untouched, but their stars are not imported into these different puzzles. The level button opens earned yards.
 
@@ -105,8 +105,8 @@ This is an analogy, not the Python agent system. It does not model memory policy
 
 ## Verification
 
-The queue-and-parking revision passes **172 repository tests**, including **40 Order Flow tests**, plus TypeScript checking. Tests complete all ten levels through the shipped markup and controls and independently solve every complete puzzle. They cover generated rectangular boards, passenger supply, partial cars, full parking, safe/unsafe moves, warnings, loss, Undo, saved attempts, keyboard focus, rapid input and reduced motion.
+The queue-and-parking revision passes **172 repository tests**, including **40 Order Flow tests**, plus TypeScript checking. Tests complete all ten levels through the shipped markup and controls and independently solve every complete puzzle. They also follow losing paths on every level, asserting that every legal tap commits immediately with no predictive warning or confirmation. Coverage includes passenger supply, partial cars, full parking, loss, Undo, saved attempts, keyboard focus, rapid input and reduced motion.
 
-All ten levels were also completed through Chromium browser controls. Warning cancellation preserved the board; confirming an unsafe sequence produced Out of slots with all three spaces highlighted. Undo restored the queue and parking. Reload preserved a partly completed final board. The captured browser console had no warnings or errors.
+The queue-and-parking campaign was also completed through Chromium browser controls. Undo restored the queue and parking, and reload preserved a partly completed final board. Predictive warning and confirmation controls have since been removed at the user's request; the loss condition and saved-game format remain unchanged. In the latest browser check, a losing choice left two occupied spaces with no overlay; the next move filled parking and showed Out of slots immediately. The captured console had no warnings or errors.
 
 The 72-car board, queue, parking and footer fit at 1280×800 and 390×700. At 840×474, scrolling and keyboard focus reached the last row and footer. These are resized browser checks, not physical-device or Safari tests. The Impeccable source check returned no findings; visual review then corrected the desktop height allowance so the footer remained visible.

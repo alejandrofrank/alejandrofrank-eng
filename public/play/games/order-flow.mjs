@@ -1,6 +1,6 @@
 import {LEVELS,SKILLS,copyState,inYard,blocker,rating} from './order-flow-model.mjs';
 import {SAVE_KEY,newAttempt,takeTurn,undoTurn,useHint,restoreProgress,serializeProgress} from './order-flow-progress.mjs';
-import {inspectPosition,nextMoveHint} from './order-flow-proof.mjs';
+import {nextMoveHint} from './order-flow-proof.mjs';
 const marks={picker:'<circle cx="0" cy="0" r="3"/>',courier:'<path d="M-3-3h6v6h-6z"/>',support:'<path d="m0-4 4 7h-8z"/>',inventory:'<path d="m0-4 4 4-4 4-4-4z"/>'};
 const carArt=()=>'<svg viewBox="0 0 64 64" aria-hidden="true"><path class="of-direction" d="M32 47V17m-12 12 12-12 12 12"/></svg>';
 const personArt=skill=>'<svg viewBox="0 0 26 34" aria-hidden="true"><circle cx="13" cy="7" r="5" fill="currentColor"/><path d="M5 31V20a8 8 0 0 1 16 0v11z" fill="currentColor"/><g fill="#fffaf3" transform="translate(13 22)">'+marks[skill]+'</g></svg>';
@@ -9,7 +9,7 @@ export function initOrderFlowGame(){
  const root=document.getElementById('order-flow-game');if(!root)return;
  const $=id=>document.getElementById('of-'+id),panel=root.closest('[data-station-panel]'),reduced=window.matchMedia('(prefers-reduced-motion: reduce)'),compact=window.matchMedia('(max-width: 700px)');
  let raw;try{raw=window.localStorage.getItem(SAVE_KEY);}catch{}
- let {level:index,stars,attempt}=restoreProgress(raw),level=LEVELS[index],buttons=[],focusId=1,highlight=null,hint=null,pending=null,sound=false,audio,raf=0,destroyed=false;
+ let {level:index,stars,attempt}=restoreProgress(raw),level=LEVELS[index],buttons=[],focusId=1,highlight=null,hint=null,sound=false,audio,raf=0,destroyed=false;
  let effects=[],started=null;const cleanups=[];
  const on=(el,event,fn)=>{el.addEventListener(event,fn);cleanups.push(()=>el.removeEventListener(event,fn));};
  const announce=text=>{$('message').textContent=text;};
@@ -27,7 +27,7 @@ export function initOrderFlowGame(){
  function draw(){
   if(!buttons.length)return;
   const s=attempt.state;root.dataset.level=String(index+1);root.dataset.status=s.status;
-  $('grid').inert=s.status!=='playing'||pending!==null||!$('levels').hidden;
+  $('grid').inert=s.status!=='playing'||!$('levels').hidden;
   for(const c of level.cars){
    const el=buttons[c.id-1],present=inYard(s,c.id),by=blocker(level,s,c.id);
    el.classList.toggle('is-empty',!present);el.classList.toggle('is-blocker',c.id===highlight);el.classList.toggle('is-hint',c.id===hint);
@@ -46,9 +46,8 @@ export function initOrderFlowGame(){
   $('score').textContent=attempt.mistakes+' blocked · '+attempt.hints+(attempt.hints===1?' hint':' hints');
   $('undo').textContent='Undo '+(3-attempt.undos);$('undo').disabled=!attempt.history.length||attempt.undos>=3;
   $('loss-undo').disabled=$('undo').disabled;$('hint').disabled=s.status!=='playing';
-  $('warning').hidden=pending===null;
   $('loss').hidden=s.status!=='lost';
-  if(s.status==='lost')$('loss-text').textContent='All '+level.slots+' spaces are full, but the front passenger needs '+SKILLS[front].name+'. Undo and save a space for that color.';
+  if(s.status==='lost')$('loss-text').textContent='All '+level.slots+' spaces are full, but the front passenger needs '+SKILLS[front].name+'.';
   const won=s.status==='won'&&!effects.length;$('result').hidden=!won;
   if(won){
    const score=rating(attempt);$('stars').innerHTML=Array.from({length:3},(_,i)=>star.replace('<svg ','<svg data-empty="'+(i>=score)+'" ')).join('');
@@ -98,14 +97,11 @@ export function initOrderFlowGame(){
   boarding.forEach((e,i)=>effects.push({type:'person',el:ghost('of-passenger-ghost',e.skill,personArt(e.skill)),from:queueOrigin,to:{x:slots[e.slot].x+12,y:slots[e.slot].y+9},begin:180+i*150,end:330+i*150}));
   if(effects.length)raf=requestAnimationFrame(tick);
  }
- function tap(id,confirmed=false){
+ function tap(id){
   if(attempt.state.status!=='playing'||!inYard(attempt.state,id))return;
   const turn=takeTurn(level,attempt,id);highlight=null;hint=null;
   if(turn.error){attempt=turn.attempt;highlight=turn.blockedBy??null;save();draw();announce(turn.error);return;}
-  if(!confirmed&&inspectPosition(level,turn.state).kind==='dead-end'){
-   finishFlights();pending=id;draw();announce('That choice cannot finish this queue. Choose another car.');$('cancel').focus();return;
-  }
-  finishFlights();pending=null;
+  finishFlights();
   const before=copyState(attempt.state),r=buttons[id-1].getBoundingClientRect(),q=$('passengers').getBoundingClientRect();
   attempt=turn.attempt;focusId=attempt.state.yard.find(n=>n>id)??attempt.state.yard[0]??null;
   save();draw();animateTurn(before,turn.events,{x:r.x,y:r.y},{x:q.x,y:q.y});draw();tone();
@@ -115,7 +111,7 @@ export function initOrderFlowGame(){
   else if(focusId)buttons[focusId-1].focus({preventScroll:true});
  }
  function loadLevel(next,resume){
-  finishFlights();index=next;level=LEVELS[index];attempt=resume??newAttempt(level);highlight=null;hint=null;pending=null;focusId=attempt.state.yard[0]??null;
+  finishFlights();index=next;level=LEVELS[index];attempt=resume??newAttempt(level);highlight=null;hint=null;focusId=attempt.state.yard[0]??null;
   $('levels').hidden=true;$('title').textContent=level.title;$('caption').textContent=level.caption;$('level').textContent=(index+1)+' / '+LEVELS.length;
   $('level').setAttribute('aria-label','Level '+(index+1)+' of '+LEVELS.length+'. Choose an unlocked level.');
   root.style.setProperty('--cols',level.cols);root.style.setProperty('--rows',level.rows);root.style.setProperty('--slots',level.slots);
@@ -126,11 +122,11 @@ export function initOrderFlowGame(){
  }
  function undo(){
   const next=undoTurn(level,attempt);if(!next)return;
-  finishFlights();attempt=next;pending=null;highlight=null;hint=null;focusId=attempt.state.yard[0]??null;save();draw();closeTools();
+  finishFlights();attempt=next;highlight=null;hint=null;focusId=attempt.state.yard[0]??null;save();draw();closeTools();
   announce('Last move restored, including its passengers. '+(3-attempt.undos)+' undos left.');buttons[focusId-1]?.focus({preventScroll:true});
  }
  function levelMenu(){
-  finishFlights();pending=null;const first=stars.findIndex(s=>!s),unlocked=first<0?LEVELS.length-1:first;
+  finishFlights();const first=stars.findIndex(s=>!s),unlocked=first<0?LEVELS.length-1:first;
   $('level-list').innerHTML=LEVELS.map((l,i)=>'<button type="button" data-level="'+i+'" '+(i>unlocked?'disabled':'')+' aria-label="Level '+(i+1)+', '+l.title+', '+stars[i]+' of 3 stars"'+(i===index?' aria-current="step"':'')+'><strong>'+(i+1)+'</strong><span>'+l.cols+' × '+l.rows+'</span><span>'+stars[i]+'/3 stars</span></button>').join('');
   $('levels').hidden=false;draw();$('level-list').querySelector('[data-level="'+index+'"]').focus();
  }
@@ -138,8 +134,6 @@ export function initOrderFlowGame(){
  on($('exit'),'click',()=>root.closest('.arcade-screen')?.querySelector('.screen-exit')?.click());
  for(const id of ['replay','again','loss-retry'])on($(id),'click',()=>loadLevel(index));
  on($('next'),'click',()=>{loadLevel((index+1)%LEVELS.length);buttons[focusId-1]?.focus({preventScroll:true});});
- on($('cancel'),'click',()=>{const id=pending;pending=null;draw();announce('Choose another clear car. The parking spaces are unchanged.');buttons[id-1]?.focus();});
- on($('confirm'),'click',()=>{const id=pending;pending=null;tap(id,true);});
  on($('hint'),'click',()=>{
   const advice=nextMoveHint(level,attempt.state);closeTools();
   if(!advice){announce('No complete route remains. Undo or retry this level.');return;}
@@ -150,10 +144,9 @@ export function initOrderFlowGame(){
  on($('close-levels'),'click',()=>{$('levels').hidden=true;draw();$('level').focus();});
  on($('level-list'),'click',e=>{const b=e.target.closest('[data-level]');if(b&&!b.disabled)loadLevel(Number(b.dataset.level));});
  on(root,'keydown',e=>{
-  const overlay=['warning','loss','levels','result'].map($).find(el=>!el.hidden);
+  const overlay=['loss','levels','result'].map($).find(el=>!el.hidden);
   if(overlay){
-   if(e.key==='Escape'&&overlay===$('warning')){e.preventDefault();e.stopPropagation();$('cancel').click();}
-   else if(e.key==='Escape'&&overlay===$('levels')){e.preventDefault();e.stopPropagation();$('close-levels').click();}
+   if(e.key==='Escape'&&overlay===$('levels')){e.preventDefault();e.stopPropagation();$('close-levels').click();}
    else if(e.key==='Tab'){const options=[...overlay.querySelectorAll('button:not(:disabled),a[href]')],at=options.indexOf(document.activeElement);e.preventDefault();options[(at+(e.shiftKey?-1:1)+options.length)%options.length]?.focus();}
    return;
   }
@@ -168,6 +161,6 @@ export function initOrderFlowGame(){
  on(compact,'change',toolsMode);on(window,'resize',finishFlights);
  const visibility=panel?new MutationObserver(()=>{if(panel.hidden)finishFlights();}):null;visibility?.observe(panel,{attributes:true,attributeFilter:['hidden']});
  root.hidden=false;toolsMode();loadLevel(index,attempt);
- return {snapshot:()=>({level:index,state:copyState(attempt.state),stars:[...stars],mistakes:attempt.mistakes,hints:attempt.hints,undos:attempt.undos,pendingFrames:effects.length,proof:inspectPosition(level,attempt.state),pending}),
+ return {snapshot:()=>({level:index,state:copyState(attempt.state),stars:[...stars],mistakes:attempt.mistakes,hints:attempt.hints,undos:attempt.undos,pendingFrames:effects.length}),
  destroy:()=>{destroyed=true;finishFlights();cleanups.forEach(fn=>fn());visibility?.disconnect();audio?.close();}};
 }
