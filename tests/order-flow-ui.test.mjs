@@ -71,16 +71,21 @@ test('Undo restores passengers and parking, clears animations and is capped at t
   assert.equal(f.get('undo').disabled,true);assert.equal(f.get('undo').textContent,'Undo 0');
  }finally{await f.close();}
 });
-test('unsafe release warning can cancel without spending a move or changing the queue',async()=>{
- const f=await fixture();try{for(const id of losingPath(LEVELS[0])){
-  const before=f.controller.snapshot().state;f.tap(id);if(!f.get('warning').hidden){
-   assert.deepEqual(f.controller.snapshot().state,before);assert.equal(f.win.document.activeElement.id,'of-cancel');f.get('cancel').click();
-   assert.equal(f.get('warning').hidden,true);assert.deepEqual(f.controller.snapshot().state,before);assert.equal(f.win.document.activeElement,f.car(id));return;
+test('wrong legal choices commit immediately on every level without a prediction or confirmation',async()=>{
+ for(const level of LEVELS){const f=await fixture({index:level.index,reduce:false});try{
+  assert.equal(f.get('warning'),null);assert.equal(f.get('confirm'),null);assert.equal(f.get('cancel'),null);
+  let expected=initialState(level),crossedDeadEnd=false;
+  for(const id of losingPath(level)){
+   expected=move(level,expected,id).state;if(inspectPosition(level,expected).kind==='dead-end')crossedDeadEnd=true;
+   f.tap(id);assert.deepEqual(f.controller.snapshot().state,expected);
+   assert.doesNotMatch(f.get('message').textContent,/cannot finish|Choose another car|Keep planning/);
+   assert.equal(f.get('loss').hidden,expected.status!=='lost');
   }
- }assert.fail('No warning');}finally{await f.close();}
+  assert.equal(crossedDeadEnd,true);assert.equal(expected.status,'lost');assert.equal(f.get('loss').hidden,false);
+ }finally{await f.close();}}
 });
-test('accepting unsafe choices reaches a clear full-parking loss with Undo and Retry',async()=>{
- let saved;const f=await fixture();try{for(const id of losingPath(LEVELS[0])){f.tap(id);if(!f.get('warning').hidden)f.get('confirm').click();}
+test('full-parking loss remains saved and supports Undo and Retry',async()=>{
+ let saved;const f=await fixture();try{for(const id of losingPath(LEVELS[0]))f.tap(id);
   assert.equal(f.controller.snapshot().state.status,'lost');assert.equal(f.get('loss').hidden,false);assert.equal(f.get('loss-title').textContent,'Out of slots');
   assert.equal(f.get('bay').querySelectorAll('.is-stuck').length,3);assert.match(f.get('loss-text').textContent,/front passenger needs/);assert.equal(f.win.document.activeElement.id,'of-loss-undo');
   saved=f.save();f.get('loss-undo').click();assert.equal(f.get('loss').hidden,true);assert.equal(f.controller.snapshot().undos,1);
