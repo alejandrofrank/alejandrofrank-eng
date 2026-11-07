@@ -6,7 +6,7 @@ test('ten full grids retain identical two-seat cars and add one balanced queue a
  assert.equal(LEVELS.length,10);assert.equal(LEVELS[0].cars.length,16);assert.equal(LEVELS.at(-1).cars.length,72);
  for(const l of LEVELS){
   assert.equal(validateLevel(l),true);assert.equal(l.cars.length,l.cols*l.rows);assert.equal(l.slots,3);assert.equal(l.queue.length,2*l.cars.length);
-  assert.deepEqual(generateYard(l.cols,l.rows,l.seed),{cars:l.cars,witness:l.witness});assert.ok(l.cars.every(c=>c.capacity===2));
+  assert.deepEqual(generateYard(l.cols,l.rows,l.seed),{cars:l.cars,witness:l.witness,split:l.split});assert.ok(l.cars.every(c=>c.capacity===2));assert.equal(legalMoves(l,initialState(l)).length>=2,true);
  }
 });
 test('independent BFS completes the queue, bay and yard on every level at the N-release lower bound',()=>{
@@ -32,12 +32,15 @@ test('all four rays inspect the entire exit path, including gaps',()=>{
   assert.equal(blocker(l,{yard:[13,ray[1]]},13),ray[1]);assert.equal(blocker(l,{yard:[13]},13),null);
  }
 });
-test('a nonmatching car occupies a slot until the front passenger can board it',()=>{
- const l=LEVELS[0],s=initialState(l),id=l.witness[0],r=move(l,s,id);
- assert.equal(r.state.cursor,0);assert.deepEqual(r.state.bay[0],{id,left:2});assert.equal(r.events[0].type,'park');
- const second=move(l,r.state,l.witness[1]);assert.equal(second.state.cursor,4);assert.ok(second.state.bay.every(c=>!c));
- assert.deepEqual(second.events.filter(e=>e.type==='board').map(e=>e.left),[1,1,0,0]);
- assert.equal(second.events.filter(e=>e.type==='depart').length,2);
+test('the front color leaves at once and the other open car can hold a space',()=>{
+ const l=LEVELS[0],s=initialState(l),open=legalMoves(l,s),id=l.witness[0],other=open.find(n=>n!==id),r=move(l,s,id);
+ assert.equal(open.length,2);assert.equal(r.state.cursor,2);assert.ok(r.state.bay.every(c=>!c));assert.equal(r.events.filter(e=>e.type==='depart').length,1);
+ assert.deepEqual(r.events.filter(e=>e.type==='board').map(e=>e.left),[1,0]);
+ const held=move(l,s,other);assert.equal(held.state.cursor,0);assert.deepEqual(held.state.bay[0],{id:other,left:2});
+ const follow=move(l,held.state,id);assert.equal(follow.state.cursor,4);assert.ok(follow.state.bay.every(c=>!c));assert.equal(follow.events.filter(e=>e.type==='depart').length,2);
+});
+test('the witness clears one car at a time instead of a long boarding run',()=>{
+ for(const l of LEVELS){let s=initialState(l);for(const id of l.witness){const r=move(l,s,id);assert.equal(r.events.filter(e=>e.type==='board').length,2);assert.equal(r.events.filter(e=>e.type==='depart').length,1);assert.ok(r.state.bay.every(c=>!c));s=r.state;}assert.equal(s.status,'won');}
 });
 const tiny=()=>({cols:2,rows:2,slots:2,queue:['picker','courier','picker','courier','support','support','inventory','inventory'],cars:['picker','courier','support','inventory'].map((skill,i)=>({id:i+1,x:i%2,y:Math.floor(i/2),dir:i<2?'up':'down',skill,capacity:2})),witness:[1,2,3,4]});
 test('only the front passenger boards; partially filled cars keep their slot',()=>{
@@ -76,7 +79,7 @@ test('Undo restores passengers, parking and the exact yard and stops after three
  assert.equal(undoTurn(l,a),null);
 });
 test('new boarding campaign preserves the earlier save keys and validates current action history',()=>{
- assert.equal(SAVE_KEY,'portfolio.order-flow.boarding-v1');
+ assert.equal(SAVE_KEY,'portfolio.order-flow.boarding-v2');
  for(const raw of ['{bad',null,JSON.stringify({version:2,level:9,stars:Array(10).fill(3),actions:[]}),JSON.stringify({version:3,level:9,stars:Array(10).fill(0),actions:[]}),JSON.stringify({version:3,level:0,stars:Array(10).fill(0),actions:[{tap:900}]}),JSON.stringify({version:3,level:0,stars:Array(10).fill(0),actions:[{undo:true}]})])assert.equal(restoreProgress(raw).attempt.state.moves,0);
 });
 test('saved wins restore the cleared queue, empty parking and best stars',()=>{
