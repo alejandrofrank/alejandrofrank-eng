@@ -1,67 +1,89 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {LEVELS,DIRECTIONS,generateYard,rayIds,initialState,copyState,blocker,legalMoves,move,solve,solveBFS,validateLevel,rating} from '../public/play/games/order-flow-model.mjs';
+import {LEVELS,DIRECTIONS,generateYard,generatePuzzle,rayIds,initialState,copyState,blocker,legalMoves,move,solve,solveBFS,validateLevel,rating,stateKey} from '../public/play/games/order-flow-model.mjs';
 import {SAVE_KEY,newAttempt,takeTurn,undoTurn,useHint,restoreProgress,serializeProgress} from '../public/play/games/order-flow-progress.mjs';
-
-test('ten deterministic, fully packed yards grow from 16 to 72 identical two-seat cars',()=>{
+test('ten full grids retain identical two-seat cars and add one balanced queue and three parking spaces',()=>{
  assert.equal(LEVELS.length,10);assert.equal(LEVELS[0].cars.length,16);assert.equal(LEVELS.at(-1).cars.length,72);
- for(const [i,l] of LEVELS.entries()){
-  assert.equal(validateLevel(l),true);assert.equal(l.cars.length,l.cols*l.rows);
-  assert.deepEqual(generateYard(l.cols,l.rows,l.seed),{cars:l.cars,witness:l.witness});
-  assert.ok(l.cars.every(c=>c.capacity===2));assert.ok(!('queue' in l)&&!('slots' in l));
-  if(i)assert.ok(l.cars.length>LEVELS[i-1].cars.length);
+ for(const l of LEVELS){
+  assert.equal(validateLevel(l),true);assert.equal(l.cars.length,l.cols*l.rows);assert.equal(l.slots,3);assert.equal(l.queue.length,2*l.cars.length);
+  assert.deepEqual(generateYard(l.cols,l.rows,l.seed),{cars:l.cars,witness:l.witness});assert.ok(l.cars.every(c=>c.capacity===2));
  }
 });
-test('independent BFS solves every campaign level at its exact N-car lower bound',()=>{
- for(const l of LEVELS){const bfs=solveBFS(l);assert.equal(bfs.moves,l.cars.length);assert.equal(solve(l).moves,bfs.moves);let s=initialState(l);for(const id of bfs.path)s=move(l,s,id).state;assert.equal(s.status,'won');}
+test('independent BFS completes the queue, bay and yard on every level at the N-release lower bound',()=>{
+ for(const l of LEVELS){const bfs=solveBFS(l);assert.equal(bfs.moves,l.cars.length);assert.equal(solve(l).moves,bfs.moves);let s=initialState(l);for(const id of bfs.path)s=move(l,s,id).state;assert.equal(s.status,'won');assert.equal(s.cursor,l.queue.length);assert.ok(s.bay.every(c=>!c));}
 });
-test('a blocked tap is immutable and names the nearest blocker',()=>{
+test('X by Y generation constructs reproducible complete solutions, not only removable yards',()=>{
+ for(const [cols,rows] of [[2,2],[3,7],[7,3],[8,9],[12,12]])for(const seed of [0,23,91]){
+  const l=generatePuzzle(cols,rows,seed);assert.equal(validateLevel(l),true);
+  assert.deepEqual(generatePuzzle(cols,rows,seed),l);
+  let s=initialState(l);for(const id of l.witness)s=move(l,s,id).state;
+  assert.equal(s.status,'won');assert.equal(s.cursor,2*cols*rows);
+ }
+ for(const args of [[1,4,1],[13,4,1],[4,0,1],[4,4,NaN]])assert.throws(()=>generatePuzzle(...args));
+ assert.throws(()=>generatePuzzle(4,4,1,{slots:2,wave:3}));
+});
+test('a blocked tap is immutable and names its nearest blocker',()=>{
  const l=LEVELS[0],s=initialState(l),id=s.yard.find(id=>blocker(l,s,id)),before=copyState(s),by=blocker(l,s,id);
  const r=move(l,s,id);assert.equal(r.state,s);assert.equal(r.blockedBy,by);assert.deepEqual(s,before);
 });
-test('all four arrow rays inspect every cell to the edge, including gaps',()=>{
+test('all four rays inspect the entire exit path, including gaps',()=>{
  const l={cols:5,rows:5,cars:[]};for(const dir of Object.keys(DIRECTIONS)){
   const c={id:13,x:2,y:2,dir};l.cars[12]=c;const ray=rayIds(l,c);assert.equal(ray.length,2);
   assert.equal(blocker(l,{yard:[13,ray[1]]},13),ray[1]);assert.equal(blocker(l,{yard:[13]},13),null);
  }
 });
-test('car identifiers above 32 and 64 remain independent',()=>{
+test('a nonmatching car occupies a slot until the front passenger can board it',()=>{
+ const l=LEVELS[0],s=initialState(l),id=l.witness[0],r=move(l,s,id);
+ assert.equal(r.state.cursor,0);assert.deepEqual(r.state.bay[0],{id,left:2});assert.equal(r.events[0].type,'park');
+ const second=move(l,r.state,l.witness[1]);assert.equal(second.state.cursor,4);assert.ok(second.state.bay.every(c=>!c));
+ assert.deepEqual(second.events.filter(e=>e.type==='board').map(e=>e.left),[1,1,0,0]);
+ assert.equal(second.events.filter(e=>e.type==='depart').length,2);
+});
+const tiny=()=>({cols:2,rows:2,slots:2,queue:['picker','courier','picker','courier','support','support','inventory','inventory'],cars:['picker','courier','support','inventory'].map((skill,i)=>({id:i+1,x:i%2,y:Math.floor(i/2),dir:i<2?'up':'down',skill,capacity:2})),witness:[1,2,3,4]});
+test('only the front passenger boards; partially filled cars keep their slot',()=>{
+ const l=tiny(),r=move(l,initialState(l),1);assert.equal(r.state.cursor,1);assert.equal(r.state.bay[0].left,1);
+ const next=move(l,r.state,2);assert.equal(next.state.cursor,4);assert.ok(next.state.bay.every(c=>!c));
+ assert.equal(initialState(l).cursor,0);
+});
+test('full parking with no front-color car loses immediately and refuses further taps',()=>{
+ const l=tiny();let s=move(l,initialState(l),3).state;s=move(l,s,4).state;
+ assert.equal(s.status,'lost');assert.equal(s.cursor,0);assert.ok(s.bay.every(Boolean));assert.deepEqual(legalMoves(l,s),[]);
+ assert.ok(move(l,s,1).error);
+});
+test('empty yard alone is not a win; the queue and parking must also clear',()=>{
+ const l=tiny(),s={...initialState(l),yard:[],bay:[{id:3,left:2},{id:4,left:2}],moves:4,cursor:4};
+ assert.notEqual(s.status,'won');assert.equal(solve(l,s),null);
+});
+test('all successful turns conserve passengers and seats, including IDs above 64',()=>{
  const l=LEVELS.at(-1);let s=initialState(l);
- for(const id of solve(l).path){const before=[...s.yard];s=move(l,s,id).state;assert.deepEqual(s.yard,before.filter(n=>n!==id));}
- assert.equal(s.moves,72);assert.equal(s.yard.length,0);
+ for(const id of l.witness){const before=copyState(s);s=move(l,s,id).state;assert.deepEqual(s.yard,before.yard.filter(n=>n!==id));assert.equal(2*s.yard.length+s.bay.reduce((n,c)=>n+(c?.left??0),0),l.queue.length-s.cursor);}
+ assert.equal(s.moves,72);assert.equal(s.status,'won');
 });
-test('cleared cars cannot be released twice and wins reject further taps',()=>{
- const l=LEVELS[0],id=legalMoves(l,initialState(l))[0],r=move(l,initialState(l),id);
- assert.ok(move(l,r.state,id).error);let s=initialState(l);for(const n of solve(l).path)s=move(l,s,n).state;assert.ok(move(l,s,1).error);
+test('state keys distinguish parking, partial seats and queue cursor without 32-bit collisions',()=>{
+ const s=initialState(LEVELS.at(-1));assert.notEqual(stateKey(s),stateKey({...s,yard:s.yard.filter(id=>id!==65)}));
+ assert.notEqual(stateKey(s),stateKey({...s,cursor:1}));assert.notEqual(stateKey({...s,bay:[{id:1,left:1},null,null]}),stateKey({...s,bay:[{id:1,left:2},null,null]}));
 });
-test('generation has no random global source and rejects malformed authored layouts',()=>{
- assert.deepEqual(generateYard(4,4,15),generateYard(4,4,15));assert.notDeepEqual(generateYard(4,4,15),generateYard(4,4,16));
- for(const change of [{cars:[]},{witness:[]},{cars:LEVELS[0].cars.map((c,i)=>i?c:{...c,capacity:3})}])assert.throws(()=>validateLevel({...LEVELS[0],...change}));
+test('validation rejects unmatched passenger counts, missing cells and invalid seats',()=>{
+ for(const change of [{queue:[]},{slots:0},{witness:[]},{cars:[]},{cars:LEVELS[0].cars.map((c,i)=>i?c:{...c,capacity:3})}])assert.throws(()=>validateLevel({...LEVELS[0],...change}));
 });
-test('blocked taps, hints and successful releases persist as distinct actions',()=>{
- const l=LEVELS[0];let a=newAttempt(l),bad=legalMoves(l,a.state)[0]===1?2:1;
- a=takeTurn(l,a,bad).attempt;assert.equal(a.mistakes,1);assert.equal(a.state.moves,0);
- a=useHint(a);a=takeTurn(l,a,legalMoves(l,a.state)[0]).attempt;
- const saved=restoreProgress(serializeProgress(0,Array(10).fill(0),a));assert.deepEqual(saved.attempt,a);
+test('blocked taps, hints and boarding moves persist as distinct actions',()=>{
+ const l=LEVELS[0];let a=newAttempt(l);a=takeTurn(l,a,1).attempt;assert.equal(a.mistakes,1);a=useHint(a);a=takeTurn(l,a,l.witness[0]).attempt;
+ assert.deepEqual(restoreProgress(serializeProgress(0,Array(10).fill(0),a)).attempt,a);
 });
-test('Undo restores the exact car and stops after three uses',()=>{
+test('Undo restores passengers, parking and the exact yard and stops after three uses',()=>{
  const l=LEVELS[0];let a=newAttempt(l);
- for(let i=0;i<3;i++){const before=copyState(a.state);a=takeTurn(l,a,legalMoves(l,a.state)[0]).attempt;a=undoTurn(l,a);assert.deepEqual(a.state,before);}
- a=takeTurn(l,a,legalMoves(l,a.state)[0]).attempt;assert.equal(undoTurn(l,a),null);assert.equal(a.undos,3);
+ for(let i=0;i<3;i++){a=takeTurn(l,a,l.witness[0]).attempt;const before=copyState(a.state);a=takeTurn(l,a,l.witness[1]).attempt;a=undoTurn(l,a);assert.deepEqual(a.state,before);if(i<2)a={...a,state:initialState(l),history:[]};}
+ assert.equal(undoTurn(l,a),null);
 });
-test('new campaign saves do not reuse old coordination stars or mutate the old key',()=>{
- assert.equal(SAVE_KEY,'portfolio.order-flow.packed-v1');
- assert.equal(restoreProgress(JSON.stringify({version:1,level:9,stars:Array(10).fill(3),actions:[]})).level,0);
+test('new boarding campaign preserves the earlier save keys and validates current action history',()=>{
+ assert.equal(SAVE_KEY,'portfolio.order-flow.boarding-v1');
+ for(const raw of ['{bad',null,JSON.stringify({version:2,level:9,stars:Array(10).fill(3),actions:[]}),JSON.stringify({version:3,level:9,stars:Array(10).fill(0),actions:[]}),JSON.stringify({version:3,level:0,stars:Array(10).fill(0),actions:[{tap:900}]}),JSON.stringify({version:3,level:0,stars:Array(10).fill(0),actions:[{undo:true}]})])assert.equal(restoreProgress(raw).attempt.state.moves,0);
 });
-test('invalid, corrupted or impossible action histories restart safely',()=>{
- for(const raw of ['{bad',null,JSON.stringify({version:2,level:9,stars:Array(10).fill(0),actions:[]}),JSON.stringify({version:2,level:0,stars:Array(10).fill(0),actions:[{tap:900}]}),JSON.stringify({version:2,level:0,stars:Array(10).fill(0),actions:[{undo:true}]})])assert.equal(restoreProgress(raw).attempt.state.moves,0);
+test('saved wins restore the cleared queue, empty parking and best stars',()=>{
+ const l=LEVELS[0];let a=newAttempt(l);for(const id of l.witness)a=takeTurn(l,a,id).attempt;
+ const p=restoreProgress(serializeProgress(0,Array(10).fill(0),a));assert.equal(p.attempt.state.status,'won');assert.equal(p.attempt.state.cursor,l.queue.length);assert.equal(p.stars[0],3);
 });
-test('a completed yard restores its best stars and clear state',()=>{
- const l=LEVELS[0];let a=newAttempt(l);for(const id of solve(l).path)a=takeTurn(l,a,id).attempt;
- const p=restoreProgress(serializeProgress(0,Array(10).fill(0),a));assert.equal(p.attempt.state.status,'won');assert.equal(p.stars[0],3);
-});
-test('stars reward careful reading and explicitly account for help and Undo',()=>{
+test('stars account for blocked taps, help and Undo',()=>{
  assert.equal(rating({mistakes:0,hints:0,undos:0}),3);assert.equal(rating({mistakes:1,hints:0,undos:0}),2);assert.equal(rating({mistakes:0,hints:1,undos:0}),2);
  assert.equal(rating({mistakes:3,hints:0,undos:0}),1);assert.equal(rating({mistakes:0,hints:2,undos:0}),1);assert.equal(rating({mistakes:0,hints:0,undos:1}),1);
 });
-

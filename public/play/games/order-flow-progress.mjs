@@ -1,6 +1,6 @@
 import {LEVELS,initialState,copyState,move,rating} from './order-flow-model.mjs';
 // New campaign; leave the previous campaign's stored progress untouched.
-export const SAVE_KEY='portfolio.order-flow.packed-v1';
+export const SAVE_KEY='portfolio.order-flow.boarding-v1';
 export const newAttempt=level=>({state:initialState(level),history:[],mistakes:0,undos:0,hints:0,actions:[]});
 export function takeTurn(level,a,id){
  const result=move(level,a.state,id);
@@ -16,7 +16,7 @@ export function restoreProgress(raw){
  const fresh={level:0,stars:Array(LEVELS.length).fill(0),attempt:newAttempt(LEVELS[0])};
  try{
   const saved=JSON.parse(raw);
-  if(saved?.version!==2||!Number.isInteger(saved.level)||saved.level<0||saved.level>=LEVELS.length||!Array.isArray(saved.stars)||saved.stars.length!==LEVELS.length||saved.stars.some(s=>!Number.isInteger(s)||s<0||s>3)||!Array.isArray(saved.actions)||saved.actions.length>1000)return fresh;
+  if(saved?.version!==3||!Number.isInteger(saved.level)||saved.level<0||saved.level>=LEVELS.length||!Array.isArray(saved.stars)||saved.stars.length!==LEVELS.length||saved.stars.some(s=>!Number.isInteger(s)||s<0||s>3)||!Array.isArray(saved.actions)||saved.actions.length>1000)return fresh;
   if(saved.stars.slice(0,saved.level).some(s=>s===0))return fresh;
   let attempt=newAttempt(LEVELS[saved.level]);
   for(const action of saved.actions){
@@ -29,4 +29,4 @@ export function restoreProgress(raw){
   return {level:saved.level,stars:saved.stars,attempt};
  }catch{return fresh;}
 }
-export const serializeProgress=(level,stars,attempt)=>JSON.stringify({version:2,level,stars,actions:attempt.actions});
+export const serializeProgress=(level,stars,attempt)=>JSON.stringify({version:3,level,stars,actions:attempt.actions});
