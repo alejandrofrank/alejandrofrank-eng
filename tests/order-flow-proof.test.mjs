@@ -8,7 +8,7 @@ import {buildProofs,serializeProofs,buildCertificate} from '../scripts/build-ord
 test('the complete yard/queue/parking proof exactly matches regeneration',()=>{
  const p=buildProofs();assert.equal(readFileSync(new URL('../public/play/games/order-flow-proof-data.mjs',import.meta.url),'utf8').replaceAll('\r',''),serializeProofs(p));
 });
-test('every reachable edge and terminal outcome is verified for all ten levels',()=>{
+test('every reachable edge and terminal outcome is verified for all twenty levels',()=>{
  for(const l of LEVELS)assert.equal(verifyCertificate(l,PROOFS[l.index]),true);
 });
 test('the certificate agrees with independent BFS from every position on the tutorial',()=>{
