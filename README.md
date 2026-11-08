@@ -37,21 +37,16 @@ npm run dev
 The basic site runs without a GitHub token. To enable the contribution calendar locally, add your token as `GITHUB_TOKEN` in a gitignored `.dev.vars` file. `GITHUB_USER` is configured in `wrangler.jsonc`.
 
 ```bash
-npm run typecheck
-npm run test:site
 npm run deploy
 ```
 
 Deployment requires your own Cloudflare account and Worker configuration. Set the `GITHUB_TOKEN` Worker secret separately if you want the calendar in production.
 
-### Choose checks for the change
+### Maintenance approach
 
-- Website navigation, appearance, experience and recovery: `npm run test:site`. This focused suite skips full game campaigns.
-- Game changes: run the affected game's test files, including its controls and engine. For example: `node --test tests/order-flow-*.test.mjs`.
-- Releases or changes shared across games: `npm test` runs the complete suite once.
-- Copy or small CSS changes: check the affected page and run any relevant existing test; do not add tests that only repeat the new text or styles.
+This is a personal portfolio: prioritize small changes and quick fixes. No manual testing is expected from the owner. Do not add test infrastructure or run the full suite for routine edits. Use a targeted automated check only when it resolves a concrete concern; deployment already builds the site.
 
-Run `npm run typecheck` for TypeScript changes. After checks pass, repeat them only for new code changes, failures or unresolved concerns. Documentation and test-command changes do not require another website deployment.
+Existing tests remain available for debugging with `npm test`, and TypeScript diagnostics with `npm run typecheck`. They are optional tools, not a release checklist. Documentation changes do not require a website deployment.
 
 ## Project map
 
