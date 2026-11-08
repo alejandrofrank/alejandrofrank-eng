@@ -48,7 +48,7 @@ function navLink(l: (typeof LINKS)[number]): string {
   const label = icon + '<span>' + esc(l.label) + '</span>';
   if (l.href.startsWith("mailto:")) {
     const email = l.href.slice("mailto:".length);
-    return '<details class="email-pop"><summary class="contact-button">' + label + '</summary><div class="email-box on-cream chamfer"><a href="' + l.href + '">' + esc(email) + '</a><button type="button" class="email-copy chamfer" data-email="' + esc(email) + '">Copy</button></div></details>';
+    return '<details class="email-pop"><summary class="contact-button">' + label + '</summary><div class="email-box on-cream chamfer"><a href="' + l.href + '">' + esc(email) + '</a><button type="button" class="email-copy chamfer" data-email="' + esc(email) + '">Copy</button><span class="email-status" role="status" aria-live="polite"></span></div></details>';
   }
   return '<a class="contact-button" href="' + l.href + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
 }
@@ -171,12 +171,15 @@ ${FONTS_LINK}
     var b = e.target.closest ? e.target.closest('.email-copy') : null;
     if (!b) return;
     var email = b.getAttribute('data-email');
+    var status = b.parentElement.querySelector('.email-status');
+    function copyFailed() { status.textContent = 'Could not copy. Select the email address to copy it manually.'; }
     if (navigator.clipboard) {
       navigator.clipboard.writeText(email).then(function () {
+        status.textContent = 'Email address copied.';
         var prev = b.textContent; b.textContent = 'copied';
         setTimeout(function () { b.textContent = prev; }, 1200);
-      });
-    }
+      }).catch(copyFailed);
+    } else { copyFailed(); }
   });
   </script>
 </body>

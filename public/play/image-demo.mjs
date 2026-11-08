@@ -26,10 +26,13 @@ export function initImageDemo() {
     const settings = { sample: document.getElementById('image-sample').value, columns: Number(document.getElementById('image-columns').value), palette: document.getElementById('image-palette').value };
     const baseline = verify ? previous : null;
     function fail() {
-      status.textContent = 'The preview could not run. Open the full image tool using the link below.';
+      status.textContent = 'The preview could not run. Retry below, or open Image to Pixels.';
       demo.setAttribute('aria-busy', 'false');
       worker?.terminate();
       previous = null;
+      evidence.hidden = false;
+      const explanation = evidence.querySelector('p');
+      if (explanation) explanation.hidden = true;
       repeat.disabled = false;
       repeat.textContent = 'Retry rendering';
     }
@@ -54,6 +57,8 @@ export function initImageDemo() {
           ? (identicalPixels(baseline.plain, result.plain) && identicalPixels(baseline.dithered, result.dithered) ? 'Both images reproduced exactly, pixel for pixel.' : 'The repeated outputs differ. Inspect the settings and renderer.')
           : 'Same source, grid and palette. Only the conversion method changes.';
         evidence.hidden = false;
+        const explanation = evidence.querySelector('p');
+        if (explanation) explanation.hidden = false;
         previous = result;
         repeat.disabled = false;
         repeat.textContent = 'Check repeatability';

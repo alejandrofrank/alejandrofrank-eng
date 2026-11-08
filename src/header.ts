@@ -14,7 +14,7 @@ export interface Outcome {
 
 export async function buildOutcomes(env: Env): Promise<Outcome[]> {
   const building = SHIPLOG.filter((e) => e.status === "building").length;
-  const pushAgo = await latestPushAgo(env);
+  const pushAgo = await latestPushAgo(env).catch(() => null);
 
   return [
     ...OUTCOMES,

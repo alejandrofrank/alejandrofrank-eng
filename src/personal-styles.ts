@@ -361,6 +361,9 @@ body.personal { background:#192822; color:#201c32; --fg:#201c32; }
 .personal .contact-links .email-pop { position:static; }
 .personal .contact-links .email-box { top:calc(100% + 14px); left:50%; right:auto; transform:translateX(-50%); width:max-content; max-width:100%; justify-content:center; border-color:#506557; border-radius:12px; }
 .personal .contact-links:has(.email-pop[open]) { margin-bottom:76px; }
+.personal .email-box { flex-wrap:wrap; }
+.email-status { flex-basis:100%; font:400 12px/1.5 var(--sans); text-align:center; max-width:38ch; }
+.email-status:empty { display:none; }
 @media(max-width:560px) { .personal .contact-links { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .personal .contact-links .contact-button { padding:14px 10px; } .personal .contact-links:has(.email-pop[open]) { margin-bottom:105px; } }
 @media(prefers-reduced-motion:reduce) { .personal .contact-links .contact-button { transition:none; } .personal .contact-links .contact-button:hover { transform:none; } }
 

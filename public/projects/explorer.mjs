@@ -13,6 +13,13 @@ if (explorer) {
   let selected = -1;
   let animations = [];
   let listMode = false;
+  try { listMode = sessionStorage.getItem('portfolio-project-layout') === 'list'; } catch { /* Storage can be unavailable. */ }
+  const applyLayout = () => {
+    explorer.hidden = listMode;
+    list.hidden = !listMode;
+    viewToggle.textContent = listMode ? 'Use project picker ↗' : 'Read as a list ☷';
+    viewToggle.setAttribute('aria-pressed', String(listMode));
+  };
   const resetTilt = () => explorer.querySelectorAll('.project-sketch').forEach(sketch => {
     sketch.style.removeProperty('--tilt-x');
     sketch.style.removeProperty('--tilt-y');
@@ -57,10 +64,8 @@ if (explorer) {
   viewToggle.addEventListener('click', () => {
     cancelMotion();
     listMode = !listMode;
-    explorer.hidden = listMode;
-    list.hidden = !listMode;
-    viewToggle.textContent = listMode ? 'Use project picker ↗' : 'Read as a list ☷';
-    viewToggle.setAttribute('aria-pressed', String(listMode));
+    applyLayout();
+    try { sessionStorage.setItem('portfolio-project-layout', listMode ? 'list' : 'picker'); } catch { /* Keep the current page usable. */ }
   });
   // Tilt only the illustration; text and controls remain stationary.
   explorer.querySelectorAll('.project-sketch').forEach(sketch => {
@@ -81,7 +86,8 @@ if (explorer) {
   explorer.hidden = false;
   explorer.querySelectorAll('.sketch-wire').forEach(wire => wireLengths.set(wire, wire.getTotalLength()));
   document.getElementById('explorer-tools').hidden = false;
-  list.hidden = true;
   const initial = choices.findIndex(choice => choice.value === location.hash.slice(1));
   select(initial >= 0 ? initial : 0, false);
+  applyLayout();
+  if (listMode && initial >= 0) document.getElementById(choices[initial].value)?.scrollIntoView({ block:'nearest' });
 }

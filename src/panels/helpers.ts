@@ -37,6 +37,9 @@ export function timeAgo(iso: string): string {
  * caches.default under a synthetic GET key (per-colo, `ttl` seconds).
  */
 export async function cachedFetch(url: string, init: RequestInit, ttl = 300): Promise<Response> {
+  // Optional activity data must never hold the page open indefinitely. The
+  // signal also bounds response-body reads after headers have arrived.
+  init = { ...init, signal: init.signal ?? AbortSignal.timeout(2500) };
   const method = (init.method ?? "GET").toUpperCase();
   if (method === "GET") {
     return fetch(url, { ...init, cf: { cacheTtl: ttl, cacheEverything: true } } as RequestInit);
