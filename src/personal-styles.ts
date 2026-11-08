@@ -335,13 +335,18 @@ body.personal { background:#192822; color:#201c32; --fg:#201c32; }
  .personal :is(a,button,summary):focus-visible { outline-color:#e8b286; }
 }
 
-/* Contact opens directly under the controls, ahead of the activity graph. */
-#contact .reveal-body { grid-row:2; text-align:center; padding-block:38px; }
-.explore:has(#contact[open]) > .ambient-calendar { grid-row:3; }
+/* Every selected section opens next to its controls, ahead of activity. */
+.explore .reveal-body { grid-row:2; }
+#contact .reveal-body { text-align:center; padding-block:38px; }
+.explore:has(.reveal[open]) > .ambient-calendar { grid-row:3; }
 @media(max-width:760px) {
- #contact .reveal-body { grid-row:3; }
- .explore:has(#contact[open]) > .ambient-calendar { grid-row:4; }
+ .explore .reveal-body { grid-row:3; }
+ .explore:has(.reveal[open]) > .ambient-calendar { grid-row:4; }
 }
+.project-summary { display:grid; gap:6px; min-width:0; }
+.project-summary strong { font-size:17px; font-weight:600; }
+.personal .project-summary > span { font-size:14px; line-height:1.5; font-weight:400; color:#f1ecdf; }
+.personal .project-summary small { font-size:12px; line-height:1.4; font-weight:400; color:#b8c5b8; }
 #contact .reveal-body h2 { margin-bottom:26px; }
 .personal .contact-links { position:relative; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; max-width:640px; margin:0 auto; align-items:start; }
 .personal .contact-links .contact-button {

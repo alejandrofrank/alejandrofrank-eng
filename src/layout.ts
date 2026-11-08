@@ -88,7 +88,7 @@ export async function renderPage(env: Env, origin: string): Promise<string> {
       body: `<p class="project-eyebrow">${esc(project.status)}</p><p class="v-headline">${esc(project.question)}</p><p class="v-blurb">${esc(project.summary)}</p><div class="v-actions"><a class="v-action" href="${projectPath(project)}">Read the project →</a>${project.links.map(link => `<a class="v-action" href="${esc(link.href.startsWith("#") ? projectPath(project) + link.href : link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)} ↗</a>`).join('')}</div>`,
       foot: `<span class="badge">${project.stack.map(esc).join(' · ')}</span>`,
     });
-    return `<details class="project-dropdown" name="project" id="project-${project.slug}"><summary>${esc(project.title)}</summary><div class="project-details">${body}</div></details>`;
+    return `<details class="project-dropdown" name="project" id="project-${project.slug}"><summary><span class="project-summary"><strong>${esc(project.title)}</strong><span>${esc(project.question)}</span><small>${esc(project.status)}</small></span></summary><div class="project-details">${body}</div></details>`;
   }).join('');
 
   return `<!doctype html>
