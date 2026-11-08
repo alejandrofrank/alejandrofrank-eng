@@ -31,7 +31,7 @@ export function readingShell(title: string, description: string, path: string, o
 <style>${readingStyles}${appearanceStyles}${extraStyles}${appearance.styles}${navigationStyles}</style></head><body class="${appearance.bodyClass}" data-view="${view}">
 ${appearance.background}
 <a class="skip-link" href="#main">Skip to content</a><div class="site-wrap">
-${portfolioNavigation(view, path === '/tech' ? 'home' : 'projects', currentProject?.slug, currentProject ? path : undefined)}<main id="main">${body}</main>
+${portfolioNavigation(view, path === '/' ? 'home' : 'projects', currentProject?.slug, currentProject ? path : undefined)}<main id="main">${body}</main>
 <footer class="site-footer" id="contact"><p>Have a problem worth working on? Get in touch.</p><nav class="footer-links" aria-label="Contact">${LINKS.filter(l => ['Email', 'GitHub', 'LinkedIn'].includes(l.label)).map(l => `<a href="${esc(l.href)}"${l.href.startsWith('https:') ? ' target="_blank" rel="noopener noreferrer"' : ''}>${esc(l.label)}${l.href.startsWith('https:') ? ' ↗' : ''}</a>`).join('')}</nav></footer>
 </div><script type="module" src="/appearance.mjs"></script>${script ? `<script type="module">${script}</script>` : ''}</body></html>`;
 }

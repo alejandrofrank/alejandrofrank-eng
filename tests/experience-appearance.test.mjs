@@ -112,12 +112,16 @@ test('all appearances stay banner-free and retain a Home return and appearance p
       assert.ok(controls);
       assert.equal(win.getComputedStyle(controls).position, 'relative');
       assert.equal(controls.querySelectorAll('.view-choice').length, 3);
+      if (path === '/') {
+        assert.equal(controls.querySelector('.home-identity').textContent, 'Alejandro Frank');
+        continue;
+      }
       assert.equal(controls.querySelectorAll('[data-destination]').length, 1);
       const home = controls.querySelector('[aria-label=Home]');
-      assert.equal(home.getAttribute('href'), view === 'tech' ? '/tech' : '/');
+      assert.equal(home.getAttribute('href'), '/');
       const next = await browser.open(home.getAttribute('href'));
       assertAppearance(next, view);
-      assert.equal(next.location.pathname, view === 'tech' ? '/tech' : '/');
+      assert.equal(next.location.pathname, '/');
       assert.equal(next.location.hash, '');
       assert.equal(Boolean(next.document.querySelector('[data-aim-range]')), view === 'arcade');
     }
@@ -160,7 +164,7 @@ test('an open game has a direct Home exit as well as its existing arcade exit', 
       screen.open('bakiano', win.document.getElementById('station-bakiano'));
       const home = win.document.querySelector('dialog[open] .screen-home');
       assert.equal(home.textContent, 'Home');
-      assert.equal(home.getAttribute('href'), view === 'tech' ? '/tech' : '/');
+      assert.equal(home.getAttribute('href'), '/');
       assertAppearance(await browser.open(home.getAttribute('href')), view);
       win.document.querySelector('.screen-exit').click();
       assert.equal(screen.isOpen, false);

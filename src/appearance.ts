@@ -6,8 +6,8 @@ export function isPortfolioView(value?: string): value is PortfolioView {
   return value === 'original' || value === 'tech' || value === 'arcade';
 }
 
-export function portfolioHome(view: PortfolioView): string {
-  return { original: '/', tech: '/tech', arcade: '/' }[view];
+export function portfolioHome(_view: PortfolioView): string {
+  return '/';
 }
 
 const views: { id: PortfolioView; label: string; description: string; icon: string }[] = [
@@ -20,7 +20,7 @@ const views: { id: PortfolioView; label: string; description: string; icon: stri
 export function appearanceSwitch(active: PortfolioView, projectSlug = '', currentPage?: string): string {
   const hash = projectSlug ? '#' + encodeURIComponent(projectSlug) : '';
   const destinations = Object.fromEntries(views.map(({ id }) => [id,
-    `${currentPage || (id === 'arcade' && projectSlug ? '/play' : portfolioHome(id))}?view=${id}${currentPage ? '' : hash}`,
+    `${currentPage || (projectSlug ? { original: '/', tech: '/tech', arcade: '/play' }[id] : portfolioHome(id))}?view=${id}${currentPage ? '' : hash}`,
   ]));
   return `<nav class="view-switcher" aria-label="Portfolio view"><span class="view-switcher-label" aria-hidden="true">View</span><div class="view-choices">${views.map(view => `<a class="view-choice" data-view="${view.id}" href="${destinations[view.id]}"${currentPage ? ' data-keep-fragment' : ''} title="${view.description}"${active === view.id ? ' aria-current="page"' : ''}><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${view.icon}</svg><span>${view.label}</span></a>`).join('')}</div></nav>`;
 }

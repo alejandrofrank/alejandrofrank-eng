@@ -6,12 +6,13 @@ import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { renderPage } from "./layout";
 import { renderProjectIndex, renderProjectPage } from "./projects/page";
+import { renderTechHome } from "./projects/home";
 import { renderAmbientCalendar } from "./panels/github";
 import { renderPlayPage } from "./play/page";
 import { renderArcadeHome } from "./play/home";
 import { renderResumePage } from "./resume/page";
 import { renderTimelinePage } from "./timeline/page";
-import { APPEARANCE_COOKIE, isPortfolioView, portfolioHome, type PortfolioView } from "./appearance";
+import { APPEARANCE_COOKIE, isPortfolioView, type PortfolioView } from "./appearance";
 import { styles } from "./styles";
 import { FAVICON } from "./favicon";
 import { FONTS_LINK, DIAMOND } from "./ui";
@@ -59,7 +60,7 @@ app.get("/", async (c) => {
   const origin = new URL(c.req.url).origin;
   if (c.get('view') === 'arcade') return c.html(await renderArcadeHome(c.env, origin));
   if (c.get('view') === 'original') return c.html(await renderPage(c.env, origin));
-  return c.redirect(portfolioHome('tech'), 302);
+  return c.html(renderTechHome(origin));
 });
 app.get("/tech", async (c) => c.html(renderProjectIndex(new URL(c.req.url).origin, await renderAmbientCalendar(c.env), c.get('view'))));
 app.get("/projects/:slug", (c) => {
