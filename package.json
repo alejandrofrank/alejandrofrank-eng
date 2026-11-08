@@ -7,6 +7,7 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
+    "test:site": "node --test tests/experience-appearance.test.mjs tests/performance-hint.test.mjs tests/portfolio-recovery.test.mjs",
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {

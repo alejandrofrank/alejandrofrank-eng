@@ -38,11 +38,20 @@ The basic site runs without a GitHub token. To enable the contribution calendar 
 
 ```bash
 npm run typecheck
-npm test
+npm run test:site
 npm run deploy
 ```
 
 Deployment requires your own Cloudflare account and Worker configuration. Set the `GITHUB_TOKEN` Worker secret separately if you want the calendar in production.
+
+### Choose checks for the change
+
+- Website navigation, appearance, experience and recovery: `npm run test:site`. This focused suite skips full game campaigns.
+- Game changes: run the affected game's test files, including its controls and engine. For example: `node --test tests/order-flow-*.test.mjs`.
+- Releases or changes shared across games: `npm test` runs the complete suite once.
+- Copy or small CSS changes: check the affected page and run any relevant existing test; do not add tests that only repeat the new text or styles.
+
+Run `npm run typecheck` for TypeScript changes. After checks pass, repeat them only for new code changes, failures or unresolved concerns. Documentation and test-command changes do not require another website deployment.
 
 ## Project map
 
