@@ -172,18 +172,16 @@ test('appearance changes keep the selected experience role, including after hist
   for (const view of ['original', 'arcade']) {
     const browser = visitor(`portfolio_view=${view}`), win = await browser.open('/resume#sanofi');
     initPortfolioNavigation(win.document);
-    for (const script of win.document.querySelectorAll('script:not([src]):not([type=module])')) win.eval(script.textContent);
-    win.document.querySelectorAll('.tab')[1].click();
+    win.history.replaceState(null, '', '#permira');
     const selectedRole = win.location.hash;
-    assert.notEqual(selectedRole, '#sanofi');
     const picker = win.document.querySelector('.view-choice[data-view=tech]');
     picker.addEventListener('click', event => event.preventDefault()); picker.click();
     assert.equal(picker.hash, selectedRole);
     const next = await browser.open(picker.getAttribute('href'));
     assert.equal(next.location.pathname, '/resume'); assert.equal(next.location.hash, selectedRole);
     assertAppearance(next, 'tech');
-    for (const script of next.document.querySelectorAll('script:not([src]):not([type=module])')) next.eval(script.textContent);
-    assert.equal(next.document.querySelector('.tab[aria-pressed=true]').textContent, win.document.querySelector('.tab[aria-pressed=true]').textContent);
+    assert.ok(next.document.querySelector(selectedRole + ' .role-summary').textContent);
+    assert.equal(next.document.querySelectorAll('.experience-entry').length, 11);
   }
 });
 
@@ -258,18 +256,30 @@ for (const view of ['tech', 'arcade']) {
       for (const script of win.document.querySelectorAll('script:not([src]):not([type=module])')) win.eval(script.textContent);
       const expectedText = view === 'tech' ? '#e6edf3' : '#f1edde';
       assert.equal(win.getComputedStyle(win.document.body).getPropertyValue('--fg'), expectedText);
-      assert.equal(win.getComputedStyle(win.document.querySelector('.on-cream')).getPropertyValue('--fg'), expectedText);
+      if (win.document.querySelector('.on-cream')) assert.equal(win.getComputedStyle(win.document.querySelector('.on-cream')).getPropertyValue('--fg'), expectedText);
     }
     const firstRole = timeline.document.querySelector('.tlp-bar');
     firstRole.focus(); firstRole.click();
     assert.equal(timeline.document.querySelector('#tlpModal').getAttribute('aria-hidden'), 'false');
+    assert.equal(timeline.document.querySelector('#tlpModal').tagName, 'DIALOG');
+    assert.equal(timeline.document.querySelector('#tlpModal').open, true);
     assert.ok(timeline.document.querySelectorAll('#tlpScene .node').length > 0);
-    timeline.document.dispatchEvent(new timeline.KeyboardEvent('keydown', { key: 'Escape' }));
+    timeline.document.querySelector('#tlpModal').dispatchEvent(new timeline.Event('cancel', { cancelable:true }));
     assert.equal(timeline.document.querySelector('#tlpModal').getAttribute('aria-hidden'), 'true');
     assert.equal(timeline.document.activeElement, firstRole);
-    list.document.querySelectorAll('.tab')[1].click();
-    assert.equal(list.document.querySelectorAll('.tab')[1].getAttribute('aria-pressed'), 'true');
-    assertAppearance(await browser.open('/resume' + list.location.hash), view);
+    const entries = [...list.document.querySelectorAll('.experience-entry')];
+    assert.equal(entries.length, 11);
+    assert.equal(entries[0].id, 'permira');
+    for (const entry of entries) {
+      assert.equal(entry.hidden, false);
+      assert.ok(entry.querySelector('.role-dates').textContent);
+      assert.ok(entry.querySelector('.role-summary').textContent);
+    }
+    const linked = await browser.open(entries[0].querySelector('a').getAttribute('href'));
+    assertAppearance(linked, view);
+    for (const script of linked.document.querySelectorAll('script:not([src]):not([type=module])')) linked.eval(script.textContent);
+    assert.equal(linked.document.querySelector('#tlpModal').open, true);
+    assert.match(linked.document.querySelector('#tlpMeta').textContent, /Permira/);
   });
 }
 

@@ -20,6 +20,8 @@ export function experienceNavigation(view: PortfolioView, path: ExperiencePath):
 }
 
 const toolbarStyles = `
+.skip-link { position:absolute; top:-80px; left:20px; padding:12px; background:var(--fg); color:var(--bg); }
+.skip-link:focus { top:8px; }
 .experience-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:12px 24px; padding:8px 0; margin:0 0 16px; }
 .experience-toolbar a { display:inline-flex; align-items:center; min-height:44px; }
 @media print { .experience-toolbar { display:none; } }
@@ -57,7 +59,7 @@ const themedStyles = `
   .experience-themed .tlp-dialog { border:1px solid var(--line); border-radius:12px; clip-path:none; box-shadow:0 20px 80px #0008; }
   .experience-themed .tlp-backdrop { background:#050811b8; backdrop-filter:blur(8px); }
   .experience-themed .tlp-role { padding-right:36px; }
-  .experience-themed .tlp-close { min-width:32px; min-height:32px; }
+  .experience-themed .tlp-close { min-width:44px; min-height:44px; }
   .experience-themed .stage { border:1px solid var(--line); border-radius:10px; clip-path:none; }
   .experience-themed .tabs { justify-content:flex-start; gap:8px; }
   .experience-themed :is(.tab,.pp,.ft-toggle) { border:1px solid var(--line); border-radius:7px; clip-path:none; min-height:40px; }

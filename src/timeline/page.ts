@@ -59,15 +59,17 @@ const TIMELINE_STYLES = `
     .tlp-legend { flex-direction: row; flex-wrap: wrap; gap: 14px; }
   }
   /* modal */
-  .tlp-modal { position: fixed; inset: 0; z-index: 50; display: none; }
-  .tlp-modal.open { display: block; }
+  .tlp-modal { position:fixed; inset:0; z-index:50; display:none; width:100vw; max-width:none; height:100dvh; max-height:none; margin:0; padding:0; border:0; background:transparent; color:inherit; }
+  .tlp-modal[open] { display:block; }
+  .tlp-modal::backdrop { background:transparent; }
+  body:has(.tlp-modal[open]) { overflow:hidden; }
   .tlp-backdrop { position: absolute; inset: 0; background: rgba(22,21,15,.72); backdrop-filter: blur(2px); }
   .tlp-dialog { position: relative; width: min(1000px, calc(100% - 20px)); margin: 4vh auto; padding: 22px 26px 26px; max-height: 92vh; overflow: auto; }
   @media (max-width: 700px) {
     .tlp-dialog { margin: 2.5vh auto; padding: 18px 14px; max-height: 95vh; }
     .tlp-role { padding-right: 30px; } /* keep clear of the close button */
   }
-  .tlp-close { position: absolute; top: 14px; right: 18px; background: none; border: none; color: var(--muted); font-size: 26px; line-height: 1; cursor: pointer; }
+  .tlp-close { position: absolute; top: 10px; right: 10px; min-width:44px; min-height:44px; background: none; border: none; color: var(--muted); font-size: 26px; line-height: 1; cursor: pointer; }
   .tlp-close:hover { color: var(--accent); }
   .tlp-role { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
   .tlp-meta { font: 500 10px/1 var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); margin: 6px 0 16px; }
@@ -204,6 +206,8 @@ const TIMELINE_SCRIPT = `<script>
     lastFocus = document.activeElement;
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
+    if (!modal.open) modal.showModal();
+    history.replaceState(null, '', '#' + s.id);
     closeBtn.focus();
     if (controller) controller.stop();
     controller = window.SceneEngine.mount(s, els);
@@ -212,15 +216,24 @@ const TIMELINE_SCRIPT = `<script>
     if (!modal.classList.contains('open')) return;
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
+    modal.close();
+    history.replaceState(null, '', location.pathname + location.search);
     if (controller) { controller.stop(); controller = null; }
     if (lastFocus && lastFocus.focus) { lastFocus.focus(); lastFocus = null; }
   }
   closeBtn.addEventListener('click', close);
   backdrop.addEventListener('click', close);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  modal.addEventListener('cancel', function (e) { e.preventDefault(); close(); });
   if (window.FullText) window.FullText.wire(fullEl, function () { if (controller) controller.pause(); });
 
   build();
+  function openLinkedRole() {
+    var id = location.hash.slice(1);
+    var idx = scenes.findIndex(function (scene) { return scene.id === id; });
+    if (idx >= 0) open(idx);
+  }
+  openLinkedRole();
+  window.addEventListener('hashchange', openLinkedRole);
   tlp.addEventListener('runner-exit', build);
   var rt;
   window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(build, 150); });
@@ -245,8 +258,10 @@ ${FONTS_LINK}
 </head>
 <body class="${appearance.bodyClass}" data-view="${view}">
   ${appearance.background}
+  <a class="skip-link" href="#main">Skip to content</a>
   <div class="wrap tlp-wrap">
     ${experienceNavigation(view, '/timeline')}
+    <main id="main">
     ${sectionLabel("Timeline", `${SCENES.length} roles`)}
     <div class="tlp-head">
       <div>
@@ -269,11 +284,12 @@ ${FONTS_LINK}
       <span class="tlp-hint-mobile">swipe ↔ · tap a company</span>
       <a href="/resume">List view</a>
     </div>
+    </main>
   </div>
 
-  <div class="tlp-modal" id="tlpModal" aria-hidden="true">
+  <dialog class="tlp-modal" id="tlpModal" aria-hidden="true" aria-labelledby="tlpRole">
     <div class="tlp-backdrop" id="tlpBackdrop"></div>
-    <div class="tlp-dialog on-cream chamfer" role="dialog" aria-modal="true" aria-labelledby="tlpRole">
+    <div class="tlp-dialog on-cream chamfer">
       <button class="tlp-close" id="tlpClose" aria-label="close">×</button>
       <div class="tlp-role" id="tlpRole"></div>
       <div class="tlp-meta" id="tlpMeta"></div>
@@ -292,7 +308,7 @@ ${FONTS_LINK}
         <div class="tlp-cap-text" id="tlpCapText"></div>
       </div>
     </div>
-  </div>
+  </dialog>
 
   <script>window.__SCENES__ = ${data};</script>
   ${SCENE_ENGINE_SCRIPT}
