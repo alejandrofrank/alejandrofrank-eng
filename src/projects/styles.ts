@@ -71,6 +71,10 @@ p+p { margin-top:14px; }
 .breadcrumb { font-size:13px; margin-top:28px; color:var(--muted); }
 .case-head { padding:26px 0 30px; border-bottom:1px solid var(--line); }
 .case-head h1 { margin:12px 0; }
+.case-head .entry-meta { margin:16px 0; }
+.case-category { color:var(--muted); font-size:13px; }
+.case-jumps { display:flex; flex-wrap:wrap; gap:4px 22px; margin-top:18px; }
+.case-jumps a { display:inline-flex; align-items:center; min-height:44px; font-size:14px; color:var(--muted); }
 .case-head .question { font-size:21px; margin:0 0 12px; }
 .case-head .summary { max-width:68ch; color:var(--muted); }
 .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:22px; }

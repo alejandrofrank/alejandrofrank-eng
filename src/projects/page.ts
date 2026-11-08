@@ -11,6 +11,7 @@ import { navigationStyles, portfolioNavigation, portfolioProjects } from '../nav
 import { readingAppearance } from './appearance';
 import { renderProjectExplorer } from './explorer';
 import { explorerStyles } from './explorer-styles';
+import { projectInspector, inspectorStyles } from './inspector';
 
 export function projectState(project: Project): string {
   const state = project.category === 'Product' ? ' live' : project.category === 'In development' ? ' building' : '';
@@ -50,15 +51,18 @@ export function renderProjectPage(slug: string, origin: string, view: PortfolioV
   if (index < 0) return undefined;
   const project = PROJECTS[index];
   const next = PROJECTS[index + 1];
+  const inspector = projectInspector(slug);
+  const inspectorLabel = slug === 'catalog-match-lab' ? 'Try the matcher' : 'Compare rendering methods';
   const technical = project.slug === 'bakiano' ? bakianoTechnical() : project.slug === 'vesti' ? vestiTechnical() : '';
   const run = project.repo ? `<section aria-labelledby="run-title"><h2 id="run-title">Run it locally</h2><p>Node.js 22 or newer. The default lab needs no API key or cloud account.</p><pre class="run-block"><code>git clone https://github.com/alejandrofrank/${esc(project.repo)}.git
 cd ${esc(project.repo)}
 npm run dev</code></pre><p class="run-note">Then open <code>http://127.0.0.1:${project.port}</code>. Follow the repository for optional integrations and verification commands.</p></section>` : '';
   return readingShell(project.title, project.summary, projectPath(project), origin, `
 <nav class="breadcrumb" aria-label="Breadcrumb"><a href="${portfolioProjects(view, project.slug)}">← All projects</a> / ${String(index + 1).padStart(2, '0')}</nav>
-<header class="case-head"><div class="entry-meta"><span class="eyebrow">${esc(project.category)}</span>${projectState(project)}</div><h1>${esc(project.title)}</h1><p class="question">${esc(project.question)}</p><p class="summary">${esc(project.summary)}</p>${project.links.length ? `<div class="actions">${project.links.map((link, i) => `<a class="action${i === 0 ? ' primary' : ''}" href="${esc(link.href)}"${link.href.startsWith("#") ? "" : ' target="_blank" rel="noopener noreferrer"'}>${esc(link.label)} ↗</a>`).join('')}</div>` : ''}</header>
+<header class="case-head"><h1>${esc(project.title)}</h1><div class="entry-meta"><span class="case-category">${esc(project.category)}</span>${projectState(project)}</div><p class="question">${esc(project.question)}</p><p class="summary">${esc(project.summary)}</p>${project.links.length || inspector ? `<div class="actions">${inspector ? `<a class="action primary" href="#try-it">${inspectorLabel} ↓</a>` : ''}${project.links.map((link, i) => `<a class="action${i === 0 && !inspector ? ' primary' : ''}" href="${esc(link.href)}"${link.href.startsWith("#") ? "" : ' target="_blank" rel="noopener noreferrer"'}>${esc(link.label)} ${link.href.startsWith('#') ? '↓' : '↗'}</a>`).join('')}</div>` : ''}<nav class="case-jumps" aria-label="On this page"><a href="#problem">Problem</a><a href="#approach">Approach</a><a href="#evidence">Evidence</a><a href="#scope">Scope</a>${run ? '<a href="#run-title">Run locally</a>' : ''}</nav></header>
 ${project.slug === "madrid-delivery-sim" ? madridDemo() : ""}
-<div class="case-grid"><div class="case-copy"><section><h2>The problem</h2><p>${esc(project.problem)}</p></section><section><h2>The approach</h2><ul>${project.approach.map(p => `<li>${esc(p)}</li>`).join('')}</ul></section><section><h2>What you can inspect</h2><p>${esc(project.evidence)}</p></section><section class="case-note"><h2>Scope & limitations</h2><p>${esc(project.boundary)}</p></section>${project.slug === "madrid-delivery-sim" ? madridGuide() : ""}${run}${technical}</div>
+${inspector}
+<div class="case-grid"><div class="case-copy"><section id="problem"><h2>The problem</h2><p>${esc(project.problem)}</p></section><section id="approach"><h2>The approach</h2><ul>${project.approach.map(p => `<li>${esc(p)}</li>`).join('')}</ul></section><section id="evidence"><h2>What you can inspect</h2><p>${esc(project.evidence)}</p></section><section class="case-note" id="scope"><h2>Scope & limitations</h2><p>${esc(project.boundary)}</p></section>${project.slug === "madrid-delivery-sim" ? madridGuide() : ""}${run}${technical}</div>
 <aside class="case-aside" aria-label="Project at a glance"><h2>System at a glance</h2><ol class="flow">${project.flow.map(p => `<li>${esc(p)}</li>`).join('')}</ol><h2>Working with</h2><p>${project.stack.map(esc).join(' · ')}</p></aside></div>
-<nav class="next-project" aria-label="Continue reading"><a href="${portfolioProjects(view, project.slug)}">Back to projects</a>${project.arcade === false ? `<a href="#demo">Back to the demo →</a>` : `<a href="/play#concept-${project.slug}">Play this project →</a>`}${next ? `<a href="${projectPath(next)}"><span>Next in the reading path</span>${esc(next.title)} →</a>` : '<a href="/timeline">Explore my experience →</a>'}</nav>`, project.slug === 'madrid-delivery-sim' ? madridStyles : '', '', view);
+<nav class="next-project" aria-label="Continue reading"><a href="${portfolioProjects(view, project.slug)}">Back to projects</a>${project.arcade === false ? `<a href="#demo">Back to the demo →</a>` : `<a href="/play#concept-${project.slug}">Play this project →</a>`}${next ? `<a href="${projectPath(next)}"><span>Next in the reading path</span>${esc(next.title)} →</a>` : '<a href="/timeline">Explore my experience →</a>'}</nav>`, (project.slug === 'madrid-delivery-sim' ? madridStyles : '') + (inspector ? inspectorStyles : ''), inspector ? "import '/projects/inspector.mjs';" : '', view);
 }

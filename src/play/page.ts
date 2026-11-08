@@ -1,3 +1,4 @@
+import { matchMarkup, imageMarkup } from '../projects/inspectors';
 import { PROJECTS, projectPath } from '../projects/catalog';
 import { readingShell } from '../projects/page';
 import type { PortfolioView } from '../appearance';
@@ -44,25 +45,4 @@ export function renderPlayPage(origin: string, view: PortfolioView = 'arcade'): 
     </section>`;
   }).join('')}</div>
 <div class="arcade-colophon"><span>PLAY → INSPECT → READ THE CODE</span><span><a href="/tech#projects">Read all projects →</a></span></div>`, playStyles + miniStyles + basketStyles + ingestionStyles + queryStyles + identityStyles + orderFlowStyles, `import { initArcade } from '/play/arcade.mjs'; initArcade();`, view);
-}
-
-function matchMarkup(): string {
-  return `<section class="match-demo" id="match-demo" aria-label="Product identity comparison" hidden>
-  <div class="match-presets" role="group" aria-label="Example pairs"><button type="button" data-pair="size" aria-pressed="true">Size conflict</button><button type="button" data-pair="units" aria-pressed="false">Aliases + units</button><button type="button" data-pair="missing" aria-pressed="false">Missing detail</button></div>
-  <form id="match-form"><div class="match-inputs"><label>Requested product<input id="match-request" maxlength="160" required value="Loma leche entera 1 L"></label><label>Candidate listing<input id="match-candidate" maxlength="160" required value="Loma leche entera 200 ml"></label></div><button class="action" type="submit">Inspect pair →</button></form>
-  <div class="match-results" aria-live="polite" aria-atomic="true"><div><span>A / SHARED WORDS</span><strong id="match-baseline"></strong><p>A deliberately simple reference rule.</p></div><div id="match-identity"><span>B / IDENTITY CHECKS</span><strong id="match-decision"></strong><p id="match-reason"></p></div></div>
-  <div class="match-table-wrap"><table class="evidence-table"><caption>ACTUAL MATCHER OUTPUT / normalized attributes</caption><thead><tr><th scope="col">Check</th><th scope="col">Requested</th><th scope="col">Candidate</th><th scope="col">Result</th></tr></thead><tbody id="match-checks"></tbody></table></div>
-  <p class="arcade-note">Fictional names. These offline rules support a small vocabulary; unfamiliar details stay uncertain. This is not a trained model or Bakiano’s production matcher. <a href="https://github.com/alejandrofrank/catalog-match-lab/blob/2a7ce8a3e4330bfb7d284b878ff9833693fa32b8/src/match.js" target="_blank" rel="noopener noreferrer">Inspect the exact code ↗</a></p>
-  </section>`;
-}
-
-function imageMarkup(): string {
-  return `<section class="image-demo" id="image-demo" aria-label="Image conversion comparison" hidden>
-  <div class="image-demo-controls" id="image-demo-controls"><label>Source<select id="image-sample"><option value="still-life">Still life</option><option value="terrain">Landscape</option><option value="signal">Signal</option></select></label><label>Grid columns<select id="image-columns"><option>16</option><option>32</option><option selected>64</option><option>128</option></select></label><label>Color budget<select id="image-palette"><option value="gray">4 grays</option><option value="ink">2 colors</option><option value="moss">4 greens</option></select></label></div>
-  <figure class="image-source"><canvas id="image-source" width="640" height="480" role="img" aria-label="Original image"></canvas><figcaption><strong>Original / 640 × 480</strong><span>An original procedural sample from the repo. Both methods receive exactly these pixels.</span></figcaption></figure>
-  <div class="image-results"><figure><figcaption>A / Nearest color</figcaption><canvas id="image-plain" width="64" height="48" role="img" aria-label="Nearest color result"></canvas><p id="image-plain-meta"></p><span>Choose the closest available color for each cell.</span></figure><figure><figcaption>B / Error diffusion</figcaption><canvas id="image-dithered" width="64" height="48" role="img" aria-label="Dithered result"></canvas><p id="image-dither-meta"></p><span>Spread color error to nearby cells to retain shading.</span></figure></div>
-  <div class="image-evidence" id="image-evidence" hidden><p>Both outputs obey the same color budget. Dithering trades a patterned texture for shading; it is not automatically better for every image.</p><button type="button" class="action" id="image-repeat" disabled>Check repeatability</button> <a href="https://raster-lab.alejandrofranks.workers.dev" target="_blank" rel="noopener noreferrer">Open Image to Pixels ↗</a></div>
-  <p class="image-demo-status" id="image-demo-status" role="status" aria-live="polite">Select this project to render the comparison.</p>
-  <p class="arcade-note">Runs a pinned copy of the real renderer in a browser worker. <a href="https://github.com/alejandrofrank/art_exploring/blob/ff13495892fdf732da4120fd1bda1a54a37f6c9c/studio/core.mjs" target="_blank" rel="noopener noreferrer">Inspect the code ↗</a> · <a href="https://raster-lab.alejandrofranks.workers.dev" target="_blank" rel="noopener noreferrer">Open Image to Pixels ↗</a></p>
-  </section>`;
 }
