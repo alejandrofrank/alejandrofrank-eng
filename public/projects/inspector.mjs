@@ -14,8 +14,10 @@ if (region) {
         const { initImageDemo } = await import('/play/image-demo.mjs');
         initImageDemo().activate();
       }
+      const focusControls = kind === 'image' && document.activeElement === trigger;
       trigger.hidden = true;
       status.textContent = '';
+      if (focusControls) region.querySelector('#image-sample').focus({ preventScroll: true });
     } catch {
       status.textContent = 'The comparison could not load. Try again, or use the project links above.';
       trigger.textContent = 'Try again';
