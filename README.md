@@ -1,6 +1,6 @@
 # Alejandro Frank — engineering portfolio
 
-An engineering portfolio with a direct **Original / Tech / Arcade** view picker. The original green gradients and expandable sections open by default. Choose **Tech** for an animated project explorer and engineering case studies, or **Arcade** for the optional game view.
+An engineering portfolio with a direct **Original / Tech / Arcade** view picker. The original green gradients and expandable sections open on a first visit. Choose **Tech** for a compact overview, project explorer and engineering case studies, or **Arcade** for the optional game view. Your chosen appearance stays selected as you navigate.
 
 **[Explore the live site](https://me.alejandrofranks.workers.dev)** · **[Career timeline](https://me.alejandrofranks.workers.dev/timeline)** · **[Bakiano case study](https://github.com/alejandrofrank/bakiano-showcase)**
 
@@ -9,6 +9,7 @@ An engineering portfolio with a direct **Original / Tech / Arcade** view picker.
 ## What you can explore
 
 - **Original homepage:** green gradients, expandable About me and Projects sections, experience and contact links. All seven projects remain accessible here.
+- **Tech homepage:** a compact overview of all seven projects and recent experience. About and contact open inline, and direct section links open the corresponding content.
 - **Tech project explorer:** `/tech` has seven selectable projects, each with its own system sketch, color and animated entrance. Use the project rail, arrow keys or previous/next controls; the selected project stays in the URL and carries into the arcade. “Read as a list” restores the complete reading index.
 - **View picker:** three visible links with distinct icons and a highlighted current view. One click switches between Original, Tech and Arcade; the selected project carries across all three. The control expands to the available width on phones.
 - **Project pages:** `/projects/:slug` explains the problem, approach, inspectable evidence and limitations. Three runnable labs include local setup instructions. Bakiano and Vesti retain their technical walkthroughs.
@@ -17,7 +18,7 @@ An engineering portfolio with a direct **Original / Tech / Arcade** view picker.
 - **Reading interface:** compact titles, direct project links, keyboard navigation, responsive layouts and print styles. Reading the projects requires no JavaScript.
 - **Optional Arcade view:** `/play` has seven illustrated cabinets and 48 stages. Play Basket Run, Packet Factory, Catalog Customs, Partition Sweep, Pixel Shuffle, Complete the rack and Order Flow. The Agents in GCP game opens at `/play#concept-madrid-delivery-sim`: twenty puzzles use touching grids of 16 to 72 identical two-seat cars, showing only a central arrow and highlights. Clear a path into parking and serve the front passenger's color. From level 6, incognito cars reveal their color only when unblocked. From 7, only the front passenger is visible. From 13, a countdown starts on the first released car. Levels 19–20 reduce parking to two spaces. Queue, parking and yard have a verified complete solution; the proof does not guarantee a player will discover it within the time limit. Losing choices commit immediately without a warning or confirmation. Existing stars carry over, and three undos and an optional hint support retrying. Reload and Undo do not reset the clock. This original browser puzzle has no map or AI/GCP calls. Results link to the real agent in a new tab. The other six games remain unchanged. Keyboard, touch and reduced motion are supported. [Arcade designs and evidence](docs/project-arcade.md) · [Order Flow rules and proof](docs/order-flow.md).
 
-The appearance choices are ordinary links, so they work without JavaScript. The full project list is the fallback when scripts are unavailable and is used for printing. Motion follows the system's reduced-motion preference; animations are finite and run on selection. `/` always opens the original homepage. Neither visiting a project nor playing a game changes the default for later visits.
+The appearance choices are ordinary links, so they work without JavaScript. The full project list is the fallback when scripts are unavailable and is used for printing. Motion follows the system's reduced-motion preference; animations are finite and run on selection. `/` opens the homepage for the saved appearance. Only an explicit picker choice changes that preference; reading a project or playing a game does not.
 
 ## How it works
 

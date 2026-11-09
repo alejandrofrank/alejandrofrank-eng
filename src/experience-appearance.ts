@@ -16,7 +16,7 @@ export function experienceAppearance(view: PortfolioView) {
 
 export function experienceNavigation(view: PortfolioView, path: ExperiencePath): string {
   const alternate = path === '/timeline' ? '/resume' : '/timeline';
-  return `${portfolioNavigation(view, 'experience', '', path)}<nav class="experience-toolbar subnav" aria-label="Experience navigation"><a href="${alternate}">${alternate === '/resume' ? 'List view' : 'Timeline view'}</a></nav>`;
+  return `${portfolioNavigation(view, 'experience', '', path)}<nav class="experience-toolbar subnav" aria-label="Experience navigation"><a href="${alternate}" data-keep-fragment>${alternate === '/resume' ? 'List view' : 'Timeline view'}</a></nav>`;
 }
 
 const toolbarStyles = `

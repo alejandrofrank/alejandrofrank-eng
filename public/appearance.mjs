@@ -1,6 +1,7 @@
-import { initPortfolioNavigation } from './navigation.mjs';
+import { initPortfolioNavigation, initHomeSections } from './navigation.mjs';
 
 initPortfolioNavigation();
+initHomeSections();
 
 // The server saves explicit picker choices. Project selection must preserve that
 // choice parameter instead of replacing the link with an ordinary navigation URL.

@@ -48,6 +48,7 @@ const TIMELINE_STYLES = `
   .tlp-foot span { color: var(--muted); font: 500 10px/1 var(--mono); text-transform: uppercase; letter-spacing: .12em; }
   .tlp-foot a { color: var(--muted); text-decoration: none; font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .14em; }
   .tlp-foot a:hover { color: var(--cream); }
+  .tlp-read-role { display:inline-flex; align-items:center; min-height:44px; margin-bottom:12px; color:var(--fg); text-underline-offset:4px; }
   .tlp-hint-mobile { display: none; }
   @media (max-width: 700px) {
     .tlp { min-width: 780px; height: 62vh; min-height: 430px; }
@@ -202,6 +203,7 @@ const TIMELINE_SCRIPT = `<script>
     var s = scenes[idx];
     roleEl.textContent = s.role;
     metaEl.textContent = s.title + ' \\u00B7 ' + s.period;
+    document.getElementById('tlpReadRole').href = '/resume#' + encodeURIComponent(s.id);
     if (window.FullText) window.FullText.show(fullEl, s.id);
     lastFocus = document.activeElement;
     modal.classList.add('open');
@@ -282,7 +284,7 @@ ${FONTS_LINK}
     <div class="tlp-foot">
       <span class="tlp-hint-desktop">click a company</span>
       <span class="tlp-hint-mobile">swipe ↔ · tap a company</span>
-      <a href="/resume">List view</a>
+      <a href="/resume" data-keep-fragment>List view</a>
     </div>
     </main>
   </div>
@@ -293,6 +295,7 @@ ${FONTS_LINK}
       <button class="tlp-close" id="tlpClose" aria-label="close">×</button>
       <div class="tlp-role" id="tlpRole"></div>
       <div class="tlp-meta" id="tlpMeta"></div>
+      <a class="tlp-read-role" id="tlpReadRole" href="/resume">Read this role as text →</a>
       ${renderFullText(SCENES)}
       <div class="stage">
         ${media(
