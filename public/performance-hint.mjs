@@ -32,19 +32,18 @@ export function initPerformanceHint(doc = document, options = {}) {
   const reduced = win.matchMedia('(prefers-reduced-motion: reduce)');
   const read = (storage, key) => { try { return win[storage].getItem(key); } catch { return null; } };
   const write = (storage, key, value) => { try { value === null ? win[storage].removeItem(key) : win[storage].setItem(key, value); } catch {} };
-  let light = read('localStorage', EFFECTS_KEY) === 'light';
+  let light = read('localStorage', EFFECTS_KEY) !== 'full';
   let dismissed = read('sessionStorage', DISMISSED_KEY) === '1';
   let frame = 0, starts = 0, settled = 0, meter, notice, destroyed = false;
   const restore = doc.createElement('button');
   restore.type = 'button'; restore.className = 'effects-restore'; restore.hidden = true;
-  restore.textContent = 'Lighter effects · Restore';
-  restore.setAttribute('aria-label', 'Restore full background effects');
   doc.body.append(restore);
 
   function stop() { if (frame) frames.cancel(frame); frame = 0; }
   function sync() {
     background.dataset.effects = light ? 'light' : 'full';
-    restore.hidden = !light || reduced.matches;
+    restore.hidden = reduced.matches;
+    restore.textContent = light ? 'Enable background motion' : 'Use lighter effects';
     if (light || reduced.matches) { stop(); if (notice) notice.hidden = true; }
     win.dispatchEvent(new win.Event('portfolio:effectschange'));
   }
@@ -87,11 +86,10 @@ export function initPerformanceHint(doc = document, options = {}) {
   function visibility() { stop(); if (!doc.hidden) start(); }
   function motion() { sync(); if (!reduced.matches) start(); }
   function storage(event) {
-    if (event.key === EFFECTS_KEY || event.key === null) { light = read('localStorage', EFFECTS_KEY) === 'light'; sync(); if (!light) start(); }
+    if (event.key === EFFECTS_KEY || event.key === null) { light = read('localStorage', EFFECTS_KEY) !== 'full'; sync(); if (!light) start(); }
   }
   restore.addEventListener('click', () => {
-    light = false; write('localStorage', EFFECTS_KEY, null); dismiss(); sync();
-    doc.querySelector('.view-choice[aria-current=page]')?.focus({ preventScroll: true });
+    light = !light; write('localStorage', EFFECTS_KEY, light ? 'light' : 'full'); dismiss(); sync();
   });
   win.addEventListener('load', start);
   win.addEventListener('pointermove', start, { passive: true });

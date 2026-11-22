@@ -9,7 +9,7 @@ const { gradientMarkup, personalStyles } = await import(`data:text/javascript;ba
 const fixtures = [];
 afterEach(async () => { await Promise.all(fixtures.splice(0).map(f => { f.controller.destroy(); return f.win.happyDOM.close(); })); });
 
-function fixture({ savedLight = false, dismissed = false, reduced = false, blockedStorage = false } = {}) {
+function fixture({ savedEffects = null, dismissed = false, reduced = false, blockedStorage = false } = {}) {
   const win = new Window({ url: 'https://portfolio.test/', settings: { disableCSSFileLoading: true, disableJavaScriptFileLoading: true } });
   win.document.body.innerHTML = `<style>${personalStyles.replaceAll('@media(', '@media (')}</style>${gradientMarkup}<a class="view-choice" aria-current="page" href="/">Original</a><button id="reading">Reading the page</button>`;
   Object.defineProperty(win.document, 'readyState', { configurable: true, value: 'complete' });
@@ -17,7 +17,7 @@ function fixture({ savedLight = false, dismissed = false, reduced = false, block
   Object.defineProperty(win.document, 'hidden', { configurable: true, get: () => hidden });
   Object.defineProperty(win, 'performance', { configurable: true, value: { now: () => time } });
   const media = new win.EventTarget(); media.matches = reduced; win.matchMedia = () => media;
-  if (savedLight) win.localStorage.setItem('portfolio-effects', 'light');
+  if (savedEffects) win.localStorage.setItem('portfolio-effects', savedEffects);
   if (dismissed) win.sessionStorage.setItem('portfolio-performance-dismissed', '1');
   if (blockedStorage) for (const storage of ['localStorage', 'sessionStorage']) Object.defineProperty(win, storage, { get() { throw new Error('Storage blocked'); } });
   const pending = new Map();
@@ -51,16 +51,33 @@ test('frame health requires sustained poor rendering, not 30 fps, a hitch or one
   assert.notEqual(sample(20000), 'slow', 'a suspended frame is discarded');
 });
 
-test('a healthy visit never prompts and sampling stops after a bounded period', () => {
-  const f = fixture(); f.tick(16000);
+test('a first visit stays light from markup through pointer movement; full motion is an explicit choice', () => {
+  assert.match(gradientMarkup, /class="color-world" data-effects="light"/);
+  const f = fixture();
+  assert.equal(f.root.dataset.effects, 'light'); assert.equal(f.pending.size, 0);
+  assert.equal(f.win.getComputedStyle(f.root.querySelector('.color-band')).animation, 'none');
+  assert.equal(f.win.getComputedStyle(f.root.querySelector('.color-band')).filter, 'none');
+  for (const script of f.win.document.querySelectorAll('script:not([type=module])')) f.win.eval(script.textContent);
+  f.win.dispatchEvent(new f.win.PointerEvent('pointermove', { pointerType: 'mouse', clientX: 200, clientY: 100 }));
+  assert.equal(f.pending.size, 0);
+  const control = f.win.document.querySelector('.effects-restore');
+  assert.equal(control.textContent, 'Enable background motion');
+  control.click();
+  assert.equal(f.root.dataset.effects, 'full'); assert.equal(f.win.localStorage.getItem('portfolio-effects'), 'full');
+  assert.equal(control.hidden, false); assert.equal(control.textContent, 'Use lighter effects');
+  f.tick(100);
+  f.win.dispatchEvent(new f.win.PointerEvent('pointermove', { pointerType: 'mouse', clientX: 400, clientY: 200 }));
+  assert.ok(f.pending.size > 0);
+  control.click(); assert.equal(f.root.dataset.effects, 'light'); assert.equal(f.pending.size, 0);
+  f.tick(16000);
   assert.equal(f.notice, null); assert.equal(f.pending.size, 0);
-  // Pointer activity can begin another bounded sample, at most three per page.
+  // Pointer activity must not restart work after switching back to light mode.
   for (let i = 0; i < 4; i++) { f.win.dispatchEvent(new f.win.PointerEvent('pointermove')); f.tick(16000); }
   assert.equal(f.notice, null); assert.equal(f.pending.size, 0);
 });
 
 test('sustained stuttering offers help without taking focus; light mode stops real ripple work', () => {
-  const f = fixture(); const reading = f.win.document.getElementById('reading'); reading.focus();
+  const f = fixture({ savedEffects: 'full' }); const reading = f.win.document.getElementById('reading'); reading.focus();
   f.tick(7000, 80);
   assert.ok(f.notice); assert.equal(f.pending.size, 0);
   assert.equal(f.win.document.activeElement, reading);
@@ -78,34 +95,35 @@ test('sustained stuttering offers help without taking focus; light mode stops re
   f.win.dispatchEvent(new f.win.PointerEvent('pointermove', { pointerType: 'mouse', clientX: 800, clientY: 500 }));
   assert.equal(f.pending.size, 0, 'lighter mode cannot restart the pixel simulation');
   f.win.document.querySelector('.effects-restore').click();
-  assert.equal(f.root.dataset.effects, 'full'); assert.equal(f.win.localStorage.getItem('portfolio-effects'), null);
+  assert.equal(f.root.dataset.effects, 'full'); assert.equal(f.win.localStorage.getItem('portfolio-effects'), 'full');
   assert.equal(f.notice.hidden, true, 'restoring effects does not immediately nag again');
 });
 
 test('background tabs and reduced motion do not produce warnings', () => {
-  const f = fixture(); f.tick(3500, 80); f.hide(true);
+  const f = fixture({ savedEffects: 'full' }); f.tick(3500, 80); f.hide(true);
   assert.equal(f.pending.size, 0); f.tick(30000, 80); assert.equal(f.notice, null);
   f.hide(false); f.tick(16000); assert.equal(f.notice, null);
-  const quiet = fixture({ reduced: true });
+  const quiet = fixture({ savedEffects: 'full', reduced: true });
   assert.equal(quiet.pending.size, 0); quiet.tick(16000, 80); assert.equal(quiet.notice, null);
-  const active = fixture(); active.tick(2500, 80);
+  const active = fixture({ savedEffects: 'full' }); active.tick(2500, 80);
   active.media.matches = true; active.media.dispatchEvent(new active.win.Event('change'));
   assert.equal(active.pending.size, 0); assert.equal(active.notice, null);
 });
 
 test('dismissal lasts for the session and lighter effects survive a returning visit', () => {
-  const f = fixture(); f.tick(7000, 80); f.notice.querySelector('[data-dismiss]').click();
+  const f = fixture({ savedEffects: 'full' }); f.tick(7000, 80); f.notice.querySelector('[data-dismiss]').click();
   assert.equal(f.win.sessionStorage.getItem('portfolio-performance-dismissed'), '1');
   f.win.dispatchEvent(new f.win.PointerEvent('pointermove')); assert.equal(f.pending.size, 0);
-  const dismissed = fixture({ dismissed: true }); assert.equal(dismissed.pending.size, 0);
-  const returning = fixture({ savedLight: true });
+  const dismissed = fixture({ savedEffects: 'full', dismissed: true }); assert.equal(dismissed.pending.size, 0);
+  const returning = fixture({ savedEffects: 'light' });
   assert.equal(returning.root.dataset.effects, 'light'); assert.equal(returning.pending.size, 0);
   assert.equal(returning.win.document.querySelector('.effects-restore').hidden, false);
 });
 
 test('blocked storage still permits lighter effects and reverting them; other appearances get no notice', () => {
   const f = fixture({ blockedStorage: true }); f.tick(7000, 80);
-  f.notice.querySelector('[data-use-light]').click(); assert.equal(f.root.dataset.effects, 'light');
+  assert.equal(f.notice, null); assert.equal(f.root.dataset.effects, 'light'); assert.equal(f.pending.size, 0);
   f.win.document.querySelector('.effects-restore').click(); assert.equal(f.root.dataset.effects, 'full');
+  f.win.document.querySelector('.effects-restore').click(); assert.equal(f.root.dataset.effects, 'light');
   f.root.remove(); assert.equal(initPerformanceHint(f.win.document), undefined);
 });

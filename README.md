@@ -2,6 +2,8 @@
 
 An engineering portfolio with a direct **Original / Tech / Arcade** view picker. The original green gradients and expandable sections open on a first visit. Choose **Tech** for a compact overview, project explorer and engineering case studies, or **Arcade** for the optional game view. Your chosen appearance stays selected as you navigate.
 
+The gradient uses lighter effects by default, with no background animation, blur filter or cursor ripples. Visitors can enable background motion or switch back to lighter effects using the corner control; that choice is saved when browser storage is available. The lighter background also works before JavaScript loads and when storage is blocked.
+
 **[Explore the live site](https://me.alejandrofranks.workers.dev)** · **[Career timeline](https://me.alejandrofranks.workers.dev/timeline)** · **[Bakiano case study](https://github.com/alejandrofrank/bakiano-showcase)**
 
 **[Agents in GCP](https://me.alejandrofranks.workers.dev/projects/madrid-delivery-sim)** explains how agents with different tools, memory, permissions and decision rules work together. A delivery simulation in Madrid is the example, with a clickable city replay, 3D store, agent anatomy, a GCP architecture guide, evidence boundaries and MIT source. The demo runs entirely in the browser from recorded synthetic data. It makes no live model calls or Google Cloud queries; the existing portfolio hosts its static files. The existing project URL and source repository name remain stable.

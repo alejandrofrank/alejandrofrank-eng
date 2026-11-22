@@ -1,5 +1,5 @@
 // Full-page decorative color, with all readable content on a separate layer.
-export const gradientMarkup = `<div class="color-world" aria-hidden="true">
+export const gradientMarkup = `<div class="color-world" data-effects="light" aria-hidden="true">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><filter id="cursor-waves" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feImage id="wave-map" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="waves"/><feDisplacementMap in="SourceGraphic" in2="waves" scale="125" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg>
   <div class="color-motion"><div class="color-band"><i></i><i></i><i></i></div></div>
 </div>
@@ -8,10 +8,9 @@ export const gradientMarkup = `<div class="color-world" aria-hidden="true">
  const surface=document.querySelector('.color-motion'),map=document.getElementById('wave-map');
  if(!surface||!map)return;
  const background=surface.closest('.color-world');
- try{if(localStorage.getItem('portfolio-effects')==='light')background.dataset.effects='light';}catch{}
+ try{if(localStorage.getItem('portfolio-effects')==='full')background.dataset.effects='full';}catch{}
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
- const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
- if(!ctx)return;
+ let canvas,ctx;
  let waves=[],frame=0,lastPaint=0,lastPointer=0,previous=null;
  function stop(){cancelAnimationFrame(frame);frame=0;waves=[];previous=null;surface.classList.remove('is-rippling');}
  function paint(now){
@@ -42,6 +41,8 @@ export const gradientMarkup = `<div class="color-world" aria-hidden="true">
  }
  window.addEventListener('pointermove',e=>{
    if(reduced.matches||document.hidden||background.dataset.effects==='light'||e.pointerType==='touch')return;
+   if(!canvas){canvas=document.createElement('canvas');ctx=canvas.getContext('2d');}
+   if(!ctx)return;
    const now=performance.now(),x=e.clientX/innerWidth,y=e.clientY/innerHeight,aspect=innerWidth/innerHeight;
    if(now-lastPointer<70)return;
    const distance=previous?Math.hypot(x-previous.x,y-previous.y):.025;
