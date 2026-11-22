@@ -88,6 +88,14 @@ This proves the complete queue/parking layout has a solution. Hidden information
 
 Certificates verify the levels and supply the optional Hint action. Normal taps do not consult the solver or prevent mistakes. A dead end is allowed to play out until parking fills. Missing states, invalid saves or changed level definitions cannot receive a verified safe hint. Search limits throw an error; an unfinished search is never reported as an impossible puzzle. BigInt state keys support the 72-car yard without a 32-bit occupancy limit.
 
+### Independent generator audit
+
+The November 2026 level-four report is covered by `tests/order-flow-generation-audit.test.mjs`. Its reference rules do not import the game's move, blocker, search or witness validator: they check aligned occupied cells, consume a passenger array and count filled seats. This avoids relying on two solvers that share the same potentially incorrect move function.
+
+The reference rules complete all twenty starting boards and 72 additional configurations across rectangular dimensions, seeds, parking sizes and passenger wave lengths. For level 4, they enumerate all **343 reachable states**, confirm a **30-release winning path**, and check every certificate classification against independently computed outcomes.
+
+The reported screenshot has 34 passengers waiting, 15 cars in the yard, and empty purple and green cars occupying two parking spaces. Three reachable states match that appearance because identical-colored cars cannot be distinguished in the image. All three are unwinnable: the only unblocked blue car takes one passenger, then an orange passenger is at the front while all three spaces are occupied. This is a reachable losing attempt, not an impossible starting board. The regression checks both facts; it does not add warnings or prevent a player from choosing a losing move.
+
 ```bash
 node scripts/build-order-flow-proof.mjs
 npm test
@@ -121,10 +129,11 @@ This is an analogy, not the Python agent system. It does not model memory policy
 | public/play/games/order-flow.mjs | Immediate input, accessibility, sound and one animation loop |
 | src/play/games/order-flow.ts | Cabinet markup, responsive grid, queue, bay and outcomes |
 | tests/order-flow-{model,proof,ui}.test.mjs | Rules, proofs, complete campaigns, saves and interactions |
+| tests/order-flow-generation-audit.test.mjs | Separate reference rules, generator matrix and level-four screenshot regression |
 
 ## Verification
 
-The twenty-level revision passes **184 repository tests**, including **52 Order Flow tests**, plus TypeScript checking. Tests complete all twenty levels through the shipped markup and controls and independently solve every complete puzzle. They also follow losing paths on every level, asserting that every legal tap commits immediately with no predictive warning or confirmation. Coverage includes passenger supply, partial cars, full parking, loss, Undo, saved attempts, keyboard focus, rapid input and reduced motion. New cases verify exact unlock thresholds, hidden-color reveal and accessibility, hidden queues, timer start/expiry/final-move boundaries, reload/Undo deadlines, old-save migration and the final two-space levels.
+The generator audit passes **193 repository tests**, plus TypeScript checking. Tests complete all twenty levels through the shipped markup and controls and independently solve every complete puzzle. They also follow losing paths on every level, asserting that every legal tap commits immediately with no predictive warning or confirmation. Coverage includes passenger supply, partial cars, full parking, loss, Undo, saved attempts, keyboard focus, rapid input and reduced motion. Cases verify exact unlock thresholds, hidden-color reveal and accessibility, hidden queues, timer start/expiry/final-move boundaries, reload/Undo deadlines, old-save migration and the final two-space levels.
 
 Browser checks use the shipped controls, including the optional Hint to exercise long completion paths. All ten added levels were completed through those controls, ending at “All 20 yards cleared!” with zero waiting passengers. The existing ten-level stars migrate and unlock level 11. Level 6 reveals a gray car when its path clears; later levels expose only the front passenger. Reload preserves a partly completed timed board and its running countdown. Levels 19–20 expose exactly two parking spaces. The captured browser console had no warnings or errors.
 
